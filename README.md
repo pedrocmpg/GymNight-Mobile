@@ -10,11 +10,6 @@
 
 ---
 
-## 📸 UI/UX Design Preview
-*Insert a screenshot or GIF of your React Native mobile interface here!*
-
----
-
 ## ⚡ Mobile Philosophy: Pure Focus
 GymNight Mobile eliminates the clutter. No social feeds, no gamification badges, and no distracting configurations. It is a minimalist logging tool designed to let you enter your numbers in under 3 seconds between sets and put your phone back down.
 

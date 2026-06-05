@@ -734,7 +734,7 @@ event.listen(
 # - Descriptive: Clearly identifies table and operation
 # - Unique: No conflicts with other trigger names
 CREATE_USERS_TRIGGER_SQL = """
-CREATE TRIGGER trg_users_delete
+CREATE OR REPLACE TRIGGER trg_users_delete
 AFTER DELETE ON users
 FOR EACH ROW
 EXECUTE FUNCTION create_tombstone_on_delete();
@@ -763,7 +763,7 @@ EXECUTE FUNCTION create_tombstone_on_delete();
 #
 # Trigger name: trg_workouts_delete
 CREATE_WORKOUTS_TRIGGER_SQL = """
-CREATE TRIGGER trg_workouts_delete
+CREATE OR REPLACE TRIGGER trg_workouts_delete
 AFTER DELETE ON workouts
 FOR EACH ROW
 EXECUTE FUNCTION create_tombstone_on_delete();
@@ -789,7 +789,7 @@ EXECUTE FUNCTION create_tombstone_on_delete();
 #
 # Trigger name: trg_workout_exercises_delete
 CREATE_WORKOUT_EXERCISES_TRIGGER_SQL = """
-CREATE TRIGGER trg_workout_exercises_delete
+CREATE OR REPLACE TRIGGER trg_workout_exercises_delete
 AFTER DELETE ON workout_exercises
 FOR EACH ROW
 EXECUTE FUNCTION create_tombstone_on_delete();
@@ -815,7 +815,7 @@ EXECUTE FUNCTION create_tombstone_on_delete();
 #
 # Trigger name: trg_workout_sessions_delete
 CREATE_WORKOUT_SESSIONS_TRIGGER_SQL = """
-CREATE TRIGGER trg_workout_sessions_delete
+CREATE OR REPLACE TRIGGER trg_workout_sessions_delete
 AFTER DELETE ON workout_sessions
 FOR EACH ROW
 EXECUTE FUNCTION create_tombstone_on_delete();
@@ -841,7 +841,7 @@ EXECUTE FUNCTION create_tombstone_on_delete();
 #
 # Trigger name: trg_logged_sets_delete
 CREATE_LOGGED_SETS_TRIGGER_SQL = """
-CREATE TRIGGER trg_logged_sets_delete
+CREATE OR REPLACE TRIGGER trg_logged_sets_delete
 AFTER DELETE ON logged_sets
 FOR EACH ROW
 EXECUTE FUNCTION create_tombstone_on_delete();

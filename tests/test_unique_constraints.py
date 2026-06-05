@@ -15,8 +15,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 from app.core.config import DATABASE_URL
+from app.database.connection import Base
 from app.database.models import (
-    Base,
     User,
     Exercise,
     current_timestamp_ms

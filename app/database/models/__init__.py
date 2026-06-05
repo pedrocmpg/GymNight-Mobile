@@ -42,6 +42,9 @@ SYNC PROTOCOL:
 # IMPORTAÇÃO CENTRALIZADA: Modelos segregados em módulos isolados
 # ============================================================================
 
+# Base declarativa do SQLAlchemy (necessária para create_all)
+from app.database.connection import Base
+
 # Função utilitária de timestamp (usada por todos os modelos)
 from .utils import current_timestamp_ms
 
@@ -72,6 +75,9 @@ from .sync import (
 # ============================================================================
 
 __all__ = [
+    # Base declarativa SQLAlchemy
+    "Base",
+    
     # Função utilitária
     "current_timestamp_ms",
     

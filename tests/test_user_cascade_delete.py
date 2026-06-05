@@ -15,8 +15,8 @@ from datetime import datetime, timezone
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.core.config import DATABASE_URL
+from app.database.connection import Base
 from app.database.models import (
-    Base,
     User,
     Exercise,
     Workout,

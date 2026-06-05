@@ -112,13 +112,14 @@ class WorkoutSession(Base):
     --------------
     - created_at: Set once when session is first created (sync timestamp in Unix ms)
     - updated_at: Updated when session is modified (ended_at set, notes added, etc.)
-    - started_at: DateTime when workout began (actual workout timestamp, timezone-aware)
-    - ended_at: DateTime when workout ended (actual workout timestamp, timezone-aware, nullable)
+    - started_at: BigInteger Unix milliseconds when workout began (actual workout timestamp)
+    - ended_at: BigInteger Unix milliseconds when workout ended (actual workout timestamp, nullable)
     
-    Why both created_at/updated_at (BigInteger) AND started_at/ended_at (DateTime)?
-    - created_at/updated_at: Sync protocol timestamps (Unix ms) for change tracking
-    - started_at/ended_at: Business domain timestamps (DateTime with timezone) for workout duration
-    - Different purposes: sync tracking vs. workout timing
+    All timestamps use BigInteger Unix milliseconds format for consistency:
+    - Standardized across sync protocol and business domain
+    - Simplifies client-side handling and serialization
+    - No timezone conversion complexity
+    - Simple duration calculations: ended_at - started_at = duration in milliseconds
     
     CASCADE DELETE RULES:
     ---------------------
@@ -143,8 +144,8 @@ class WorkoutSession(Base):
     - id: String(36) - Client-generated UUID primary key
     - user_id: String(36) - Foreign key to users.id, CASCADE on delete, NOT NULL
     - workout_id: String(36) - Foreign key to workouts.id, SET NULL on delete, NULLABLE (freestyle sessions)
-    - started_at: DateTime(timezone=True) - When workout session began, NOT NULL
-    - ended_at: DateTime(timezone=True) - When workout session ended, NULLABLE (in-progress sessions)
+    - started_at: BigInteger - Unix milliseconds when workout session began, NOT NULL
+    - ended_at: BigInteger - Unix milliseconds when workout session ended, NULLABLE (in-progress sessions)
     - created_at: BigInteger - Unix milliseconds when created, NOT NULL
     - updated_at: BigInteger - Unix milliseconds when last modified, NOT NULL
     
@@ -171,11 +172,11 @@ class WorkoutSession(Base):
     1. Client generates UUID: "ws123456-e5f6-7890-abcd-ef1234567890"
     2. Client sets user_id (must already exist or be created in same sync batch)
     3. Client sets workout_id (NULL for freestyle, or references a Workout template)
-    4. Client sets started_at to current datetime with timezone
+    4. Client sets started_at to current Unix milliseconds (e.g., 1705311000000)
     5. Client leaves ended_at as NULL (session in progress)
     6. Client sets created_at and updated_at to current Unix milliseconds
     7. Client stores locally in WatermelonDB
-    8. User completes workout, client sets ended_at to current datetime
+    8. User completes workout, client sets ended_at to current Unix milliseconds
     9. Client updates updated_at to current Unix milliseconds
     10. When online, client pushes workout_session
     11. Server validates user_id and workout_id (if provided) exist
@@ -264,14 +265,14 @@ class WorkoutSession(Base):
     # TIMER TRACKING COLUMNS: Workout session start and end timestamps
     # ========================================================================
     
-    # DateTime when workout session began (timezone-aware)
-    # Example: 2024-01-15 08:30:00+00:00 (ISO 8601 format with UTC timezone)
+    # Unix timestamp in milliseconds when workout session began
+    # Example: 1705311000000 (represents 2024-01-15 08:30:00 UTC)
     #
-    # Why DateTime(timezone=True) instead of BigInteger Unix milliseconds?
-    # - Business domain timestamp: represents actual workout timing (not sync tracking)
-    # - Timezone-aware: crucial for users in different timezones
-    # - Human-readable: easier to debug and query
-    # - PostgreSQL TIMESTAMP WITH TIME ZONE type
+    # Why BigInteger Unix milliseconds (not DateTime)?
+    # - Consistency with sync protocol: matches created_at/updated_at format
+    # - Cross-platform compatibility: no timezone conversion issues
+    # - Simple arithmetic: duration = ended_at - started_at (in milliseconds)
+    # - Standardized format throughout WatermelonDB sync protocol
     #
     # Why nullable=False?
     # - Every workout session MUST have a start time
@@ -279,26 +280,28 @@ class WorkoutSession(Base):
     # - Enforced at both application and database level
     #
     # Business logic:
-    # - Set to current datetime when user starts workout
+    # - Set to current Unix milliseconds when user starts workout
     # - Immutable after creation (workout start time doesn't change)
-    # - Used to calculate session duration: ended_at - started_at
+    # - Used to calculate session duration: ended_at - started_at (milliseconds)
     # - Used for historical workout tracking and calendar views
+    # - Convert to DateTime for display: datetime.fromtimestamp(started_at / 1000, tz=UTC)
     started_at = Column(
-        DateTime(timezone=True),  # TIMESTAMP WITH TIME ZONE (timezone-aware datetime)
-        nullable=False            # Start time is required
+        BigInteger,           # Unix milliseconds (e.g., 1705311000000)
+        nullable=False        # Start time is required
     )
     
-    # DateTime when workout session ended (timezone-aware, NULLABLE for in-progress sessions)
-    # Example: 2024-01-15 09:45:00+00:00 (ISO 8601 format with UTC timezone)
+    # Unix timestamp in milliseconds when workout session ended (NULLABLE for in-progress sessions)
+    # Example: 1705315500000 (represents 2024-01-15 09:45:00 UTC)
     #
-    # Why DateTime(timezone=True)?
-    # - Same rationale as started_at: business domain timestamp, timezone-aware
-    # - PostgreSQL TIMESTAMP WITH TIME ZONE type
+    # Why BigInteger Unix milliseconds (not DateTime)?
+    # - Same rationale as started_at: consistency with sync protocol
+    # - Enables simple duration calculations in milliseconds
+    # - No timezone conversion complexity
     #
     # Why NULLABLE?
     # - Represents in-progress sessions that haven't been completed yet
     # - ended_at=NULL indicates session is currently active
-    # - ended_at=<datetime> indicates session is completed
+    # - ended_at=<timestamp> indicates session is completed
     #
     # Session states:
     # 1. In Progress: ended_at IS NULL
@@ -307,21 +310,21 @@ class WorkoutSession(Base):
     #    - UI shows "Current Workout" with live timer
     # 2. Completed: ended_at IS NOT NULL
     #    - User finished the workout
-    #    - Session duration = ended_at - started_at
+    #    - Session duration = ended_at - started_at (in milliseconds)
     #    - UI shows "Completed" with total duration
     #
     # Business logic:
     # - Initially NULL when session created
-    # - Set to current datetime when user finishes workout
+    # - Set to current Unix milliseconds when user finishes workout
     # - Should always be >= started_at (application validation)
     # - If app crashes, ended_at remains NULL (can detect abandoned sessions)
     #
     # Abandoned session detection:
-    # - Query: WHERE ended_at IS NULL AND started_at < (NOW() - INTERVAL '24 hours')
+    # - Query: WHERE ended_at IS NULL AND started_at < (current_time_ms - 86400000)
     # - Application can prompt user: "Resume workout from yesterday?"
     ended_at = Column(
-        DateTime(timezone=True),  # TIMESTAMP WITH TIME ZONE (timezone-aware datetime)
-        nullable=True             # NULLABLE: in-progress sessions have no end time yet
+        BigInteger,           # Unix milliseconds (e.g., 1705315500000)
+        nullable=True         # NULLABLE: in-progress sessions have no end time yet
     )
     
     # ========================================================================
@@ -332,14 +335,16 @@ class WorkoutSession(Base):
     # See User model documentation for detailed timestamp rationale.
     # Same sync protocol architecture: tracks creation time for sync queries.
     #
-    # NOTE: This is DIFFERENT from started_at:
-    # - created_at: Sync protocol timestamp (when record created in database, Unix ms)
-    # - started_at: Business domain timestamp (when workout physically started, DateTime with TZ)
+    # All timestamps in WorkoutSession use consistent BigInteger Unix milliseconds format:
+    # - created_at: When record created in database (sync protocol)
+    # - updated_at: When record last modified (sync protocol)
+    # - started_at: When workout physically started (business domain)
+    # - ended_at: When workout physically ended (business domain)
     #
     # Example: User starts workout offline at 8:30 AM, syncs at 9:00 AM
-    # - started_at = 8:30 AM (when workout actually started)
-    # - created_at = 8:30 AM Unix ms (set by client when session created locally)
-    # - updated_at = 9:00 AM Unix ms (when synced to server)
+    # - started_at = 1705311000000 (8:30 AM in Unix ms)
+    # - created_at = 1705311000000 (set by client when session created locally)
+    # - updated_at = 1705314600000 (9:00 AM in Unix ms when synced to server)
     created_at = Column(
         BigInteger,                         # 64-bit integer for Unix milliseconds
         nullable=False,                     # Must always have a value
@@ -350,18 +355,60 @@ class WorkoutSession(Base):
     # See User model documentation for detailed timestamp rationale.
     # Updates when: ended_at set, notes added, or any other modification
     #
-    # NOTE: This is DIFFERENT from ended_at:
-    # - updated_at: Sync protocol timestamp (when record modified in database, Unix ms)
-    # - ended_at: Business domain timestamp (when workout physically ended, DateTime with TZ)
+    # All timestamps use consistent BigInteger Unix milliseconds format
     #
     # Example: User finishes workout at 9:45 AM
-    # - ended_at = 9:45 AM (when workout actually finished)
-    # - updated_at = 9:45 AM Unix ms (when ended_at field was set)
+    # - ended_at = 1705315500000 (9:45 AM in Unix ms when workout finished)
+    # - updated_at = 1705315500000 (9:45 AM in Unix ms when ended_at field was set)
     updated_at = Column(
         BigInteger,                         # 64-bit integer for Unix milliseconds
         nullable=False,                     # Must always have a value
         default=current_timestamp_ms,       # Set on creation
         onupdate=current_timestamp_ms       # Auto-update on every modification
+    )
+    
+    # ========================================================================
+    # WATERMELONDB SYNC OPTIMIZATION FIELDS: Record state and change tracking
+    # ========================================================================
+    
+    # WatermelonDB sync optimization field: record state tracking
+    # Values: 'created', 'updated', 'deleted'
+    # String(10) accommodates the longest value ('deleted' = 7 chars)
+    #
+    # Why NULLABLE?
+    # - Optional optimization field per WatermelonDB specification
+    # - Existing records will have NULL (backward compatibility)
+    # - NULL treated as "optimization not available, use full record sync"
+    # - New records can optionally populate for sync optimization
+    #
+    # Why default=None?
+    # - No automatic population (application logic handles this)
+    # - Leaving NULL is safer than incorrect auto-population
+    # - Future enhancement can add event listeners for automatic tracking
+    _status = Column(
+        String(10),           # Values: 'created', 'updated', 'deleted'
+        nullable=True,        # NULLABLE: Optional optimization field
+        default=None          # Default: None (not set initially)
+    )
+    
+    # WatermelonDB sync optimization field: comma-separated list of changed field names
+    # Example: "name,email" when those fields were modified
+    # String(500) provides capacity for ~50 field names (typical: "name,weight" = 11 chars)
+    #
+    # Why NULLABLE?
+    # - Optional optimization field per WatermelonDB specification
+    # - Existing records will have NULL (backward compatibility)
+    # - NULL treated as "optimization not available, use full record sync"
+    # - New records can optionally populate for granular sync
+    #
+    # Why default=None?
+    # - No automatic population (requires event listeners to detect field modifications)
+    # - Leaving NULL is safer than incorrect auto-population
+    # - Future enhancement can add event listeners for automatic tracking
+    _changed = Column(
+        String(500),          # Comma-separated field names (e.g., "name,weight,reps")
+        nullable=True,        # NULLABLE: Optional optimization field
+        default=None          # Default: None (not set initially)
     )
     
     # ========================================================================
@@ -545,12 +592,13 @@ class LoggedSet(Base):
     --------------
     - created_at: Set once when logged set is first created (sync timestamp in Unix ms)
     - updated_at: Updated when set is modified (weight/reps changed, etc.)
-    - completed_at: DateTime when set was actually completed (business domain timestamp)
+    - completed_at: BigInteger Unix milliseconds when set was actually completed (business domain timestamp)
     
-    Why both created_at/updated_at (BigInteger) AND completed_at (DateTime)?
-    - created_at/updated_at: Sync protocol timestamps (Unix ms) for change tracking
-    - completed_at: Business domain timestamp (DateTime with timezone) for workout timing
-    - Different purposes: sync tracking vs. set timing
+    All timestamps use BigInteger Unix milliseconds format for consistency:
+    - Standardized across sync protocol and business domain
+    - Simplifies client-side handling and serialization
+    - No timezone conversion complexity
+    - Simple arithmetic operations for rest time calculations
     
     CASCADE DELETE RULES:
     ---------------------
@@ -579,7 +627,7 @@ class LoggedSet(Base):
     - weight: Float - Actual weight lifted in kg, NOT NULL
     - repetitions: Integer - Actual repetitions completed, NOT NULL
     - estimated_one_rm: Float - Calculated one-rep max using Epley formula, NOT NULL
-    - completed_at: DateTime(timezone=True) - When set was completed, NOT NULL
+    - completed_at: BigInteger - Unix milliseconds when set was completed, NOT NULL
     - created_at: BigInteger - Unix milliseconds when created, NOT NULL
     - updated_at: BigInteger - Unix milliseconds when last modified, NOT NULL
     
@@ -612,7 +660,7 @@ class LoggedSet(Base):
     5. Client EITHER:
        a) Provides estimated_one_rm explicitly (client-side Epley calculation)
        b) Omits estimated_one_rm (server calculates automatically via @validates)
-    6. Client sets completed_at to current datetime with timezone
+    6. Client sets completed_at to current Unix milliseconds (e.g., 1705312532000)
     7. Client sets created_at and updated_at to current Unix milliseconds
     8. Client stores locally in WatermelonDB
     9. When online, client pushes logged_set
@@ -807,14 +855,14 @@ class LoggedSet(Base):
     # TIMING COLUMN: When set was actually completed
     # ========================================================================
     
-    # DateTime when set was completed (timezone-aware)
-    # Example: 2024-01-15 10:15:32+00:00 (ISO 8601 format with UTC timezone)
+    # Unix timestamp in milliseconds when set was completed
+    # Example: 1705312532000 (represents 2024-01-15 10:15:32 UTC)
     #
-    # Why DateTime(timezone=True) instead of BigInteger Unix milliseconds?
-    # - Business domain timestamp: represents actual set timing (not sync tracking)
-    # - Timezone-aware: crucial for users in different timezones
-    # - Human-readable: easier to debug and query
-    # - PostgreSQL TIMESTAMP WITH TIME ZONE type
+    # Why BigInteger Unix milliseconds (not DateTime)?
+    # - Consistency with sync protocol: matches created_at/updated_at format
+    # - Cross-platform compatibility: no timezone conversion issues
+    # - Simple arithmetic: rest time = completed_at(set N+1) - completed_at(set N)
+    # - Standardized format throughout WatermelonDB sync protocol
     #
     # Why nullable=False?
     # - Every logged set MUST record when it was completed
@@ -822,27 +870,28 @@ class LoggedSet(Base):
     # - Enforced at both application and database level
     #
     # Business logic:
-    # - Set to current datetime when user logs the set
+    # - Set to current Unix milliseconds when user logs the set
     # - Used for workout history and timeline views
     # - Used for rest time calculation: completed_at(set N+1) - completed_at(set N)
     # - Used for progress tracking: performance over time
     #
     # Example rest time calculation:
-    # Set 1: completed_at = 10:15:32
-    # Set 2: completed_at = 10:18:15
-    # Rest time = 10:18:15 - 10:15:32 = 2 minutes 43 seconds
+    # Set 1: completed_at = 1705312532000 (10:15:32)
+    # Set 2: completed_at = 1705312695000 (10:18:15)
+    # Rest time = 1705312695000 - 1705312532000 = 163000 milliseconds = 163 seconds = 2m 43s
     #
-    # NOTE: This is DIFFERENT from created_at:
-    # - completed_at: Business domain timestamp (when set physically completed, DateTime with TZ)
-    # - created_at: Sync protocol timestamp (when record created in database, Unix ms)
+    # All timestamps use consistent BigInteger Unix milliseconds format:
+    # - completed_at: When set physically completed (business domain)
+    # - created_at: When record created in database (sync protocol)
+    # - updated_at: When record last modified (sync protocol)
     #
     # Example: User completes set offline at 10:15 AM, syncs at 11:00 AM
-    # - completed_at = 10:15 AM (when set actually completed)
-    # - created_at = 10:15 AM Unix ms (set by client when logged locally)
-    # - updated_at = 11:00 AM Unix ms (when synced to server)
+    # - completed_at = 1705312532000 (10:15 AM in Unix ms when set actually completed)
+    # - created_at = 1705312532000 (set by client when logged locally)
+    # - updated_at = 1705316400000 (11:00 AM in Unix ms when synced to server)
     completed_at = Column(
-        DateTime(timezone=True),  # TIMESTAMP WITH TIME ZONE (timezone-aware datetime)
-        nullable=False            # Completion time is required
+        BigInteger,           # Unix milliseconds (e.g., 1705312532000)
+        nullable=False        # Completion time is required
     )
     
     # ========================================================================
@@ -866,6 +915,50 @@ class LoggedSet(Base):
         nullable=False,                     # Must always have a value
         default=current_timestamp_ms,       # Set on creation
         onupdate=current_timestamp_ms       # Auto-update on every modification
+    )
+    
+    # ========================================================================
+    # WATERMELONDB SYNC OPTIMIZATION FIELDS: Record state and change tracking
+    # ========================================================================
+    
+    # WatermelonDB sync optimization field: record state tracking
+    # Values: 'created', 'updated', 'deleted'
+    # String(10) accommodates the longest value ('deleted' = 7 chars)
+    #
+    # Why NULLABLE?
+    # - Optional optimization field per WatermelonDB specification
+    # - Existing records will have NULL (backward compatibility)
+    # - NULL treated as "optimization not available, use full record sync"
+    # - New records can optionally populate for sync optimization
+    #
+    # Why default=None?
+    # - No automatic population (application logic handles this)
+    # - Leaving NULL is safer than incorrect auto-population
+    # - Future enhancement can add event listeners for automatic tracking
+    _status = Column(
+        String(10),           # Values: 'created', 'updated', 'deleted'
+        nullable=True,        # NULLABLE: Optional optimization field
+        default=None          # Default: None (not set initially)
+    )
+    
+    # WatermelonDB sync optimization field: comma-separated list of changed field names
+    # Example: "name,email" when those fields were modified
+    # String(500) provides capacity for ~50 field names (typical: "name,weight" = 11 chars)
+    #
+    # Why NULLABLE?
+    # - Optional optimization field per WatermelonDB specification
+    # - Existing records will have NULL (backward compatibility)
+    # - NULL treated as "optimization not available, use full record sync"
+    # - New records can optionally populate for granular sync
+    #
+    # Why default=None?
+    # - No automatic population (requires event listeners to detect field modifications)
+    # - Leaving NULL is safer than incorrect auto-population
+    # - Future enhancement can add event listeners for automatic tracking
+    _changed = Column(
+        String(500),          # Comma-separated field names (e.g., "name,weight,reps")
+        nullable=True,        # NULLABLE: Optional optimization field
+        default=None          # Default: None (not set initially)
     )
     
     # ========================================================================
@@ -1086,21 +1179,29 @@ class LoggedSet(Base):
         weight_value = value if key == 'weight' else getattr(self, 'weight', None)
         reps_value = value if key == 'repetitions' else getattr(self, 'repetitions', None)
         
-        # Check if we have both weight and repetitions available for calculation
-        # If either is None, we can't calculate yet (early in object construction)
-        if weight_value is not None and reps_value is not None:
-            # Both values available → calculate estimated_one_rm using Epley formula
-            # Formula: estimated_one_rm = weight × (1 + repetitions / 30)
-            # 
-            # Example calculation:
-            # weight_value = 100.0, reps_value = 8
-            # estimated_one_rm = 100.0 × (1 + 8/30) = 100.0 × 1.2667 = 126.67
-            calculated_one_rm = weight_value * (1 + reps_value / 30)
-            
-            # Set the calculated value on the object
-            # This updates estimated_one_rm even if we're currently validating weight or repetitions
-            # SQLAlchemy will call this validator again for estimated_one_rm, but we'll accept it
-            self.estimated_one_rm = calculated_one_rm
+        # SAFETY CHECK: Early return if either value is None
+        # This prevents TypeError during partial sync updates where only one field is provided
+        # Example: Partial sync sends only weight=105.0, repetitions remains None
+        # Without this check: TypeError "unsupported operand type(s) for /: 'NoneType' and 'int'"
+        # With this check: Skip calculation, defer until both fields are available
+        if weight_value is None or reps_value is None:
+            # Skip calculation: Missing required field(s)
+            # Calculation will be deferred until both weight and repetitions are available
+            return value
+        
+        # Both values available → safe to proceed with calculation
+        # Calculate estimated_one_rm using Epley formula
+        # Formula: estimated_one_rm = weight × (1 + repetitions / 30)
+        # 
+        # Example calculation:
+        # weight_value = 100.0, reps_value = 8
+        # estimated_one_rm = 100.0 × (1 + 8/30) = 100.0 × 1.2667 = 126.67
+        calculated_one_rm = weight_value * (1 + reps_value / 30)
+        
+        # Set the calculated value on the object
+        # This updates estimated_one_rm even if we're currently validating weight or repetitions
+        # SQLAlchemy will call this validator again for estimated_one_rm, but we'll accept it
+        self.estimated_one_rm = calculated_one_rm
         
         # Return the value being set for the current field (weight or repetitions)
         # The estimated_one_rm calculation happens as a side effect via setattr above

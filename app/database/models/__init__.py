@@ -70,6 +70,12 @@ from .sync import (
     CREATE_LOGGED_SETS_TRIGGER_SQL,
 )
 
+# Event listeners para tracking automático de _status e _changed
+from .event_listeners import register_all_sync_listeners
+
+# Registrar event listeners automaticamente quando módulo é importado
+register_all_sync_listeners()
+
 # ============================================================================
 # EXPORTAÇÃO PÚBLICA: Garante retrocompatibilidade dos imports
 # ============================================================================

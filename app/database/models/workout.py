@@ -228,6 +228,50 @@ class Workout(Base):
     )
     
     # ========================================================================
+    # WATERMELONDB SYNC OPTIMIZATION FIELDS: Record state and change tracking
+    # ========================================================================
+    
+    # WatermelonDB sync optimization field: record state tracking
+    # Values: 'created', 'updated', 'deleted'
+    # String(10) accommodates the longest value ('deleted' = 7 chars)
+    #
+    # Why NULLABLE?
+    # - Optional optimization field per WatermelonDB specification
+    # - Existing records will have NULL (backward compatibility)
+    # - NULL treated as "optimization not available, use full record sync"
+    # - New records can optionally populate for sync optimization
+    #
+    # Why default=None?
+    # - No automatic population (application logic handles this)
+    # - Leaving NULL is safer than incorrect auto-population
+    # - Future enhancement can add event listeners for automatic tracking
+    _status = Column(
+        String(10),           # Values: 'created', 'updated', 'deleted'
+        nullable=True,        # NULLABLE: Optional optimization field
+        default=None          # Default: None (not set initially)
+    )
+    
+    # WatermelonDB sync optimization field: comma-separated list of changed field names
+    # Example: "name,email" when those fields were modified
+    # String(500) provides capacity for ~50 field names (typical: "name,weight" = 11 chars)
+    #
+    # Why NULLABLE?
+    # - Optional optimization field per WatermelonDB specification
+    # - Existing records will have NULL (backward compatibility)
+    # - NULL treated as "optimization not available, use full record sync"
+    # - New records can optionally populate for granular sync
+    #
+    # Why default=None?
+    # - No automatic population (requires event listeners to detect field modifications)
+    # - Leaving NULL is safer than incorrect auto-population
+    # - Future enhancement can add event listeners for automatic tracking
+    _changed = Column(
+        String(500),          # Comma-separated field names (e.g., "name,weight,reps")
+        nullable=True,        # NULLABLE: Optional optimization field
+        default=None          # Default: None (not set initially)
+    )
+    
+    # ========================================================================
     # RELATIONSHIPS: Bidirectional ORM navigation with cascade rules
     # ========================================================================
     
@@ -567,6 +611,50 @@ class WorkoutExercise(Base):
         nullable=False,                     # Must always have a value
         default=current_timestamp_ms,       # Set on creation
         onupdate=current_timestamp_ms       # Auto-update on every modification
+    )
+    
+    # ========================================================================
+    # WATERMELONDB SYNC OPTIMIZATION FIELDS: Record state and change tracking
+    # ========================================================================
+    
+    # WatermelonDB sync optimization field: record state tracking
+    # Values: 'created', 'updated', 'deleted'
+    # String(10) accommodates the longest value ('deleted' = 7 chars)
+    #
+    # Why NULLABLE?
+    # - Optional optimization field per WatermelonDB specification
+    # - Existing records will have NULL (backward compatibility)
+    # - NULL treated as "optimization not available, use full record sync"
+    # - New records can optionally populate for sync optimization
+    #
+    # Why default=None?
+    # - No automatic population (application logic handles this)
+    # - Leaving NULL is safer than incorrect auto-population
+    # - Future enhancement can add event listeners for automatic tracking
+    _status = Column(
+        String(10),           # Values: 'created', 'updated', 'deleted'
+        nullable=True,        # NULLABLE: Optional optimization field
+        default=None          # Default: None (not set initially)
+    )
+    
+    # WatermelonDB sync optimization field: comma-separated list of changed field names
+    # Example: "name,email" when those fields were modified
+    # String(500) provides capacity for ~50 field names (typical: "name,weight" = 11 chars)
+    #
+    # Why NULLABLE?
+    # - Optional optimization field per WatermelonDB specification
+    # - Existing records will have NULL (backward compatibility)
+    # - NULL treated as "optimization not available, use full record sync"
+    # - New records can optionally populate for granular sync
+    #
+    # Why default=None?
+    # - No automatic population (requires event listeners to detect field modifications)
+    # - Leaving NULL is safer than incorrect auto-population
+    # - Future enhancement can add event listeners for automatic tracking
+    _changed = Column(
+        String(500),          # Comma-separated field names (e.g., "name,weight,reps")
+        nullable=True,        # NULLABLE: Optional optimization field
+        default=None          # Default: None (not set initially)
     )
     
     # ========================================================================

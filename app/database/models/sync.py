@@ -302,6 +302,38 @@ class DeletedRecord(Base):
     )
     
     # ========================================================================
+    # USER OWNERSHIP: Multi-tenant filtering support
+    # ========================================================================
+    
+    # User ID who owned the deleted record (for multi-tenant filtering)
+    # Format: "550e8400-e29b-41d4-a716-446655440000" (36 characters with hyphens)
+    #
+    # This field enables server-side filtering of tombstones by user during sync queries:
+    # - Query: WHERE deleted_at > ? AND user_id = ?
+    # - Prevents sending irrelevant tombstones to clients in multi-tenant scenarios
+    # - Each client only receives deletions for records they owned
+    #
+    # Why NULLABLE?
+    # - Exercises have no user_id (shared catalog), so Exercise deletions store NULL
+    # - Existing tombstones cannot be backfilled (original record already deleted)
+    # - NULL means "applies to all users" or "user unknown"
+    # - Backward compatibility: Old tombstones without user_id still work
+    #
+    # Trigger population logic:
+    # - For users table: user_id := OLD.id (deleted user's own ID)
+    # - For exercises table: user_id := NULL (no ownership)
+    # - For other tables: user_id := OLD.user_id (extracted dynamically)
+    #
+    # Query pattern compatibility:
+    # - Old pattern (still works): WHERE deleted_at > ?
+    # - New pattern (optimized): WHERE deleted_at > ? AND (user_id = ? OR user_id IS NULL)
+    # - The OR user_id IS NULL handles Exercise tombstones and historical records
+    user_id = Column(
+        String(36),
+        nullable=True         # NULLABLE: Not all tables have user_id concept
+    )
+    
+    # ========================================================================
     # DELETION TIMESTAMP: When the deletion occurred
     # ========================================================================
     
@@ -363,6 +395,35 @@ Index('idx_deleted_records_deleted_at', DeletedRecord.deleted_at)
 # - Enables efficient filtering by entity type
 Index('idx_deleted_records_table_name', DeletedRecord.table_name)
 
+# Create composite index for multi-tenant query optimization
+# This index is CRITICAL for multi-tenant sync protocol performance
+# Query pattern: SELECT * FROM deleted_records WHERE user_id = ? AND deleted_at > ?
+# Without composite index: Uses single-column index, then filters by user_id (suboptimal)
+# With composite index: Direct seek to user_id + range scan on deleted_at (optimal)
+#
+# Index name: idx_deleted_records_user_deleted_at
+# Column order: user_id FIRST (equality condition), deleted_at SECOND (range condition)
+# - PostgreSQL B-tree indexes work left-to-right
+# - Equality conditions should precede range conditions for optimal performance
+# - Allows query planner to: seek to user_id match, then range scan within that user's tombstones
+#
+# Index behavior:
+# - Query with user_id + deleted_at: Uses this composite index (optimal)
+# - Query with only deleted_at: Falls back to idx_deleted_records_deleted_at (still optimal)
+# - Query with only user_id: Could use this index (but uncommon query pattern)
+#
+# Backward compatibility:
+# - Existing queries using only WHERE deleted_at > ? continue to use single-column index
+# - Query planner automatically selects best index based on query predicates
+# - No performance degradation for existing query patterns
+#
+# Performance impact:
+# - Significantly improves multi-tenant sync queries (typical use case)
+# - Slight overhead on INSERT (updating 3 indexes instead of 2)
+# - Acceptable tradeoff: Tombstone insertion is infrequent (only on deletion)
+# - Sync queries are frequent (every client sync), optimization worthwhile
+Index('idx_deleted_records_user_deleted_at', DeletedRecord.user_id, DeletedRecord.deleted_at)
+
 
 # ============================================================================
 # POSTGRESQL TRIGGER FUNCTION: Automatic tombstone creation on deletion
@@ -379,13 +440,15 @@ Index('idx_deleted_records_table_name', DeletedRecord.table_name)
 CREATE_TOMBSTONE_FUNCTION_SQL = """
 CREATE OR REPLACE FUNCTION create_tombstone_on_delete()
 RETURNS TRIGGER AS $$
+DECLARE
+    v_user_id TEXT;
 BEGIN
     -- ========================================================================
     -- AUTOMATIC TOMBSTONE CREATION ON ROW DELETION
     -- ========================================================================
     -- This trigger function automatically creates a tombstone record in the
     -- deleted_records table whenever a row is deleted from a syncable table.
-    -- The tombstone captures: table name, deleted record ID, and deletion timestamp.
+    -- The tombstone captures: table name, deleted record ID, user ownership, and deletion timestamp.
     --
     -- TRIGGER MECHANISM:
     -- - Executed AFTER DELETE on syncable tables (users, workouts, exercises, etc.)
@@ -399,7 +462,7 @@ BEGIN
     -- 1. PostgreSQL executes AFTER DELETE trigger
     -- 2. This function inserts tombstone into deleted_records table
     -- 3. Original record is deleted from source table
-    -- 4. During next sync, clients query deleted_records WHERE deleted_at > last_pulled_at
+    -- 4. During next sync, clients query deleted_records WHERE deleted_at > last_pulled_at AND user_id = ?
     -- 5. Clients receive tombstone and delete corresponding local records
     --
     -- POSTGRESQL TRIGGER CONTEXT VARIABLES:
@@ -423,6 +486,34 @@ BEGIN
     -- - Usage: Captures the UUID of the record being deleted
     -- - Example: Deleting workout with id="abc-123" → OLD.id = "abc-123"
     --
+    -- USER_ID EXTRACTION LOGIC:
+    -- =========================
+    --
+    -- v_user_id variable holds the extracted user_id for multi-tenant filtering
+    --
+    -- Conditional logic based on TG_TABLE_NAME:
+    --
+    -- 1. users table: v_user_id := OLD.id (the deleted user's own ID)
+    --    - When user is deleted, the user_id is the user's own ID
+    --    - Example: DELETE FROM users WHERE id='user-123' → v_user_id = 'user-123'
+    --
+    -- 2. exercises table: v_user_id := NULL (no ownership)
+    --    - Exercises are shared catalog, no user_id concept
+    --    - NULL means "applies to all users"
+    --    - Example: DELETE FROM exercises WHERE id='exercise-456' → v_user_id = NULL
+    --
+    -- 3. Other tables (workouts, workout_exercises, workout_sessions, logged_sets):
+    --    - Extract OLD.user_id dynamically using EXECUTE format()
+    --    - These tables have user_id foreign key column
+    --    - Example: DELETE FROM workouts WHERE id='workout-789' → v_user_id = OLD.user_id
+    --
+    -- Why dynamic extraction with EXECUTE?
+    -- - Not all tables have user_id column (exercises)
+    -- - Direct OLD.user_id access would fail for exercises table
+    -- - format() with EXECUTE provides safe dynamic SQL
+    -- - Exception handling ensures trigger doesn't fail if user_id missing
+    -- - NULL is acceptable fallback for edge cases
+    --
     -- TOMBSTONE RECORD FIELDS:
     -- ========================
     --
@@ -444,6 +535,13 @@ BEGIN
     -- - Type: TEXT (String(36) in our schema)
     -- - Client uses this to identify which local record to delete
     -- - Example: If workout "abc-123" deleted → record_id = "abc-123"
+    --
+    -- user_id: v_user_id
+    -- - Stores the user who owned the deleted record (for multi-tenant filtering)
+    -- - Type: TEXT (String(36) in our schema) or NULL
+    -- - Enables server-side filtering: WHERE user_id = ?
+    -- - NULL for exercises (shared catalog) and historical tombstones
+    -- - Example: If workout owned by user-123 deleted → user_id = "user-123"
     --
     -- deleted_at: floor(EXTRACT(EPOCH FROM NOW()) * 1000)::bigint
     -- - Calculates current Unix timestamp in milliseconds
@@ -493,22 +591,46 @@ BEGIN
     -- 3. Function executes with context:
     --    - TG_TABLE_NAME = "workouts"
     --    - OLD.id = "550e8400-e29b-41d4-a716-446655440000"
-    -- 4. INSERT INTO deleted_records:
+    --    - OLD.user_id = "user-123"
+    -- 4. Determine v_user_id:
+    --    - TG_TABLE_NAME is "workouts" (not "users" or "exercises")
+    --    - Extract OLD.user_id → v_user_id = "user-123"
+    -- 5. INSERT INTO deleted_records:
     --    - id = gen_random_uuid()::text (e.g., "tombstone-uuid-abcd")
     --    - table_name = "workouts"
     --    - record_id = "550e8400-e29b-41d4-a716-446655440000"
+    --    - user_id = "user-123"
     --    - deleted_at = 1705318245123 (current Unix ms)
-    -- 5. Function returns OLD
-    -- 6. PostgreSQL completes DELETE operation
-    -- 7. Tombstone persists in deleted_records table
-    -- 8. During next sync, clients receive tombstone and delete local workout
+    -- 6. Function returns OLD
+    -- 7. PostgreSQL completes DELETE operation
+    -- 8. Tombstone persists in deleted_records table
+    -- 9. During next sync, clients receive tombstone and delete local workout
     -- ========================================================================
     
-    INSERT INTO deleted_records (id, table_name, record_id, deleted_at)
+    -- Determine user_id based on table type
+    IF TG_TABLE_NAME = 'users' THEN
+        -- For users table, the deleted user's ID IS the user_id
+        v_user_id := OLD.id;
+    ELSIF TG_TABLE_NAME = 'exercises' THEN
+        -- Exercises are shared catalog, no user_id concept
+        v_user_id := NULL;
+    ELSE
+        -- For other tables (workouts, workout_exercises, workout_sessions, logged_sets)
+        -- Extract user_id column if it exists
+        BEGIN
+            EXECUTE format('SELECT ($1).user_id::text') USING OLD INTO v_user_id;
+        EXCEPTION WHEN OTHERS THEN
+            -- If user_id column doesn't exist or other error, set NULL
+            v_user_id := NULL;
+        END;
+    END IF;
+    
+    INSERT INTO deleted_records (id, table_name, record_id, user_id, deleted_at)
     VALUES (
         gen_random_uuid()::text,
         TG_TABLE_NAME,
         OLD.id,
+        v_user_id,
         floor(EXTRACT(EPOCH FROM NOW()) * 1000)::bigint
     );
     

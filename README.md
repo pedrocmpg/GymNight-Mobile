@@ -2,9 +2,9 @@
 
 [![React Native](https://img.shields.io/badge/React%20Native-0.70+-blue.svg)](https://reactnative.dev/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 
-**GymNight Mobile** is a streamlined, distraction-free companion application built with **React Native** and **JavaScript**. It is engineered to act as a fast, high-performance interface for logging workout intensities and tracking progressive overload directly from the gym floor.
+**GymNight Mobile** is a streamlined, distraction-free companion application built with **React Native**, **JavaScript**, and **Python**. It is engineered to act as a fast, high-performance interface for logging workout intensities and tracking progressive overload directly from the gym floor.
 
 > 🖥️ **Looking for the desktop analytics dashboard?** Check out the [GymNight-Desktop](REPOSITORY_LINK_HERE) repository to view deep historical data analysis and advanced metrics.
 
@@ -26,8 +26,9 @@ GymNight Mobile eliminates the clutter. No social feeds, no gamification badges,
 ## 🛠️ Technology Stack
 
 * **Framework:** React Native
-* **Language:** JavaScript (ES6+)
+* **Languages:** JavaScript (ES6+), Python 3.8+
 * **State Management:** Optimized local state control for zero latency during active workouts.
+* **Backend Processing:** Python-based data processing and analysis pipelines.
 
 ---
 

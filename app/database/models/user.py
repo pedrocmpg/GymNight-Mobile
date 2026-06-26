@@ -73,10 +73,9 @@ class User(Base):
     
     COLUMNS:
     --------
-    - id: String(36) - Client-generated UUID primary key (e.g., "550e8400-e29b-41d4-a716-446655440000")
+    - id: String(36) - Supabase Auth UUID (= JWT sub claim), primary key
     - name: String(255) - User's full name, NOT NULL
-    - email: String(255) - Unique email for authentication, indexed for fast login queries, NOT NULL
-    - password_hash: String(255) - Bcrypt hashed password (NEVER store plaintext), NOT NULL
+    - email: String(255) - Unique email for display, indexed for fast queries, NOT NULL
     - created_at: BigInteger - Unix milliseconds when created, NOT NULL, auto-generated if not provided
     - updated_at: BigInteger - Unix milliseconds when last modified, NOT NULL, auto-updated on changes
     
@@ -89,10 +88,10 @@ class User(Base):
     
     CONSTRAINTS:
     ------------
-    - PRIMARY KEY: id
+    - PRIMARY KEY: id (= Supabase Auth UUID / JWT sub claim)
     - UNIQUE: email (prevents duplicate accounts)
-    - INDEX: email (fast lookup during login)
-    - NOT NULL: id, name, email, password_hash, created_at, updated_at
+    - INDEX: email (fast lookup during queries)
+    - NOT NULL: id, name, email, created_at, updated_at
     
     SYNC PROTOCOL EXAMPLE:
     ----------------------
@@ -106,7 +105,7 @@ class User(Base):
     __tablename__ = "users"
     
     # ========================================================================
-    # PRIMARY KEY: Client-generated UUID (String format, not PostgreSQL UUID)
+    # PRIMARY KEY: Supabase Auth UUID — maps directly to JWT sub claim
     # ========================================================================
     # Why String(36) instead of Integer auto-increment?
     # - Mobile clients can generate valid UUIDs offline using standard libraries
@@ -118,6 +117,8 @@ class User(Base):
     # - Broader database compatibility (works on SQLite for testing)
     # - Simpler JSON serialization (no custom type handling)
     # - WatermelonDB uses string IDs, so direct compatibility
+    #
+    # The value stored here MUST equal the `sub` claim from the user's Supabase JWT.
     id = Column(
         String(36),           # Fixed length: 36 characters (UUID with hyphens)
         primary_key=True,     # Primary key constraint
@@ -144,15 +145,6 @@ class User(Base):
         unique=True,          # UNIQUE constraint: prevents duplicate accounts
         index=True,           # INDEX: speeds up WHERE email='...' queries
         nullable=False        # Email is required
-    )
-    
-    # Bcrypt hashed password for secure authentication
-    # NEVER store plaintext passwords - always use bcrypt.hashpw()
-    # Example hash: "$2b$12$LQv3c1yqBWVHxkd0LHAkCOeCh4S/KKbqYHqN9xG7rT3..."
-    # String(255) accommodates bcrypt hash length (typically 60 chars)
-    password_hash = Column(
-        String(255),
-        nullable=False        # Password hash is required
     )
     
     # ========================================================================

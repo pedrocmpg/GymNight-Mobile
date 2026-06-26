@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from app.database.connection import engine
 from app.database import models
-from app.routers import users, auth
+from app.routers import users, sync
 
 # ============================================================================
 # INSTANCIAÇÃO DO FASTAPI
@@ -47,7 +47,7 @@ models.Base.metadata.create_all(bind=engine)
 #
 # ROTEADORES:
 # - users: Rotas de gerenciamento de usuários (/users)
-# - auth: Rotas de autenticação (/auth/login, /auth/google)
+# - sync: Rotas de sincronização WatermelonDB (/sync/pull, /sync/push)
 #
 # VANTAGENS DA MODULARIZAÇÃO:
 # - Código organizado por responsabilidade
@@ -55,7 +55,7 @@ models.Base.metadata.create_all(bind=engine)
 # - Documentação Swagger agrupada por tags
 # - Testabilidade (pode testar roteadores isoladamente)
 app.include_router(users.router)
-app.include_router(auth.router)
+app.include_router(sync.router)
 
 # ============================================================================
 # HANDLER DE EXCEÇÕES DE VALIDAÇÃO

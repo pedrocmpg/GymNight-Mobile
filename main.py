@@ -74,7 +74,7 @@ from app.database import models
 #
 # IMPORTANTE: Cada roteador é um APIRouter() com prefix e tags próprios.
 # Ao incluir aqui com app.include_router(), todas as rotas são registradas.
-from app.routers import users, auth
+from app.routers import users
 
 # ============================================================================
 # INSTANCIAÇÃO DO FASTAPI
@@ -157,7 +157,6 @@ models.Base.metadata.create_all(bind=engine)
 # 4. Importar aqui: from app.routers import workouts
 # 5. Incluir aqui: app.include_router(workouts.router)
 app.include_router(users.router)  # Registra rotas de /users
-app.include_router(auth.router)   # Registra rotas de /auth
 
 # ============================================================================
 # HANDLER DE EXCEÇÕES DE VALIDAÇÃO

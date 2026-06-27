@@ -33,6 +33,9 @@ from app.database.connection import get_db       # noqa: E402
 from app.routers import users                    # noqa: E402
 import app.routers.users as users_module         # noqa: E402
 
+# Save original User class to restore after each monkey-patch
+_ORIGINAL_USER_CLASS = users_module.models.User
+
 # ---------------------------------------------------------------------------
 # Test constants and helpers
 # ---------------------------------------------------------------------------
@@ -99,6 +102,9 @@ def _build_test_client() -> tuple[TestClient, MagicMock, MagicMock]:
     users_module.models.User = mock_user_class
 
     client = TestClient(app, raise_server_exceptions=False)
+
+    # NOTE: The patch is active during HTTP requests made via client.
+    # Callers are responsible for restoring _ORIGINAL_USER_CLASS after use.
     return client, mock_session, mock_user_class
 
 
@@ -145,6 +151,9 @@ def test_property_6_password_field_returns_422(
 
     body = {**extra_fields, "password": password_value}
     response = client.post("/users", json=body)
+
+    # Restore the original User class to prevent leaking the mock to other tests
+    users_module.models.User = _ORIGINAL_USER_CLASS
 
     assert response.status_code == 422, (
         f"Expected HTTP 422 for body with 'password' field, "
@@ -199,6 +208,9 @@ def test_property_7_valid_profile_subset_accepted(profile_fields: dict) -> None:
     mock_session.query.return_value.filter.return_value.first.return_value = None
 
     response = client.post("/users", json=profile_fields)
+
+    # Restore the original User class to prevent leaking the mock to other tests
+    users_module.models.User = _ORIGINAL_USER_CLASS
 
     assert response.status_code in (200, 201), (
         f"Expected HTTP 200 or 201 for valid profile subset {profile_fields!r}, "

@@ -18,7 +18,7 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
 
 ## Tasks
 
-- [ ] 1. Criar estrutura de diretórios `app/api/v1/endpoints/`
+- [x] 1. Criar estrutura de diretórios `app/api/v1/endpoints/`
   - Criar o arquivo `app/api/__init__.py` (vazio)
   - Criar o arquivo `app/api/v1/__init__.py` (vazio)
   - Criar o arquivo `app/api/v1/endpoints/__init__.py` (vazio)
@@ -28,8 +28,8 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
   - _Requirements: 1.1, 1.2_
 
 
-- [ ] 2. Implementar schemas Pydantic e helpers utilitários
-  - [ ] 2.1 Implementar schemas Pydantic em `app/api/v1/endpoints/sync.py`
+- [x] 2. Implementar schemas Pydantic e helpers utilitários
+  - [x] 2.1 Implementar schemas Pydantic em `app/api/v1/endpoints/sync.py`
     - Definir `TableChanges(BaseModel)` com campos `created: list[dict[str, Any]] = []`,
       `updated: list[dict[str, Any]] = []`, `deleted: list[str] = []`
     - Definir `PushPayload(BaseModel)` com campo `changes: dict[str, TableChanges] = {}`
@@ -38,14 +38,14 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
       `dict[str, Any]` direto no `TableChanges`)
     - _Requirements: 8.1, 9.1_
 
-  - [ ] 2.2 Implementar helper `_row_to_dict`
+  - [x] 2.2 Implementar helper `_row_to_dict`
     - Escrever `def _row_to_dict(row) -> dict[str, Any]` que itera
       `row.__table__.columns` e usa `getattr(row, col.name)` para cada coluna
     - Usar `__table__.columns` em vez de `__dict__` para evitar incluir
       atributos internos do SQLAlchemy (`_sa_instance_state`, etc.)
     - _Requirements: 6.2_
 
-  - [ ] 2.3 Implementar helper `_split_created_updated`
+  - [x] 2.3 Implementar helper `_split_created_updated`
     - Escrever `def _split_created_updated(rows, last_pulled_at) -> tuple[list, list]`
     - Retornar `(created, updated)` onde `created` contém dicts de rows com
       `row.created_at > last_pulled_at` e `updated` contém rows com
@@ -54,8 +54,8 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - _Requirements: 4.1, 4.2, 4.5_
 
 
-- [ ] 3. Implementar Pull endpoint com separação correta `created` vs `updated`
-  - [ ] 3.1 Implementar assinatura e captura de timestamp do Pull
+- [x] 3. Implementar Pull endpoint com separação correta `created` vs `updated`
+  - [x] 3.1 Implementar assinatura e captura de timestamp do Pull
     - Definir `@sync_router.get("/pull")` com parâmetros:
       `last_pulled_at: int = Query(0, ge=0)` (rejeita negativos com HTTP 422),
       `current_user_id: str = Depends(get_current_user)`,
@@ -64,7 +64,7 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
       **primeira** instrução do corpo da função, antes de qualquer query SQL
     - _Requirements: 2.1, 2.3, 3.1, 3.2, 3.3, 11.1, 11.2, 11.3_
 
-  - [ ] 3.2 Implementar queries Pull por tabela com filtro multi-tenant
+  - [x] 3.2 Implementar queries Pull por tabela com filtro multi-tenant
     - `users`: `db.query(User).filter(User.id == current_user_id, User.updated_at > last_pulled_at).all()`
     - `exercises`: sem filtro `user_id` — catálogo compartilhado
     - `workouts`: filtrar por `Workout.user_id == current_user_id`
@@ -75,14 +75,14 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - Agrupar tombstones por `table_name` em `dict[str, list[str]]`
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7_
 
-  - [ ] 3.3 Montar resposta Pull com separação `created`/`updated`/`deleted`
+  - [x] 3.3 Montar resposta Pull com separação `created`/`updated`/`deleted`
     - Para cada tabela, chamar `_split_created_updated(rows, last_pulled_at)`
       para obter `(created_list, updated_list)`
     - Montar dict `changes` com todas as 6 tabelas obrigatórias mesmo quando vazias
     - Retornar `{"changes": changes, "timestamp": current_server_timestamp}`
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 6.1, 6.3_
 
-  - [ ]* 3.4 Escrever testes de propriedade para o Pull (Properties 1, 2, 3, 4)
+  - [x] 3.4 Escrever testes de propriedade para o Pull (Properties 1, 2, 3, 4)
     - Criar `tests/test_watermelondb_sync_router_pull_properties.py`
     - **Property 1: Completude da Resposta Pull**
       `@given(last_pulled_at=st.integers(min_value=0, max_value=9_999_999_999_999))`
@@ -106,8 +106,8 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - _Requirements: 4.1, 4.2, 4.3, 4.5, 5.1–5.7, 6.1, 6.3_
 
 
-- [ ] 4. Implementar ownership scan antecipado do Push
-  - [ ] 4.1 Implementar função `_validate_push_ownership`
+- [x] 4. Implementar ownership scan antecipado do Push
+  - [x] 4.1 Implementar função `_validate_push_ownership`
     - Assinatura: `def _validate_push_ownership(payload: PushPayload, current_user_id: str, db: Session) -> None`
     - **Tabelas diretas** (`users`, `workouts`, `workout_sessions`):
       Para cada record em `created + updated`, se `record.get("user_id") is not None`
@@ -125,7 +125,7 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - **`exercises`**: SKIP — catálogo compartilhado, sem verificação de ownership
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-  - [ ] 4.2 Implementar assinatura do Push endpoint
+  - [x] 4.2 Implementar assinatura do Push endpoint
     - Definir `@sync_router.post("/push")` com parâmetros:
       `payload: PushPayload`,
       `current_user_id: str = Depends(get_current_user)`,
@@ -137,7 +137,7 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - Retornar `{"status": "ok"}` em caso de sucesso
     - _Requirements: 2.2, 2.4, 7.1, 8.1, 8.2, 8.3, 11.1, 11.2, 11.3_
 
-  - [ ]* 4.3 Escrever testes de propriedade para o Push ownership (Properties 5, 9)
+  - [x] 4.3 Escrever testes de propriedade para o Push ownership (Properties 5, 9)
     - Adicionar ao arquivo `tests/test_watermelondb_sync_router_push_properties.py`
     - **Property 5: Ownership Scan Previne Writes Parciais**
       Gera payload com registros válidos + 1 registro com `user_id` inválido;
@@ -151,8 +151,8 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 10.1, 10.2, 10.3_
 
 
-- [ ] 5. Implementar handlers internos do Push por tabela
-  - [ ] 5.1 Implementar `_push_exercises`
+- [x] 5. Implementar handlers internos do Push por tabela
+  - [x] 5.1 Implementar `_push_exercises`
     - Assinatura: `def _push_exercises(changes: Optional[TableChanges], db: Session) -> None`
     - Guard `if not changes: return`
     - **created**: idempotente — inserir somente se `db.query(Exercise).filter(Exercise.id == rec["id"]).first()` retorna `None`;
@@ -162,7 +162,7 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - **deleted**: buscar por `Exercise.id`, `db.delete(obj)` se encontrado — sem filtro de `user_id`
     - _Requirements: 9.1, 9.5, 9.9, 9.10, 8.4_
 
-  - [ ] 5.2 Implementar `_push_users`
+  - [x] 5.2 Implementar `_push_users`
     - Assinatura: `def _push_users(changes: Optional[TableChanges], current_user_id: str, db: Session) -> None`
     - **created**: `if rec.get("id") != current_user_id: raise HTTPException(403)`;
       inserir idempotente se `User.id` não existe
@@ -172,7 +172,7 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
       buscar por `User.id == record_id`, `db.delete(obj)` se encontrado
     - _Requirements: 9.1, 9.2, 9.6, 10.1, 10.2, 10.3_
 
-  - [ ] 5.3 Implementar `_push_workouts`
+  - [x] 5.3 Implementar `_push_workouts`
     - Assinatura: `def _push_workouts(changes: Optional[TableChanges], current_user_id: str, db: Session) -> None`
     - **created**: inserir idempotente; chamar `rec.setdefault("user_id", current_user_id)`
       antes do insert para garantir `user_id` preenchido
@@ -181,7 +181,7 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - Filtrar campos com `hasattr(Workout, k)` no insert e update
     - _Requirements: 9.1, 9.2, 9.6, 9.11, 8.4_
 
-  - [ ] 5.4 Implementar `_push_workout_exercises`
+  - [x] 5.4 Implementar `_push_workout_exercises`
     - Assinatura: `def _push_workout_exercises(changes: Optional[TableChanges], current_user_id: str, db: Session) -> None`
     - **created**: inserir idempotente sem filtro de `user_id` (ownership já validado no scan)
     - **updated**: JOIN com `Workout` via `WorkoutExercise.workout_id == Workout.id`;
@@ -189,7 +189,7 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - **deleted**: mesmo JOIN para verificar ownership indiretamente antes de `db.delete(obj)`
     - _Requirements: 9.1, 9.3, 9.7, 8.4_
 
-  - [ ] 5.5 Implementar `_push_workout_sessions`
+  - [x] 5.5 Implementar `_push_workout_sessions`
     - Assinatura: `def _push_workout_sessions(changes: Optional[TableChanges], current_user_id: str, db: Session) -> None`
     - **created**: inserir idempotente; `rec.setdefault("user_id", current_user_id)`
       antes do insert
@@ -197,7 +197,7 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - **deleted**: `filter(WorkoutSession.id == record_id, WorkoutSession.user_id == current_user_id)`
     - _Requirements: 9.1, 9.2, 9.6, 9.11, 8.4_
 
-  - [ ] 5.6 Implementar `_push_logged_sets`
+  - [x] 5.6 Implementar `_push_logged_sets`
     - Assinatura: `def _push_logged_sets(changes: Optional[TableChanges], current_user_id: str, db: Session) -> None`
     - **created**: inserir idempotente sem filtro de `user_id` (ownership já validado no scan)
     - **updated**: JOIN `LoggedSet → WorkoutSession` via `LoggedSet.session_id == WorkoutSession.id`;
@@ -205,14 +205,14 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - **deleted**: mesmo JOIN para verificar ownership antes de `db.delete(obj)`
     - _Requirements: 9.1, 9.4, 9.8, 8.4_
 
-  - [ ] 5.7 Encadear todos os handlers no corpo do Push endpoint
+  - [x] 5.7 Encadear todos os handlers no corpo do Push endpoint
     - Chamar handlers na ordem FK: `_push_exercises → _push_users → _push_workouts
       → _push_workout_exercises → _push_workout_sessions → _push_logged_sets`
     - Confirmar que o bloco `try/except` do task 4.2 envolve todos os handlers
     - _Requirements: 8.4_
 
 
-- [ ] 6. Checkpoint — Pull e Push funcionais
+- [x] 6. Checkpoint — Pull e Push funcionais
   - Garantir que todos os testes não-opcionais implementados até aqui passam
   - Verificar importações: `from app.api.v1.endpoints.sync import sync_router` funciona
     sem `ImportError`
@@ -220,7 +220,7 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     quando `last_pulled_at=0` não existe nenhum registro no banco
   - Perguntar ao usuário se há dúvidas antes de prosseguir para o registro em `main.py`
 
-- [ ] 7. Atualizar `app/main.py` para incluir o novo router em `/api/v1`
+- [x] 7. Atualizar `app/main.py` para incluir o novo router em `/api/v1`
   - Adicionar import: `from app.api.v1.endpoints.sync import sync_router`
   - Adicionar registro: `app.include_router(sync_router, prefix="/api/v1")`
   - Manter o router legado `app.include_router(sync.router)` registrado em `/sync`
@@ -230,10 +230,10 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
   - _Requirements: 1.3, 1.4_
 
 
-- [ ] 8. Escrever testes de propriedade restantes do Push (Properties 6, 7, 8)
+- [x] 8. Escrever testes de propriedade restantes do Push (Properties 6, 7, 8)
   - Adicionar ao arquivo `tests/test_watermelondb_sync_router_push_properties.py`
 
-  - [ ]* 8.1 Property 6 — Atomicidade do Push
+  - [x]* 8.1 Property 6 — Atomicidade do Push
     - Configurar mock de `db.commit()` para lançar `Exception` após N operações
     - `@given(payload=valid_push_payload_strategy())`
     - Verificar que o estado do banco após HTTP 500 é idêntico ao estado anterior
@@ -241,7 +241,7 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - `# Feature: watermelondb-sync-router, Property 6: Atomicidade do Push`
     - _Requirements: 8.1, 8.2_
 
-  - [ ]* 8.2 Property 7 — Idempotência de Criações no Push
+  - [x]* 8.2 Property 7 — Idempotência de Criações no Push
     - `@given(record=valid_workout_record_strategy())`
     - Enviar o mesmo `created` record duas vezes para `/api/v1/sync/push`
     - Verificar que `db.query(Workout).filter(Workout.id == record["id"]).count() == 1`
@@ -250,7 +250,7 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - `# Feature: watermelondb-sync-router, Property 7: Idempotência de Criações no Push`
     - _Requirements: 9.1_
 
-  - [ ]* 8.3 Property 8 — user_id Padrão em Criações
+  - [x]* 8.3 Property 8 — user_id Padrão em Criações
     - `@given(workout_id=st.uuids().map(str), user_id=st.uuids().map(str))`
     - Enviar `created` record de `workouts` **sem** campo `user_id` no payload
     - Verificar que `Workout.user_id == current_user_id` no banco após o Push
@@ -259,20 +259,20 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - _Requirements: 9.11_
 
 
-- [ ] 9. Escrever smoke tests para estrutura e ausência de padrões legados
+- [x] 9. Escrever smoke tests para estrutura e ausência de padrões legados
   - Criar `tests/smoke/test_sync_v1_structure.py`
 
-  - [ ]* 9.1 Smoke: `__init__.py` existem em todos os níveis
+  - [x]* 9.1 Smoke: `__init__.py` existem em todos os níveis
     - Verificar via `pathlib.Path` que os três arquivos existem:
       `app/api/__init__.py`, `app/api/v1/__init__.py`, `app/api/v1/endpoints/__init__.py`
     - _Requirements: 1.2_
 
-  - [ ]* 9.2 Smoke: `sync_router` importável e com prefixo correto
+  - [x]* 9.2 Smoke: `sync_router` importável e com prefixo correto
     - `from app.api.v1.endpoints.sync import sync_router`
     - `assert sync_router.prefix == "/sync"`
     - _Requirements: 1.1, 1.3, 1.4_
 
-  - [ ]* 9.3 Smoke: ausência de padrões incorretos de protocolo
+  - [x]* 9.3 Smoke: ausência de padrões incorretos de protocolo
     - Ler o conteúdo de `app/api/v1/endpoints/sync.py` via `pathlib.Path.read_text()`
     - Verificar que o arquivo NÃO contém `"created": []` com o array `updated` populado
       (padrão do código legado que colocava tudo em `updated`)
@@ -280,12 +280,12 @@ Wave 1 → Infraestrutura (diretórios) → Wave 2 → Schemas e helpers → Wav
     - Verificar que o arquivo NÃO usa `AsyncSession`
     - _Requirements: 4.3, 11.2_
 
-  - [ ]* 9.4 Smoke: endpoint registrado em `main.py` com prefixo `/api/v1`
+  - [x]* 9.4 Smoke: endpoint registrado em `main.py` com prefixo `/api/v1`
     - Ler o conteúdo de `app/main.py` via `pathlib.Path.read_text()`
     - Verificar que o arquivo contém `include_router(sync_router` e `prefix="/api/v1"`
     - _Requirements: 1.3_
 
-- [ ] 10. Checkpoint final — Garantir que todos os testes passam
+- [X] 10. Checkpoint final — Garantir que todos os testes passam
   - Executar `pytest tests/ -x` e confirmar que todos os testes não-opcionais passam
   - Verificar que `pytest tests/ -x --ignore=tests/smoke` também passa sem erros
   - Confirmar ausência de `ImportError` ao iniciar a aplicação

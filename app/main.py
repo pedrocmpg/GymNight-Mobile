@@ -17,6 +17,7 @@ from fastapi.exceptions import RequestValidationError
 from app.database.connection import engine
 from app.database import models
 from app.routers import users, sync
+from app.api.v1.endpoints.sync import sync_router
 
 # ============================================================================
 # INSTANCIAÇÃO DO FASTAPI
@@ -56,6 +57,10 @@ models.Base.metadata.create_all(bind=engine)
 # - Testabilidade (pode testar roteadores isoladamente)
 app.include_router(users.router)
 app.include_router(sync.router)
+# Novo router v1: GET /api/v1/sync/pull e POST /api/v1/sync/push
+# O router legado app.include_router(sync.router) acima é mantido em /sync/*
+# durante a transição — clientes existentes ainda dependem dele.
+app.include_router(sync_router, prefix="/api/v1")
 
 # ============================================================================
 # HANDLER DE EXCEÇÕES DE VALIDAÇÃO

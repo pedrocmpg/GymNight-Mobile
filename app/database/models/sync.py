@@ -31,15 +31,21 @@ EXPORTS:
 - DeletedRecord model class
 - CREATE_TOMBSTONE_FUNCTION_SQL (trigger function DDL)
 - CREATE_*_TRIGGER_SQL variables (trigger DDL for each table)
-- event.listen() registrations (automatic trigger creation)
+
+IMPORTANTE: Os triggers NÃO são mais registrados via event.listen().
+O ciclo de vida dos triggers é gerenciado exclusivamente pela migração
+Alembic 005 (005_add_offline_sync_triggers.py). Execute:
+
+    alembic upgrade head
+
+para aplicar os triggers ao banco de dados.
 """
 
 # ============================================================================
 # IMPORTS: SQLAlchemy ORM modules and dependencies
 # ============================================================================
 
-from sqlalchemy import Column, String, BigInteger, Index, event
-from sqlalchemy.schema import DDL
+from sqlalchemy import Column, String, BigInteger, Index
 
 # Import Base from connection module (single source of truth)
 from app.database.connection import Base
@@ -639,48 +645,9 @@ END;
 $$ LANGUAGE plpgsql;
 """
 
-# Register the trigger function to be created after schema creation
-# Uses SQLAlchemy event system to execute DDL after Base.metadata.create_all()
-#
-# Event: 'after_create' on Base.metadata
-# - Fires after all tables are created via create_all()
-# - Ensures deleted_records table exists before creating trigger function
-# - Trigger function references deleted_records table in INSERT statement
-#
-# Why after_create instead of manual execution?
-# - Automatic: Trigger function created whenever schema is initialized
-# - Consistent: Works in development, testing, and production environments
-# - Integrated: Part of the ORM model definition, not separate migration step
-# - Simple: No need to manually execute SQL in application startup code
-#
-# Event handler parameters:
-# - target: The MetaData object (Base.metadata)
-# - connection: Database connection to execute DDL
-# - **kw: Additional keyword arguments (unused here)
-#
-# DDL() object:
-# - Wraps raw SQL string for execution via SQLAlchemy
-# - Executes CREATE OR REPLACE FUNCTION statement
-# - CREATE OR REPLACE: Safe for repeated executions (idempotent)
-#   * If function doesn't exist: creates it
-#   * If function exists: replaces it with new definition
-#   * Prevents errors in testing scenarios with repeated schema creation
-#
-# IMPORTANT: This only creates the FUNCTION, not the TRIGGERS
-# - Task 7.2 will attach AFTER DELETE triggers to specific tables
-# - This task (7.1) just defines the reusable trigger function
-# - Multiple tables will call this same function via their triggers
-#
-# Usage in Alembic migrations:
-# - Can import: from app.database.models import CREATE_TOMBSTONE_FUNCTION_SQL
-# - Execute in migration: op.execute(CREATE_TOMBSTONE_FUNCTION_SQL)
-# - Allows manual control over when trigger function is created
-# - Useful for migration rollback scenarios
-event.listen(
-    Base.metadata,
-    'after_create',
-    DDL(CREATE_TOMBSTONE_FUNCTION_SQL)
-)
+# NOTE: A criação desta função no banco de dados é gerenciada exclusivamente
+# pela migração Alembic 005 (add_offline_sync_triggers).
+# Não use event.listen aqui — isso quebraria o determinismo das migrações.
 
 
 # ============================================================================
@@ -969,94 +936,7 @@ FOR EACH ROW
 EXECUTE FUNCTION create_tombstone_on_delete();
 """
 
-# ============================================================================
-# REGISTER TRIGGER DDL STATEMENTS: Attach triggers after schema creation
-# ============================================================================
-#
-# Uses SQLAlchemy event system to execute trigger DDL after Base.metadata.create_all()
-#
-# Event: 'after_create' on Base.metadata
-# - Fires after all tables are created via create_all()
-# - Fires after trigger function is created (task 7.1 event listener registered first)
-# - Ensures tables, function, and deleted_records table all exist before creating triggers
-#
-# Why multiple event listeners instead of one DDL with multiple statements?
-# - Clarity: Each trigger has its own registration for easy debugging
-# - Modularity: Can comment out individual triggers for testing
-# - Error isolation: If one trigger fails, can identify which one
-# - Alembic compatibility: Each trigger SQL is isolated in a variable for migration import
-#
-# Execution order (guaranteed by SQLAlchemy):
-# 1. Base.metadata.create_all() creates all tables
-# 2. 'after_create' event fires
-# 3. Task 7.1 listener executes: CREATE_TOMBSTONE_FUNCTION_SQL (function created)
-# 4. Task 7.2 listeners execute in order:
-#    - CREATE_USERS_TRIGGER_SQL (trigger attached to users table)
-#    - CREATE_WORKOUTS_TRIGGER_SQL (trigger attached to workouts table)
-#    - CREATE_WORKOUT_EXERCISES_TRIGGER_SQL (trigger attached to workout_exercises table)
-#    - CREATE_WORKOUT_SESSIONS_TRIGGER_SQL (trigger attached to workout_sessions table)
-#    - CREATE_LOGGED_SETS_TRIGGER_SQL (trigger attached to logged_sets table)
-# 5. Schema initialization complete
-
-# Register users table trigger
-event.listen(
-    Base.metadata,
-    'after_create',
-    DDL(CREATE_USERS_TRIGGER_SQL)
-)
-
-# Register workouts table trigger
-event.listen(
-    Base.metadata,
-    'after_create',
-    DDL(CREATE_WORKOUTS_TRIGGER_SQL)
-)
-
-# Register workout_exercises table trigger
-event.listen(
-    Base.metadata,
-    'after_create',
-    DDL(CREATE_WORKOUT_EXERCISES_TRIGGER_SQL)
-)
-
-# Register workout_sessions table trigger
-event.listen(
-    Base.metadata,
-    'after_create',
-    DDL(CREATE_WORKOUT_SESSIONS_TRIGGER_SQL)
-)
-
-# Register logged_sets table trigger
-event.listen(
-    Base.metadata,
-    'after_create',
-    DDL(CREATE_LOGGED_SETS_TRIGGER_SQL)
-)
-
-# ============================================================================
-# END OF TASK 7.2: AFTER DELETE TRIGGERS ATTACHED
-# ============================================================================
-#
-# Summary of what was implemented:
-# - 5 module-level SQL string variables (CREATE_USERS_TRIGGER_SQL, etc.)
-# - 5 event listeners attaching triggers to tables after schema creation
-# - Comprehensive documentation explaining:
-#   * Why AFTER DELETE (not BEFORE DELETE)
-#   * Why FOR EACH ROW (not FOR EACH STATEMENT)
-#   * Why exercises table has no trigger (RESTRICT constraint)
-#   * Cascade delete implications for each trigger
-#   * Execution order dependencies (function must exist before triggers)
-#   * Alembic migration compatibility (isolated SQL variables)
-#
-# Requirements satisfied:
-# - 10.1: Tombstone records created for users deletions
-# - 10.2: Tombstone records created for workouts deletions
-# - 10.3: Tombstone records created for workout_exercises deletions
-# - 10.4: Tombstone records created for workout_sessions deletions
-# - 10.5: Tombstone records created for logged_sets deletions
-# - 10.6: Tombstone tracking via deleted_records table
-# - 13.1: PostgreSQL-compatible trigger DDL
-# - 13.2: String type for UUIDs in trigger function
-# - 13.3: Foreign key constraints work with triggers (CASCADE captured)
-# - 13.4: Deployable to PostgreSQL without modifications
-# ============================================================================
+# NOTE: O registro dos triggers no banco de dados é gerenciado exclusivamente
+# pela migração Alembic 005 (add_offline_sync_triggers).
+# Os blocos event.listen foram removidos para garantir determinismo nas migrações.
+# Use `alembic upgrade head` para aplicar os triggers ao banco de dados.

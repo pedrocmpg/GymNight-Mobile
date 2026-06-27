@@ -34,7 +34,7 @@ Imports antigos continuam funcionando sem modificações:
 SYNC PROTOCOL:
 --------------
 - Base.metadata contém todos os modelos (descoberta automática)
-- Triggers PostgreSQL anexados via event.listen (automático)
+- Triggers PostgreSQL gerenciados pela migração Alembic 005 (determinístico)
 - DeletedRecord rastreia deleções para sincronização offline
 """
 

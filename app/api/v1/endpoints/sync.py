@@ -17,10 +17,11 @@ Requirements: 1.1, 1.2, 2.1, 2.2
 import time
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from app.core.limiter import limiter
 from app.core.security import get_current_user
 from app.database.connection import get_db
 from app.database.models import (
@@ -101,7 +102,9 @@ def _split_created_updated(rows, last_pulled_at: int) -> tuple[list, list]:
 # ============================================================================
 
 @sync_router.get("/pull")
+@limiter.limit("60/minute")
 def pull(
+    request: Request,
     last_pulled_at: int = Query(0, ge=0),
     current_user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -645,7 +648,9 @@ def _push_logged_sets(
 
 
 @sync_router.post("/push")
+@limiter.limit("60/minute")
 def push(
+    request: Request,
     payload: PushPayload,
     current_user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db),

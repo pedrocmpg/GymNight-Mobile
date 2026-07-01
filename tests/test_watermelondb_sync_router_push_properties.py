@@ -34,6 +34,7 @@ os.environ.setdefault("SUPABASE_JWT_SECRET", "test-secret-for-hypothesis-runs-x"
 os.environ.setdefault("DATABASE_URL", "postgresql://localhost/test")
 
 from app.api.v1.endpoints.sync import sync_router  # noqa: E402
+from app.core.limiter import limiter  # noqa: E402
 from app.core.security import get_current_user  # noqa: E402
 from app.database.connection import Base, get_db  # noqa: E402
 
@@ -76,6 +77,10 @@ def _build_test_client(authenticated_sub: str):
     - get_db overridden to use a fresh SQLite in-memory session
     Returns (client, db_session).
     """
+    # Reset the rate limiter storage so PBT examples don't accumulate hits
+    # and trigger 429 after 60 examples in the same minute window.
+    limiter._storage.reset()
+
     _engine, SessionFactory = _make_sqlite_session_factory()
     db_session = SessionFactory()
 

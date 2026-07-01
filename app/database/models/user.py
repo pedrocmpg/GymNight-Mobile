@@ -26,8 +26,8 @@ CASCADE RULES:
 # IMPORTS: SQLAlchemy ORM modules and dependencies
 # ============================================================================
 
-from sqlalchemy import Column, String, BigInteger, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, String, BigInteger, Float, ForeignKey
+from sqlalchemy.orm import relationship, validates
 
 # Import Base from connection module (single source of truth)
 from app.database.connection import Base
@@ -147,6 +147,75 @@ class User(Base):
         nullable=False        # Email is required
     )
     
+    # ========================================================================
+    # USER PROFILE OPTIONAL FIELDS: Physical attributes and demographics
+    # ========================================================================
+
+    # Body weight in kilograms (e.g., 75.5)
+    # Float, nullable — not required on account creation
+    # ORM validation: must be within [1.0, 500.0] kg
+    weight = Column(
+        Float,
+        nullable=True,        # Optional field
+    )
+
+    # Height in centimetres (e.g., 175.0)
+    # Float, nullable — not required on account creation
+    # ORM validation: must be within [50.0, 300.0] cm
+    height = Column(
+        Float,
+        nullable=True,        # Optional field
+    )
+
+    # Date of birth stored as ISO 8601 string "YYYY-MM-DD" (e.g., "1990-07-25")
+    # String(10) exactly fits the "YYYY-MM-DD" format (10 characters)
+    # ORM validation: must match ^\d{4}-\d{2}-\d{2}$
+    birth_date = Column(
+        String(10),
+        nullable=True,        # Optional field
+    )
+
+    # Self-identified gender
+    # String(10) fits longest accepted value ("female" = 6 chars, with room to grow)
+    # ORM validation: must be one of {"male", "female", "other"}
+    gender = Column(
+        String(10),
+        nullable=True,        # Optional field
+    )
+
+    # ========================================================================
+    # ORM VALIDATORS: Secondary safety-net validation before DB writes
+    # ========================================================================
+
+    @validates("weight")
+    def validate_weight(self, key, value):
+        """Reject weight values outside the physiologically plausible range."""
+        if value is not None and not (1.0 <= value <= 500.0):
+            raise ValueError(f"weight must be between 1.0 and 500.0, got {value}")
+        return value
+
+    @validates("height")
+    def validate_height(self, key, value):
+        """Reject height values outside the physiologically plausible range."""
+        if value is not None and not (50.0 <= value <= 300.0):
+            raise ValueError(f"height must be between 50.0 and 300.0, got {value}")
+        return value
+
+    @validates("birth_date")
+    def validate_birth_date(self, key, value):
+        """Reject birth_date strings that do not match YYYY-MM-DD."""
+        import re
+        if value is not None and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+            raise ValueError(f"birth_date must be YYYY-MM-DD, got {value!r}")
+        return value
+
+    @validates("gender")
+    def validate_gender(self, key, value):
+        """Reject gender values not in the accepted enumeration."""
+        if value is not None and value not in {"male", "female", "other"}:
+            raise ValueError(f"gender must be 'male', 'female', or 'other', got {value!r}")
+        return value
+
     # ========================================================================
     # SYNC TIMESTAMP COLUMNS: WatermelonDB synchronization protocol
     # ========================================================================

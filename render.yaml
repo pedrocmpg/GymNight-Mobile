@@ -1,0 +1,26 @@
+# ============================================================================
+# RENDER DEPLOY CONFIGURATION — GymNight FastAPI Backend
+# ============================================================================
+# Platform: Render (https://render.com)
+# Requirement 12.3: build command, start command, port, and required env vars
+# ============================================================================
+
+services:
+  - type: web
+    name: gymnight-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    port: 8000
+
+    # Required environment variables (Req 12.3)
+    # Values must be set in the Render dashboard or via render secrets.
+    envVars:
+      - key: SUPABASE_URL
+        sync: false          # set manually in dashboard
+      - key: SUPABASE_JWT_SECRET
+        sync: false          # set manually in dashboard
+      - key: DATABASE_URL
+        sync: false          # set manually in dashboard
+      - key: ADMIN_SECRET
+        sync: false          # set manually in dashboard

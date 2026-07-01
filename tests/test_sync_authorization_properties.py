@@ -1,5 +1,5 @@
 """
-Property-based tests for Sync Authorization (POST /sync/push and GET /sync/pull).
+Property-based tests for Sync Authorization (POST /api/v1/sync/push and GET /api/v1/sync/pull).
 
 Feature: supabase-migration
 Properties 8–9: Multi-tenant authorization in WatermelonDB sync routes
@@ -34,7 +34,7 @@ os.environ.setdefault("DATABASE_URL", "postgresql://localhost/test")
 
 from app.core.security import get_current_user  # noqa: E402
 from app.database.connection import Base, get_db  # noqa: E402
-from app.routers import sync as sync_module  # noqa: E402
+from app.api.v1.endpoints.sync import sync_router as sync_v1_router  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Test constants and helpers
@@ -94,12 +94,25 @@ def _build_test_client(authenticated_sub: str):
     - get_db overridden to use a fresh SQLite in-memory session
     - Returns (client, db_session) so tests can inspect/seed the database
     """
+    from slowapi.errors import RateLimitExceeded
+    from app.core.limiter import limiter
+
     _engine, SessionFactory = _make_sqlite_session_factory()
 
     db_session = SessionFactory()
 
     app = FastAPI()
-    app.include_router(sync_module.router)
+
+    # Attach the limiter so SlowAPI can find it via request.app.state.limiter.
+    # Reset storage to prevent rate-limit state from accumulating across the many
+    # Hypothesis examples executed in a single test run.
+    limiter.reset()
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, lambda req, exc: __import__('fastapi').responses.JSONResponse(
+        status_code=429, content={"error": "Rate limit exceeded"}
+    ))
+
+    app.include_router(sync_v1_router, prefix="/api/v1")
 
     app.dependency_overrides[get_current_user] = lambda: authenticated_sub
     app.dependency_overrides[get_db] = lambda: db_session
@@ -199,7 +212,7 @@ def test_property_8_push_rejects_divergent_user_id(
         }
     }
 
-    response = client.post("/sync/push", json=push_payload)
+    response = client.post("/api/v1/sync/push", json=push_payload)
 
     assert response.status_code == 403, (
         f"Expected HTTP 403 for push with user_id={payload_user_id!r} "
@@ -300,7 +313,7 @@ def test_property_9_pull_returns_only_authenticated_user_records(
     db_session.commit()
 
     # Issue pull starting from timestamp 0 so all records are returned
-    response = client.get("/sync/pull?last_pulled_at=0")
+    response = client.get("/api/v1/sync/pull?last_pulled_at=0")
 
     assert response.status_code == 200, (
         f"Expected HTTP 200 from pull, got {response.status_code}. "

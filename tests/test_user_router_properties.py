@@ -10,6 +10,7 @@ fully mocked dependencies for get_current_user and get_db.
 
 import os
 import time
+from datetime import date
 from unittest.mock import MagicMock
 
 import jwt as pyjwt
@@ -120,7 +121,7 @@ _optional_profile_fields = st.fixed_dictionaries(
         "name": st.text(min_size=1, max_size=100),
         "weight": st.floats(min_value=1.0, max_value=500.0, allow_nan=False, allow_infinity=False),
         "height": st.floats(min_value=50.0, max_value=300.0, allow_nan=False, allow_infinity=False),
-        "birth_date": st.dates().map(lambda d: d.isoformat()),
+        "birth_date": st.dates(max_value=date.today()).map(lambda d: d.isoformat()),
         "gender": st.sampled_from(["male", "female", "other"]),
     },
 )
@@ -168,10 +169,13 @@ def test_property_6_password_field_returns_422(
 
 # Strategy: generate a non-empty subset of the five allowed profile fields
 # with values within the documented valid limits.
+# NOTE: `name` is required by UserProfileCreate (POST /users), so it is
+# placed in the mandatory dict. The remaining four fields are optional.
 _valid_profile_subset = st.fixed_dictionaries(
-    {},
-    optional={
+    {
         "name": st.text(min_size=1, max_size=100),
+    },
+    optional={
         "weight": st.floats(
             min_value=1.0, max_value=500.0,
             allow_nan=False, allow_infinity=False,
@@ -180,10 +184,10 @@ _valid_profile_subset = st.fixed_dictionaries(
             min_value=50.0, max_value=300.0,
             allow_nan=False, allow_infinity=False,
         ),
-        "birth_date": st.dates().map(lambda d: d.isoformat()),
+        "birth_date": st.dates(max_value=date.today()).map(lambda d: d.isoformat()),
         "gender": st.sampled_from(["male", "female", "other"]),
     },
-).filter(lambda d: len(d) > 0)  # at least one field must be present
+)
 
 
 @h_settings(max_examples=200, suppress_health_check=[HealthCheck.too_slow])
@@ -193,10 +197,14 @@ def test_property_7_valid_profile_subset_accepted(profile_fields: dict) -> None:
     """
     **Validates: Requirements 6.4**
 
-    For any non-empty subset of fields {name, weight, height, birth_date, gender}
+    For any combination of {name (required), weight, height, birth_date, gender}
     with values within valid limits, and accompanied by a valid JWT (mocked via
     dependency override), the request to POST /users must succeed with HTTP 200
     or 201.
+
+    `name` is always present because UserProfileCreate declares it as a required
+    field — omitting it triggers HTTP 422, which is correct per the schema design
+    but outside the scope of this property test.
 
     - get_current_user is overridden to return a fixed UUID (no real JWT needed)
     - get_db is overridden with a MagicMock session (no real DB needed)

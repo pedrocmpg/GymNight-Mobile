@@ -30,6 +30,13 @@ SQLAlchemy==2.0.50
 psycopg2-binary==2.9.12
 greenlet==3.5.1
 
+# --- Structured Logging ---
+structlog==24.4.0             # Single-line JSON structured logs (Req 11.4, 11.6)
+
+# --- Rate Limiting ---
+slowapi==0.1.9               # SlowAPI rate limiter for FastAPI (Req 9)
+limits==3.13.0               # Backend for slowapi in-memory / Redis stores
+
 # --- Utilitários ---
 click==8.4.1
 h11==0.16.0

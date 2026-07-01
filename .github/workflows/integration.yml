@@ -1,0 +1,52 @@
+name: Integration Tests
+
+on:
+  push:
+    branches:
+      - main
+      - "**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: gymnight_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install --no-cache-dir -r requirements.txt
+
+      - name: Run Alembic migrations
+        env:
+          TEST_DATABASE_URL: postgresql://test:test@localhost:5432/gymnight_test
+        run: |
+          alembic upgrade head || { echo "Alembic migration failed — aborting"; exit 1; }
+
+      - name: Run integration tests
+        env:
+          TEST_DATABASE_URL: postgresql://test:test@localhost:5432/gymnight_test
+        run: pytest tests/integration/ -v

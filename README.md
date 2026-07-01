@@ -32,7 +32,6 @@ Documentação interativa disponível em `/docs` (Swagger) e `/redoc` quando o s
 
 - Python 3.12+
 - PostgreSQL (ou projeto Supabase configurado)
-- `alembic` instalado (`pip install alembic`)
 
 ---
 
@@ -44,7 +43,11 @@ Documentação interativa disponível em `/docs` (Swagger) e `/redoc` quando o s
 git clone https://github.com/pedrocmpg/GymNight-Mobile.git
 cd GymNight-Mobile
 pip install -r requirements.txt
-pip install alembic  # gerenciador de migrations (não incluso no requirements.txt)
+```
+
+**Para produção (otimizado, sem dependências de teste):**
+```bash
+pip install -r requirements-prod.txt
 ```
 
 **2. Configure as variáveis de ambiente**
@@ -72,6 +75,19 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 O servidor estará disponível em `http://localhost:8000`.
+
+---
+
+## Dependências
+
+O projeto tem dois arquivos de requirements:
+
+| Arquivo | Quando usar | Tamanho |
+|---|---|---|
+| `requirements.txt` | Desenvolvimento local, testes, CI | Maior (inclui Hypothesis, pytest) |
+| `requirements-prod.txt` | Docker, deploy em produção | Menor (apenas runtime) |
+
+Todas as versões estão fixas (pinned) para reprodutibilidade.
 
 ---
 

@@ -1,62 +1,88 @@
 # ============================================================================
 # DEPENDÊNCIAS DO GYMNIGHT MOBILE BACKEND
 # ============================================================================
-# Todas as versões são fixas (pinned) para evitar quebras de compatibilidade.
+# Todas as versões são fixas (pinned) para reprodutibilidade e evitar quebras.
 #
-# NOTA: bcrypt, passlib[bcrypt], python-jose[cryptography] e python-dotenv
-# foram removidos. A autenticação agora é delegada ao Supabase Auth.
-# A validação do JWT é feita pelo PyJWT (decode-only, HS256).
-# A configuração de ambiente é gerenciada pelo pydantic-settings.
+# Structure:
+#   - Production dependencies (required for runtime)
+#   - Database migrations (Alembic)
+#   - Testing & development
+#   - Transitive dependencies (pinned for reproducibility)
+#
+# Notas de histórico:
+#   - bcrypt, passlib[bcrypt], python-jose[cryptography] foram removidos
+#     (autenticação delegada ao Supabase Auth)
+#   - python-dotenv foi removido (substituído por pydantic-settings)
 # ============================================================================
 
-# --- Framework Web ---
+# ============================================================================
+# PRODUCTION DEPENDENCIES
+# ============================================================================
+
+# --- Web Framework ---
 fastapi==0.136.3
 uvicorn==0.48.0
 starlette==1.2.1
 
-# --- Validação e Configuração ---
+# --- Data Validation & Configuration ---
 pydantic==2.13.4
 pydantic_core==2.46.4
-pydantic-settings==2.14.2  # Substitui python-dotenv; BaseSettings com validação automática
+pydantic-settings==2.14.2
 annotated-types==0.7.0
 typing_extensions==4.15.0
 typing-inspection==0.4.2
 
-# --- Autenticação JWT (decode-only, Supabase Auth) ---
-PyJWT==2.8.0               # Validação stateless do JWT emitido pelo Supabase (HS256)
+# --- JWT Token Validation (Supabase Auth) ---
+# Decode-only validation, stateless, HS256 algorithm
+PyJWT==2.8.0
 
-# --- Banco de Dados ---
+# --- Database ORM & Connection ---
 SQLAlchemy==2.0.50
 psycopg2-binary==2.9.12
 greenlet==3.5.1
 
-# --- Structured Logging ---
-structlog==24.4.0             # Single-line JSON structured logs (Req 11.4, 11.6)
+# --- Structured Logging (JSON output) ---
+structlog==24.4.0
 
 # --- Rate Limiting ---
-slowapi==0.1.9               # SlowAPI rate limiter for FastAPI (Req 9)
-limits==3.13.0               # Backend for slowapi in-memory / Redis stores
+slowapi==0.1.9
+limits==3.13.0
 
-# --- Utilitários ---
+# --- Utility Libraries ---
 click==8.4.1
 h11==0.16.0
 anyio==4.13.0
 idna==3.17
 email-validator==2.3.0
 
-# --- Criptografia (dependência transitiva do sistema, não usada diretamente) ---
+# --- Cryptography & Security (transitive dependencies, pinned for reproducibility) ---
 cryptography==48.0.0
 cffi==2.0.0
 pycparser==3.0
 
-# --- Testes ---
+# ============================================================================
+# DATABASE MIGRATIONS (Alembic)
+# ============================================================================
+# Required to initialize and manage schema versions (001 → 006)
+# Command: alembic upgrade head
+alembic==1.13.3
+
+# ============================================================================
+# TESTING & DEVELOPMENT
+# ============================================================================
+
+# --- Test Framework & Property-Based Testing ---
 pytest==9.0.3
 hypothesis==6.155.2
+
+# --- Test Dependencies (transitive, pinned for reproducibility) ---
 sortedcontainers==2.4.0
 iniconfig==2.3.0
 packaging==26.2
 pluggy==1.6.0
 Pygments==2.20.0
 
-# --- Documentação ---
+# ============================================================================
+# OPTIONAL: API Documentation (installed by default, can be removed)
+# ============================================================================
 annotated-doc==0.0.4

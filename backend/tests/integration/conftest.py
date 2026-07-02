@@ -58,7 +58,7 @@ def engine():
     eng = create_engine(TEST_DATABASE_URL)
 
     # Run Alembic migrations against the test database (Req 13.4)
-    alembic_cfg = Config("alembic.ini")
+    alembic_cfg = Config("backend/alembic.ini")
     alembic_cfg.set_main_option("sqlalchemy.url", TEST_DATABASE_URL)
     command.upgrade(alembic_cfg, "head")
 

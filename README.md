@@ -41,7 +41,7 @@ Documentação interativa disponível em `/docs` (Swagger) e `/redoc` quando o s
 
 ```bash
 git clone https://github.com/pedrocmpg/GymNight-Mobile.git
-cd GymNight-Mobile
+cd GymNight-Mobile/backend
 pip install -r requirements.txt
 ```
 
@@ -71,7 +71,8 @@ alembic upgrade head
 **4. Suba o servidor**
 
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+cd backend
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 O servidor estará disponível em `http://localhost:8000`.
@@ -108,11 +109,12 @@ Todas as versões estão fixas (pinned) para reprodutibilidade.
 
 ---
 
-## Testes
+### Testes
 
 ### Smoke tests e property-based tests (sem banco real)
 
 ```bash
+cd backend
 pytest tests/ --ignore=tests/integration -v
 ```
 
@@ -123,6 +125,7 @@ Os testes usam SQLite in-memory e mocks — nenhuma conexão com PostgreSQL é n
 Configure `TEST_DATABASE_URL` no `.env` apontando para um banco de teste, então:
 
 ```bash
+cd backend
 pytest tests/integration/ -v
 ```
 
@@ -172,34 +175,39 @@ Se o arquivo `.env` com credenciais reais foi commitado em algum momento, você 
 ## Estrutura do projeto
 
 ```
-app/
+backend/
 ├── main.py                     # Entry point — registro de routers e middlewares
-├── core/
-│   ├── config.py               # Settings via pydantic-settings (.env)
-│   ├── security.py             # Validação JWT Supabase (get_current_user)
-│   ├── limiter.py              # SlowAPI rate limiter
-│   └── logging.py              # Structured logging com structlog (JSON)
-├── database/
-│   ├── connection.py           # SQLAlchemy engine e SessionLocal
-│   ├── models/                 # ORM models (User, Exercise, Workout, etc.)
-│   └── migrations/             # Scripts legados (referência histórica)
-├── routers/
-│   ├── users.py                # POST/GET/PATCH/DELETE /users/me
-│   ├── health.py               # GET /health
-│   └── admin.py                # POST /admin/cleanup-tombstones
-├── api/v1/endpoints/
-│   └── sync.py                 # GET /api/v1/sync/pull, POST /api/v1/sync/push
-├── middleware/
-│   ├── correlation_id.py       # X-Correlation-ID header
-│   └── access_log.py           # Log estruturado por requisição
-└── schemas/
-    └── user.py                 # Schemas Pydantic para perfil de usuário
-
-alembic/                        # Migrations Alembic (001→006)
-tests/
-├── smoke/                      # Testes de estrutura (sem I/O externo)
-├── integration/                # Testes contra PostgreSQL real
-└── test_*.py                   # Property-based tests com Hypothesis
+├── app/
+│   ├── core/
+│   │   ├── config.py           # Settings via pydantic-settings (.env)
+│   │   ├── security.py         # Validação JWT Supabase (get_current_user)
+│   │   ├── limiter.py          # SlowAPI rate limiter
+│   │   └── logging.py          # Structured logging com structlog (JSON)
+│   ├── database/
+│   │   ├── connection.py       # SQLAlchemy engine e SessionLocal
+│   │   ├── models/             # ORM models (User, Exercise, Workout, etc.)
+│   │   └── migrations/         # Scripts legados (referência histórica)
+│   ├── routers/
+│   │   ├── users.py            # POST/GET/PATCH/DELETE /users/me
+│   │   ├── health.py           # GET /health
+│   │   └── admin.py            # POST /admin/cleanup-tombstones
+│   ├── api/v1/endpoints/
+│   │   └── sync.py             # GET /api/v1/sync/pull, POST /api/v1/sync/push
+│   ├── middleware/
+│   │   ├── correlation_id.py   # X-Correlation-ID header
+│   │   └── access_log.py       # Log estruturado por requisição
+│   └── schemas/
+│       └── user.py             # Schemas Pydantic para perfil de usuário
+├── alembic/                    # Migrations Alembic (001→006)
+├── tests/
+│   ├── smoke/                  # Testes de estrutura (sem I/O externo)
+│   ├── integration/            # Testes contra PostgreSQL real
+│   └── test_*.py               # Property-based tests com Hypothesis
+├── .env                        # Variáveis de ambiente (não commitar!)
+├── .env.example                # Template das variáveis de ambiente
+├── requirements.txt            # Dependências com dev tools
+├── requirements-prod.txt       # Dependências apenas de produção
+└── alembic.ini                 # Configuração do Alembic
 ```
 
 ---

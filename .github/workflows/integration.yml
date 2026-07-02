@@ -38,15 +38,15 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install --no-cache-dir -r requirements.txt
+        run: pip install --no-cache-dir -r backend/requirements.txt
 
       - name: Run Alembic migrations
         env:
           TEST_DATABASE_URL: postgresql://test:test@localhost:5432/gymnight_test
         run: |
-          alembic upgrade head || { echo "Alembic migration failed — aborting"; exit 1; }
+          cd backend && alembic upgrade head || { echo "Alembic migration failed — aborting"; exit 1; }
 
       - name: Run integration tests
         env:
           TEST_DATABASE_URL: postgresql://test:test@localhost:5432/gymnight_test
-        run: pytest tests/integration/ -v
+        run: pytest backend/tests/integration/ -v

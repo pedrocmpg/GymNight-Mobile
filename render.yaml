@@ -9,9 +9,10 @@ services:
   - type: web
     name: gymnight-backend
     runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port 8000
     port: 8000
+    workingDirectory: .
 
     # Required environment variables (Req 12.3)
     # Values must be set in the Render dashboard or via render secrets.

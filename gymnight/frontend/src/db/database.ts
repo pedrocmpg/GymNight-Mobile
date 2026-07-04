@@ -11,7 +11,11 @@ import LoggedSet from './models/LoggedSet';
 
 const adapter = new SQLiteAdapter({
   schema,
-  jsi: true,
+  // JSI está desabilitado porque o módulo nativo `watermelondb-jsi` (@nozbe/watermelondb 0.27.1)
+  // usa `JSIModulePackage`/`JSIModuleSpec`, classes removidas do React Native a partir da
+  // migração para a Nova Arquitetura (RN 0.76+ não as expõe mais), o que quebra o build nativo.
+  // O adapter cai para o modo bridge assíncrono padrão, que funciona normalmente.
+  jsi: false,
   onSetUpError: (error) => {
     console.error('WatermelonDB setup error:', error);
   },

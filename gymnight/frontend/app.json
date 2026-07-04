@@ -19,6 +19,10 @@
         "backgroundColor": "#0D0D0D"
       },
       "package": "com.gymnight.mobile"
-    }
+    },
+    "plugins": [
+      ["@morrowdigital/watermelondb-expo-plugin", { "disableJsi": true }],
+      "expo-build-properties"
+    ]
   }
 }

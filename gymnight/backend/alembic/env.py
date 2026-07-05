@@ -45,6 +45,16 @@ def get_url() -> str:
     if url:
         return url
 
+    # os.environ alone won't pick up values defined only in the .env file
+    # (this script doesn't load .env itself). Reuse the app's Settings,
+    # which already resolves DATABASE_URL from .env via pydantic-settings.
+    try:
+        from app.core.config import settings
+
+        return settings.DATABASE_URL
+    except Exception:
+        pass
+
     # Last resort: whatever is in alembic.ini
     return config.get_main_option("sqlalchemy.url")
 

@@ -4,6 +4,40 @@
 
 This plan wires already-implemented, already-tested auth/sync/screen modules to real infrastructure. Implementation proceeds bottom-up: Env_Config first (nothing else can be constructed without it), then the Supabase-backed auth adapters and Session_Store, then the Sync_Cycle_Runner (built from existing pure sync helpers), then the navigation layer and screen containers, then the backend migration, finishing with the Bootstrap_Sequence wiring in `App.tsx` and the end-to-end validation. Property-based tests (fast-check, frontend) are placed as sub-tasks immediately after the implementation they validate, per the project's one-file-per-property convention (`src/{auth,sync,navigation}/__tests__/<Module>.propertyN.test.ts`, header-tagged, `numRuns: 100`). No backend property tests are added (Requirements 12/13 are SMOKE/INTEGRATION only per the design's Testing Strategy).
 
+## Quick Reference: Physical Device Build Flow
+
+```bash
+# Terminal 1: Backend (listens on 0.0.0.0:8000, accessible at 192.168.0.102)
+cd gymnight/backend
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# Terminal 2: Frontend (detect & deploy to USB-connected device)
+cd gymnight/frontend
+adb devices                    # Verify device is connected
+npx expo run:android           # Builds APK + deploys directly to device
+                                # Metro bundler starts; hot-reload available
+```
+
+**Key Points:**
+- Device must be connected via USB before running `npx expo run:android`
+- Device and dev machine must be on same Wi-Fi network (192.168.0.102)
+- Frontend config uses `EXPO_PUBLIC_BACKEND_BASE_URL=http://192.168.0.102:8000`
+- No localhost/10.0.2.2/emulator references
+- Backend must bind to `0.0.0.0` to be reachable from device on different network interface
+
+## Environment Documentation
+
+**Physical Device Setup (USB + Linux + Expo):**
+- **Quick Start:** [DEVICE_USB_QUICK_START.md](../../DEVICE_USB_QUICK_START.md)
+- **Deployment Checklist:** [PHYSICAL_DEVICE_CHECKLIST.md](../PHYSICAL_DEVICE_CHECKLIST.md)
+- **Migration Summary:** [ENVIRONMENT_MIGRATION_SUMMARY.md](../ENVIRONMENT_MIGRATION_SUMMARY.md)
+
+**Key Configuration:**
+- Machine IP: `192.168.0.102` (primary), `172.17.0.1` (fallback)
+- Backend: `http://192.168.0.102:8000` (must bind to `0.0.0.0`)
+- Frontend: `EXPO_PUBLIC_BACKEND_BASE_URL=http://192.168.0.102:8000`
+- Device: Connected via USB, on same Wi-Fi as dev machine
+
 ## Tasks
 
 - [ ] 1. Implement Env_Config module
@@ -20,6 +54,7 @@ This plan wires already-implemented, already-tested auth/sync/screen modules to 
 
   - [ ] 1.3 Create `gymnight/frontend/.env.example` and verify `.gitignore` coverage
     - List `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_BACKEND_BASE_URL` with non-functional placeholder values
+    - `EXPO_PUBLIC_BACKEND_BASE_URL` example: `http://192.168.0.102:8000` (physical device on same Wi-Fi network)
     - Confirm local `.env` is excluded from version control via `.gitignore`
     - _Requirements: 1.4, 1.5_
 
@@ -285,8 +320,13 @@ This plan wires already-implemented, already-tested auth/sync/screen modules to 
 - [ ] 18. Checkpoint - Ensure all backend tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 19. End-to-end validation
+- [ ] 19. End-to-end validation (Physical Device Flow)
   - [ ] 19.1 Produce a documented/scripted end-to-end run of the full flow (sign-up/sign-in, profile creation via `POST /users`, workout creation, active session logging, one push-then-pull sync cycle) against a locally running, migrated Backend_API
+    - **Prerequisites:**
+      1. Android device connected via USB: `adb devices` lists device
+      2. Backend running: `cd gymnight/backend && uvicorn app.main:app --host 0.0.0.0 --port 8000`
+      3. Frontend deployed on device: `cd gymnight/frontend && npx expo run:android` (app running on physical device)
+      4. Device on same Wi-Fi as dev machine (192.168.0.102)
     - Halt and report the failing step on any HTTP 4xx/5xx or unexpected-data outcome; assert `GET /api/v1/sync/pull` and `POST /api/v1/sync/push` return 2xx with the JWT-authenticated user's own data during the run
     - _Requirements: 13.1, 13.2, 13.3, 13.4_
 
@@ -297,6 +337,26 @@ This plan wires already-implemented, already-tested auth/sync/screen modules to 
 - [ ] 20. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
+## Environment Configuration (Physical Device via USB)
+
+**Network Setup:**
+- Development machine IP: **192.168.0.102** (primary), 172.17.0.1 (fallback)
+- Physical device: Connected via USB, same Wi-Fi network as dev machine
+- Backend: FastAPI running locally, accessible at `http://192.168.0.102:8000`
+- Frontend API calls: Point to `http://192.168.0.102:8000` (NOT localhost or 10.0.2.2)
+
+**Build & Execution Flow:**
+1. Ensure physical Android device is connected via USB: `adb devices`
+2. Start backend: `cd gymnight/backend && uvicorn app.main:app --host 0.0.0.0 --port 8000`
+3. Build & run frontend on device: `cd gymnight/frontend && npx expo run:android`
+   - Expo will detect the connected USB device and deploy directly
+   - Metro bundler will start and hot-reload on file changes
+
+**Variable Validation:**
+- `EXPO_PUBLIC_BACKEND_BASE_URL` must resolve to `http://192.168.0.102:8000` at runtime
+- Env validation (task 1.1) enforces well-formedness but does NOT resolve hostnames
+- No localhost/127.0.0.1/10.0.2.2 references allowed in frontend config
+
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for faster MVP; they are not implemented by the coding agent per the "test sub-tasks are optional" convention, except where explicitly listed as a required structural/example test.
@@ -304,6 +364,7 @@ This plan wires already-implemented, already-tested auth/sync/screen modules to 
 - No new backend (Hypothesis) property tests are added; Requirements 12 and 13 are covered by structural checks and integration/end-to-end tests only, per the design's Testing Strategy.
 - Requirement 14's "no redesign" constraint is enforced throughout by construction (new files only, no edits to screens/design system) and verified explicitly in tasks 13.2 and 19.2.
 - Checkpoints are placed after each major layer (auth, sync, navigation, backend, final) to catch integration issues early.
+- **Physical device only**: No Android emulator support. All builds target USB-connected physical devices.
 
 ## Task Dependency Graph
 

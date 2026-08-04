@@ -393,7 +393,7 @@ from fastapi.testclient import TestClient
 with patch("sqlalchemy.engine.Engine.connect"):
     from app.main import app as fastapi_app  # noqa: E402
 
-from app.core.security import get_current_user  # noqa: E402
+from app.core.security import get_current_user, get_current_user_email  # noqa: E402
 from app.database.connection import get_db       # noqa: E402
 from app.database import models                  # noqa: E402
 
@@ -403,6 +403,7 @@ from app.database import models                  # noqa: E402
 # ---------------------------------------------------------------------------
 
 _FIXED_USER_ID = str(uuid.uuid4())
+_FIXED_USER_EMAIL = "property-test@example.com"
 
 
 def _make_mock_db() -> MagicMock:
@@ -415,10 +416,11 @@ def _make_mock_db() -> MagicMock:
 
 def _make_test_client(mock_user_id: str, mock_db: MagicMock) -> TestClient:
     """
-    Build a TestClient for fastapi_app with get_current_user and get_db
-    both overridden to return the supplied test doubles.
+    Build a TestClient for fastapi_app with get_current_user, get_current_user_email
+    and get_db all overridden to return the supplied test doubles.
     """
     fastapi_app.dependency_overrides[get_current_user] = lambda: mock_user_id
+    fastapi_app.dependency_overrides[get_current_user_email] = lambda: _FIXED_USER_EMAIL
     fastapi_app.dependency_overrides[get_db] = lambda: mock_db
     return TestClient(fastapi_app, raise_server_exceptions=False)
 
@@ -477,6 +479,7 @@ def test_property_5_post_users_field_roundtrip(
     def _refresh_side_effect(user_obj):
         user_obj.id = user_id
         user_obj.name = name
+        user_obj.email = _FIXED_USER_EMAIL
         user_obj.weight = weight
         user_obj.height = height
         user_obj.birth_date = birth_date
@@ -486,6 +489,7 @@ def test_property_5_post_users_field_roundtrip(
 
     try:
         fastapi_app.dependency_overrides[get_current_user] = lambda: user_id
+        fastapi_app.dependency_overrides[get_current_user_email] = lambda: _FIXED_USER_EMAIL
         fastapi_app.dependency_overrides[get_db] = lambda: mock_db
 
         client = TestClient(fastapi_app, raise_server_exceptions=False)
@@ -527,6 +531,7 @@ def test_property_5_post_users_field_roundtrip(
             )
     finally:
         fastapi_app.dependency_overrides.pop(get_current_user, None)
+        fastapi_app.dependency_overrides.pop(get_current_user_email, None)
         fastapi_app.dependency_overrides.pop(get_db, None)
 
 
@@ -581,6 +586,7 @@ def test_property_6_get_users_me_returns_correct_profile(
     mock_user = MagicMock()
     mock_user.id = user_id
     mock_user.name = name
+    mock_user.email = _FIXED_USER_EMAIL
     mock_user.weight = weight
     mock_user.height = height
     mock_user.birth_date = birth_date

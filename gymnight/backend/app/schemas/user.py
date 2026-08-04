@@ -113,6 +113,7 @@ class UserProfileUpdate(BaseModel):
 class UserProfileResponse(BaseModel):
     id: str
     name: Optional[str] = None
+    email: Optional[str] = None
     weight: Optional[float] = None
     height: Optional[float] = None
     birth_date: Optional[str] = None

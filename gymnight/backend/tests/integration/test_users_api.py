@@ -33,7 +33,7 @@ os.environ.setdefault("DATABASE_URL", "postgresql://localhost/test")
 
 from app.database import models  # noqa: E402
 from app.database.connection import get_db  # noqa: E402
-from app.core.security import get_current_user  # noqa: E402
+from app.core.security import get_current_user, get_current_user_email  # noqa: E402
 from app.main import app  # noqa: E402
 
 
@@ -52,13 +52,15 @@ def _unique_email() -> str:
     return f"test-{uuid.uuid4().hex[:8]}@integration-test.local"
 
 
-def _make_client(db_session, user_id: str) -> TestClient:
+def _make_client(db_session, user_id: str, email: str | None = None) -> TestClient:
     """
-    Return a TestClient with both key dependencies overridden:
-      - get_current_user → returns `user_id` (skips JWT validation)
-      - get_db           → yields `db_session` (the per-test transactional session)
+    Return a TestClient with all key dependencies overridden:
+      - get_current_user       → returns `user_id` (skips JWT validation)
+      - get_current_user_email → returns `email` (skips JWT validation)
+      - get_db                 → yields `db_session` (the per-test transactional session)
     """
     app.dependency_overrides[get_current_user] = lambda: user_id
+    app.dependency_overrides[get_current_user_email] = lambda: email or _unique_email()
     app.dependency_overrides[get_db] = lambda: db_session
     return TestClient(app, raise_server_exceptions=True)
 
@@ -66,6 +68,7 @@ def _make_client(db_session, user_id: str) -> TestClient:
 def _cleanup_overrides():
     """Remove dependency overrides after a test to avoid cross-test pollution."""
     app.dependency_overrides.pop(get_current_user, None)
+    app.dependency_overrides.pop(get_current_user_email, None)
     app.dependency_overrides.pop(get_db, None)
 
 
@@ -83,7 +86,8 @@ def test_post_users_creates_profile(db_transaction):
     This test uses the real PostgreSQL database (no mocks on the DB layer).
     """
     user_id = _unique_id()
-    client = _make_client(db_transaction, user_id)
+    user_email = _unique_email()
+    client = _make_client(db_transaction, user_id, email=user_email)
 
     payload = {
         "name": "Alice Integration",
@@ -103,6 +107,7 @@ def test_post_users_creates_profile(db_transaction):
         body = response.json()
         assert body["id"] == user_id
         assert body["name"] == payload["name"]
+        assert body["email"] == user_email
         assert abs(body["weight"] - payload["weight"]) < 1e-6
         assert abs(body["height"] - payload["height"]) < 1e-6
         assert body["birth_date"] == payload["birth_date"]
@@ -119,6 +124,7 @@ def test_post_users_creates_profile(db_transaction):
         )
         assert db_user is not None, "User row not found in DB after POST /users"
         assert db_user.name == payload["name"]
+        assert db_user.email == user_email
         assert abs(db_user.weight - payload["weight"]) < 1e-6
         assert abs(db_user.height - payload["height"]) < 1e-6
         assert db_user.birth_date == payload["birth_date"]

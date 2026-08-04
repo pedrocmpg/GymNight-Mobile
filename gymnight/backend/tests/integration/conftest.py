@@ -16,12 +16,18 @@ Fixture design:
 """
 
 import os
+from pathlib import Path
 
 import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+
+# alembic.ini lives at gymnight/backend/alembic.ini — resolve relative to this
+# file (not the current working directory) so `pytest` works the same whether
+# invoked from `gymnight/backend/` or any other directory.
+_ALEMBIC_INI = Path(__file__).resolve().parents[2] / "alembic.ini"
 
 # ---------------------------------------------------------------------------
 # Guard: abort the entire integration module if TEST_DATABASE_URL is not set
@@ -58,7 +64,7 @@ def engine():
     eng = create_engine(TEST_DATABASE_URL)
 
     # Run Alembic migrations against the test database (Req 13.4)
-    alembic_cfg = Config("backend/alembic.ini")
+    alembic_cfg = Config(str(_ALEMBIC_INI))
     alembic_cfg.set_main_option("sqlalchemy.url", TEST_DATABASE_URL)
     command.upgrade(alembic_cfg, "head")
 

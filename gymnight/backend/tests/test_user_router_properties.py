@@ -29,7 +29,7 @@ os.environ.setdefault("SUPABASE_URL", "http://test-placeholder")
 os.environ.setdefault("SUPABASE_JWT_SECRET", "test-secret-for-hypothesis-runs-x")
 os.environ.setdefault("DATABASE_URL", "postgresql://localhost/test")
 
-from app.core.security import get_current_user  # noqa: E402
+from app.core.security import get_current_user, get_current_user_email  # noqa: E402
 from app.database.connection import get_db       # noqa: E402
 from app.routers import users                    # noqa: E402
 import app.routers.users as users_module         # noqa: E402
@@ -43,6 +43,7 @@ _ORIGINAL_USER_CLASS = users_module.models.User
 
 TEST_SECRET = "test-secret-for-hypothesis-runs-x"  # 32+ bytes
 TEST_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+TEST_EMAIL = "router-test@example.com"
 
 
 def make_token(sub: str, exp_delta_seconds: int = 3600, secret: str = TEST_SECRET) -> str:
@@ -61,6 +62,7 @@ class _FakeUser:
     def __init__(self, user_id: str, **kwargs):
         self.id = user_id
         self.name = kwargs.get("name")
+        self.email = kwargs.get("email")
         self.weight = kwargs.get("weight")
         self.height = kwargs.get("height")
         self.birth_date = kwargs.get("birth_date")
@@ -80,8 +82,9 @@ def _build_test_client() -> tuple[TestClient, MagicMock, MagicMock]:
     app = FastAPI()
     app.include_router(users.router)
 
-    # Override auth dependency — always returns a fixed UUID
+    # Override auth dependencies — always return a fixed UUID/email
     app.dependency_overrides[get_current_user] = lambda: TEST_UUID
+    app.dependency_overrides[get_current_user_email] = lambda: TEST_EMAIL
 
     # Build a mock User class: acts like a callable constructor but returns
     # _FakeUser objects instead of real SQLAlchemy instances

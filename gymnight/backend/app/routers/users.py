@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database.connection import get_db
 from app.database import models
 from app.schemas.user import UserProfileCreate, UserProfileUpdate, UserProfileResponse
-from app.core.security import get_current_user
+from app.core.security import get_current_user, get_current_user_email
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -78,6 +78,7 @@ def update_user_profile(
 def create_user_profile(
     profile: UserProfileCreate,
     current_user_id: str = Depends(get_current_user),
+    current_user_email: str = Depends(get_current_user_email),
     db: Session = Depends(get_db),
 ):
     """
@@ -86,16 +87,21 @@ def create_user_profile(
     O users.id é extraído do claim `sub` do JWT do Supabase — nunca gerado
     pelo backend. O cadastro em si ocorre no frontend via SDK do Supabase Auth.
 
+    O email é extraído do claim `email` do mesmo JWT (nunca enviado pelo
+    cliente no body) — é a mesma conta email+senha usada no login, então o
+    Supabase Auth sempre inclui esse claim no access token.
+
     Args:
         profile: Dados opcionais de perfil (name, weight, height, birth_date, gender)
         current_user_id: UUID extraído do JWT pelo `get_current_user`
+        current_user_email: email extraído do JWT pelo `get_current_user_email`
         db: Sessão do banco injetada pelo FastAPI
 
     Returns:
         UserProfileResponse com os dados do perfil criado
 
     Raises:
-        HTTP 400: Se o perfil já existe para esse usuário
+        HTTP 400: Se o perfil já existe para esse usuário, ou se o JWT não contém claim de email
         HTTP 401: Se o JWT estiver ausente, expirado ou inválido
     """
     existing = db.query(models.User).filter(models.User.id == current_user_id).first()
@@ -105,6 +111,7 @@ def create_user_profile(
     new_user = models.User(
         id=current_user_id,       # sub do JWT = Supabase Auth UUID
         name=profile.name,
+        email=current_user_email, # claim email do JWT = mesma conta do login
         weight=profile.weight,
         height=profile.height,
         birth_date=profile.birth_date,

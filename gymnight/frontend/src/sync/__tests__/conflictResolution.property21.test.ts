@@ -21,11 +21,20 @@ import {
 
 // ---- Arbitraries ----
 
-/** Arbitrary column name (simple alphanumeric, non-empty) */
-const arbColumnName = fc.stringOf(
-  fc.constantFrom(...'abcdefghijklmnopqrstuvwxyz'.split('')),
-  { minLength: 1, maxLength: 10 },
-);
+/**
+ * Arbitrary column name (simple alphanumeric, non-empty).
+ *
+ * Excludes "id" — it's the record's reserved identity field, and letting the
+ * generator pick it as a data column silently overwrites `scenario.id` in
+ * `buildDeletedLocalRecord` below, corrupting the very id the property is
+ * asserting about.
+ */
+const arbColumnName = fc
+  .stringOf(fc.constantFrom(...'abcdefghijklmnopqrstuvwxyz'.split('')), {
+    minLength: 1,
+    maxLength: 10,
+  })
+  .filter((name) => name !== 'id');
 
 /** Arbitrary column value — covers realistic scenarios */
 const arbColumnValue: fc.Arbitrary<string | number | boolean | null> = fc.oneof(

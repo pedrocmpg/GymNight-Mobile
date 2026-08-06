@@ -21,7 +21,7 @@ module.exports = {
     '^react-native$': '<rootDir>/src/test/mocks/reactNative.ts',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-native-community|expo|@expo|zustand)/)',
+    'node_modules/(?!(react-native|@react-native|@react-native-community|expo|@expo|zustand|@react-navigation|react-native-screens|react-native-safe-area-context)/)',
   ],
   setupFiles: ['<rootDir>/src/test/setup.ts'],
   collectCoverageFrom: [

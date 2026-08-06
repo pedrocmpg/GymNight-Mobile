@@ -32,6 +32,15 @@ export const Dimensions = {
 export const Alert = {
   alert: jest.fn(),
 };
+export const Animated = {
+  createAnimatedComponent: <T,>(component: T): T => component,
+  Value: class {
+    setValue() {}
+  },
+  timing: () => ({ start: (cb?: () => void) => cb?.() }),
+  View: 'Animated.View',
+  Text: 'Animated.Text',
+};
 
 export default {
   View,
@@ -49,4 +58,5 @@ export default {
   Platform,
   Dimensions,
   Alert,
+  Animated,
 };

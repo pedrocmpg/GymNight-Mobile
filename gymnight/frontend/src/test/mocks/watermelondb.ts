@@ -137,6 +137,18 @@ export const Model = MockModel;
 export const Collection = MockCollection;
 
 /**
+ * Minimal Q query-builder mock — real WatermelonDB filtering isn't exercised
+ * in unit tests (fake queries/collections stand in), so these just need to
+ * exist as callable no-ops that Query construction sites can invoke.
+ */
+export const Q = {
+  where: (column: string, value: unknown) => ({ type: 'where', column, value }),
+  and: (...conditions: unknown[]) => ({ type: 'and', conditions }),
+  or: (...conditions: unknown[]) => ({ type: 'or', conditions }),
+  sortBy: (column: string, direction?: string) => ({ type: 'sortBy', column, direction }),
+};
+
+/**
  * Default export: MockSQLiteAdapter.
  * This is used when `database.ts` does:
  *   import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';

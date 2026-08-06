@@ -340,3 +340,87 @@ def test_property_13_no_state_leaks(db_transaction, n):
         assert post_rollback is None, (
             f"State leak after rollback: user {user_id} still exists"
         )
+
+
+# ---------------------------------------------------------------------------
+# Migration 007: users.email nullable
+# (Requirements 12.3, 12.4, 12.5)
+#
+# Note: UserProfileCreate has no `email` field — email is always sourced from
+# the JWT's `email` claim via get_current_user_email (see app/routers/users.py),
+# never from the request body. So "email omitted" at the HTTP layer means the
+# JWT claim is absent, which get_current_user_email rejects with HTTP 400
+# before any INSERT is attempted — that pre-existing behavior is untouched by
+# this migration (Requirement 12.5: no router change). What migration 007
+# actually changes is what Postgres itself accepts at the column level, so
+# these tests exercise the ORM insert directly against the migrated schema.
+# ---------------------------------------------------------------------------
+
+
+def test_users_email_column_accepts_null_after_migration(db_transaction):
+    """
+    Requirement 12.3: inserting a User row with email=None succeeds without
+    an IntegrityError once migration 007 has dropped the NOT NULL constraint.
+    """
+    user_id = _unique_id()
+    user = models.User(
+        id=user_id,
+        name="No Email User",
+        email=None,
+    )
+    db_transaction.add(user)
+    db_transaction.flush()  # would raise IntegrityError pre-migration
+
+    db_user = (
+        db_transaction.query(models.User).filter(models.User.id == user_id).first()
+    )
+    assert db_user is not None
+    assert db_user.email is None
+
+
+def test_users_email_column_still_accepts_real_email(db_transaction):
+    """
+    Requirement 12.4: inserting a User row with a real, non-null email still
+    succeeds after the migration — type, default, and unique index unchanged.
+    """
+    user_id = _unique_id()
+    email = _unique_email()
+    user = models.User(
+        id=user_id,
+        name="Real Email User",
+        email=email,
+    )
+    db_transaction.add(user)
+    db_transaction.flush()
+
+    db_user = (
+        db_transaction.query(models.User).filter(models.User.id == user_id).first()
+    )
+    assert db_user is not None
+    assert db_user.email == email
+
+
+def test_post_users_still_requires_email_claim_in_jwt(db_transaction):
+    """
+    Requirement 12.5 (no router change): POST /users continues to reject a
+    JWT without an `email` claim with HTTP 400 — the migration does not
+    change get_current_user_email's pre-existing validation, since email
+    is never read from the request body.
+    """
+    from fastapi import HTTPException
+
+    user_id = _unique_id()
+
+    def _raise_missing_email_claim():
+        raise HTTPException(status_code=400, detail="Token não contém claim de email")
+
+    app.dependency_overrides[get_current_user] = lambda: user_id
+    app.dependency_overrides[get_current_user_email] = _raise_missing_email_claim
+    app.dependency_overrides[get_db] = lambda: db_transaction
+    client = TestClient(app, raise_server_exceptions=True)
+
+    try:
+        response = client.post("/users", json={"name": "No Claim User"})
+        assert response.status_code == 400
+    finally:
+        _cleanup_overrides()

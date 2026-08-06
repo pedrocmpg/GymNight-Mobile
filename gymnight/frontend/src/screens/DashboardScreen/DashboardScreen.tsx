@@ -10,6 +10,8 @@
  * - workouts: array of workout summaries to display
  * - syncStatus: current sync engine state
  * - onCreateWorkout: callback invoked when the user taps the CTA to create a workout
+ * - onStartSession: callback invoked when the user starts an active session
+ * - onLogout: callback invoked when the user logs out
  */
 
 import React from 'react';
@@ -35,6 +37,8 @@ export interface DashboardScreenProps {
   workouts: DashboardWorkout[];
   syncStatus: SyncState;
   onCreateWorkout: () => void;
+  onStartSession: () => void;
+  onLogout: () => void;
 }
 
 export function DashboardScreen({
@@ -43,6 +47,8 @@ export function DashboardScreen({
   workouts,
   syncStatus,
   onCreateWorkout,
+  onStartSession,
+  onLogout,
 }: DashboardScreenProps) {
   const hasData = workouts.length > 0;
 
@@ -101,6 +107,28 @@ export function DashboardScreen({
           ))}
         </ScrollView>
       )}
+
+      {/* Start Session CTA */}
+      {hasData && (
+        <TouchableOpacity
+          testID="start-session-cta"
+          style={styles.ctaButton}
+          onPress={onStartSession}
+          accessibilityLabel="Iniciar sessão"
+        >
+          <Text style={styles.ctaButtonText}>Iniciar sessão</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Logout */}
+      <TouchableOpacity
+        testID="logout-button"
+        style={styles.logoutButton}
+        onPress={onLogout}
+        accessibilityLabel="Sair"
+      >
+        <Text style={styles.logoutButtonText}>Sair</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -146,6 +174,18 @@ const styles = StyleSheet.create({
   },
   ctaButtonText: {
     color: colors.background,
+    ...typography.body,
+    fontWeight: '700',
+  },
+  logoutButton: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.sm,
+    alignItems: 'center',
+    marginTop: spacing.xs,
+  },
+  logoutButtonText: {
+    color: colors.error,
     ...typography.body,
     fontWeight: '700',
   },

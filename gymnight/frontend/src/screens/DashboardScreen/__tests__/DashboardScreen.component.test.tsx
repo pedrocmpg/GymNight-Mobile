@@ -21,6 +21,8 @@ function renderDashboardScreen(overrides: Partial<DashboardScreenProps> = {}) {
     workouts: [],
     syncStatus: 'synced',
     onCreateWorkout: jest.fn(),
+    onStartSession: jest.fn(),
+    onLogout: jest.fn(),
     ...overrides,
   };
   return { ...render(<DashboardScreen {...defaultProps} />), props: defaultProps };

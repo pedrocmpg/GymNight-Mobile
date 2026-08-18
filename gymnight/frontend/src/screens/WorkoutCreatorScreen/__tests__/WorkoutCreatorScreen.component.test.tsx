@@ -99,7 +99,7 @@ describe('WorkoutCreatorScreen — Error UI_State', () => {
 });
 
 describe('WorkoutCreatorScreen — Interaction (save workout)', () => {
-  it('calls onSave with the workout name and exercises when save is pressed', () => {
+  it('calls onSave with only the selected exercise and its targets when save is pressed', () => {
     const onSave = jest.fn();
     const exercises = [
       { id: 'ex1', name: 'Supino Reto' },
@@ -110,19 +110,54 @@ describe('WorkoutCreatorScreen — Interaction (save workout)', () => {
       onSave,
     });
 
-    // Fill in the workout name
-    const input = getByTestId('workout-name-input');
-    fireEvent.changeText(input, 'Treino A');
+    fireEvent.changeText(getByTestId('workout-name-input'), 'Treino A');
 
-    // Press save
-    const saveButton = getByTestId('save-workout-button');
-    fireEvent.press(saveButton);
+    // Select only ex1 and fill its targets — ex2 stays unselected
+    fireEvent(getByTestId('exercise-toggle-ex1'), 'valueChange', true);
+    fireEvent.changeText(getByTestId('series-input-ex1'), '3');
+    fireEvent.changeText(getByTestId('reps-input-ex1'), '10');
+    fireEvent.changeText(getByTestId('weight-input-ex1'), '80');
+
+    fireEvent.press(getByTestId('save-workout-button'));
 
     expect(onSave).toHaveBeenCalledTimes(1);
-    expect(onSave).toHaveBeenCalledWith('Treino A', exercises);
+    expect(onSave).toHaveBeenCalledWith('Treino A', [
+      { exerciseId: 'ex1', seriesTarget: 3, repsTarget: 10, weightTarget: 80 },
+    ]);
   });
 
-  it('calls onSave with empty name if user does not type anything', () => {
+  it('excludes a toggled exercise whose targets are incomplete', () => {
+    const onSave = jest.fn();
+    const exercises = [
+      { id: 'ex1', name: 'Supino Reto' },
+      { id: 'ex2', name: 'Agachamento' },
+    ];
+    const { getByTestId } = renderWorkoutCreatorScreen({
+      exercises,
+      onSave,
+    });
+
+    fireEvent.changeText(getByTestId('workout-name-input'), 'Treino A');
+
+    // ex1: complete targets
+    fireEvent(getByTestId('exercise-toggle-ex1'), 'valueChange', true);
+    fireEvent.changeText(getByTestId('series-input-ex1'), '3');
+    fireEvent.changeText(getByTestId('reps-input-ex1'), '10');
+    fireEvent.changeText(getByTestId('weight-input-ex1'), '80');
+
+    // ex2: toggled on but missing weight
+    fireEvent(getByTestId('exercise-toggle-ex2'), 'valueChange', true);
+    fireEvent.changeText(getByTestId('series-input-ex2'), '4');
+    fireEvent.changeText(getByTestId('reps-input-ex2'), '12');
+
+    fireEvent.press(getByTestId('save-workout-button'));
+
+    expect(onSave).toHaveBeenCalledWith('Treino A', [
+      { exerciseId: 'ex1', seriesTarget: 3, repsTarget: 10, weightTarget: 80 },
+    ]);
+  });
+
+  it('disables the save button when the workout name is empty', () => {
     const onSave = jest.fn();
     const exercises = [{ id: 'ex1', name: 'Supino Reto' }];
     const { getByTestId } = renderWorkoutCreatorScreen({
@@ -130,10 +165,30 @@ describe('WorkoutCreatorScreen — Interaction (save workout)', () => {
       onSave,
     });
 
-    const saveButton = getByTestId('save-workout-button');
-    fireEvent.press(saveButton);
+    fireEvent(getByTestId('exercise-toggle-ex1'), 'valueChange', true);
+    fireEvent.changeText(getByTestId('series-input-ex1'), '3');
+    fireEvent.changeText(getByTestId('reps-input-ex1'), '10');
+    fireEvent.changeText(getByTestId('weight-input-ex1'), '80');
+    // workout-name-input left empty
 
-    expect(onSave).toHaveBeenCalledTimes(1);
-    expect(onSave).toHaveBeenCalledWith('', exercises);
+    fireEvent.press(getByTestId('save-workout-button'));
+
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('disables the save button when no exercise is selected', () => {
+    const onSave = jest.fn();
+    const exercises = [{ id: 'ex1', name: 'Supino Reto' }];
+    const { getByTestId } = renderWorkoutCreatorScreen({
+      exercises,
+      onSave,
+    });
+
+    fireEvent.changeText(getByTestId('workout-name-input'), 'Treino A');
+    // no exercise toggled
+
+    fireEvent.press(getByTestId('save-workout-button'));
+
+    expect(onSave).not.toHaveBeenCalled();
   });
 });

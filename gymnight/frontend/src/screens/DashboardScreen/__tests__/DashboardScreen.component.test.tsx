@@ -221,3 +221,23 @@ describe('DashboardScreen — Interaction (create workout CTA)', () => {
     expect(onCreateWorkout).toHaveBeenCalledTimes(3);
   });
 });
+
+describe('DashboardScreen — Interaction (start session by tapping a workout)', () => {
+  it('calls onStartSession with the workout id when a workout card is pressed', () => {
+    const onStartSession = jest.fn();
+    const workouts = [
+      { id: 'w1', name: 'Push Day' },
+      { id: 'w2', name: 'Pull Day' },
+    ];
+    const { getByTestId } = renderDashboardScreen({
+      workouts,
+      isLoading: false,
+      onStartSession,
+    });
+
+    fireEvent.press(getByTestId('workout-item-w2'));
+
+    expect(onStartSession).toHaveBeenCalledTimes(1);
+    expect(onStartSession).toHaveBeenCalledWith('w2');
+  });
+});

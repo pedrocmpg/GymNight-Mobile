@@ -1,12 +1,17 @@
 import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { ActiveSessionScreen } from '../../screens/ActiveSessionScreen/ActiveSessionScreen';
 import { useObserveActiveSession } from '../../hooks/useObserveActiveSession';
+import { useObserveExerciseCatalog } from '../../hooks/useObserveExerciseCatalog';
 import { createLoggedSet, persistLoggedSetWithIsolation } from '../../screens/ActiveSessionScreen/sessionLifecycle';
+import { endSessionWithPersistence } from '../../screens/ActiveSessionScreen/endSessionWithPersistence';
 import database from '../../db/database';
-import { createActiveSessionDatabaseProvider } from '../watermelonProviders';
+import { createActiveSessionDatabaseProvider, createExerciseCatalogDatabaseProvider } from '../watermelonProviders';
+import { colors, typography, spacing, radii } from '../../designSystem/tokens';
 
 export interface ActiveSessionScreenContainerProps {
   route: { params: { sessionId: string } };
+  onSessionEnded: () => void;
 }
 
 async function persistLoggedSet(data: {
@@ -39,13 +44,41 @@ async function persistLoggedSet(data: {
 export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainerProps) {
   const sessionId = props.route.params.sessionId;
   const provider = React.useMemo(() => createActiveSessionDatabaseProvider(database), []);
-  const { session, loggedSets, totalVolume } = useObserveActiveSession(sessionId, provider);
+  const catalogProvider = React.useMemo(() => createExerciseCatalogDatabaseProvider(database), []);
+  const { session, loggedSets, totalVolume, workoutExercises } = useObserveActiveSession(sessionId, provider);
+  const { exercises: catalogExercises } = useObserveExerciseCatalog(catalogProvider);
 
   const handleLogSet = (exerciseId: string, weight: number, reps: number) => {
     void persistLoggedSetWithIsolation({ exerciseId, weight, reps, sessionId }, persistLoggedSet);
   };
 
-  if (!session) return null;
+  const handleEndSession = async () => {
+    const result = await endSessionWithPersistence(sessionId);
+    if (result.success) {
+      props.onSessionEnded();
+    }
+  };
+
+  if (!session) {
+    return (
+      <View style={styles.notFoundContainer} testID="session-not-found">
+        <Text style={styles.notFoundText}>Sessão não encontrada.</Text>
+        <TouchableOpacity
+          testID="session-not-found-back-button"
+          style={styles.backButton}
+          onPress={props.onSessionEnded}
+          accessibilityLabel="Voltar ao início"
+        >
+          <Text style={styles.backButtonText}>Voltar</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // Prefer the exercises belonging to this session's workout; fall back to the
+  // full catalog for freestyle sessions (no workoutId) or empty workouts.
+  const exerciseOptions = workoutExercises.length > 0 ? workoutExercises : catalogExercises;
+  const nameById = new Map(exerciseOptions.map((e) => [e.id, e.name]));
 
   return (
     <ActiveSessionScreen
@@ -53,11 +86,40 @@ export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainer
       loggedSets={loggedSets.map((s) => ({
         id: s.id,
         exerciseId: s.exerciseId,
+        exerciseName: nameById.get(s.exerciseId) ?? s.exerciseId,
         weight: s.weight,
         reps: s.repetitions,
       }))}
       totalVolume={totalVolume}
+      exerciseOptions={exerciseOptions}
       onLogSet={handleLogSet}
+      onEndSession={handleEndSession}
     />
   );
 }
+
+const styles = StyleSheet.create({
+  notFoundContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+    padding: spacing.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notFoundText: {
+    color: colors.secondaryText,
+    ...typography.body,
+    marginBottom: spacing.md,
+  },
+  backButton: {
+    backgroundColor: colors.primary,
+    borderRadius: radii.md,
+    padding: spacing.sm,
+    alignItems: 'center',
+  },
+  backButtonText: {
+    color: colors.background,
+    ...typography.body,
+    fontWeight: '700',
+  },
+});

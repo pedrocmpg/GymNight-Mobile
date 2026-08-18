@@ -9,13 +9,15 @@ import type { SyncState } from '../../sync/SyncStatusIndicator';
 import database from '../../db/database';
 import { createDashboardDatabaseProvider } from '../watermelonProviders';
 import { createLogoutCoordinator } from '../logoutRouting';
+import { startSessionWithPersistence } from '../../screens/ActiveSessionScreen/startSessionWithPersistence';
+import { resolveStartSessionOutcome } from '../startSessionRouting';
 
 export interface DashboardScreenContainerProps {
   syncEngine: SyncEngine;
   logoutManager: LogoutManager;
   userId: string;
   onCreateWorkout: () => void;
-  onStartSession: () => void;
+  onSessionStarted: (sessionId: string) => void;
   onLoggedOut: () => void;
 }
 
@@ -38,6 +40,7 @@ function useSyncStatus(syncEngine: SyncEngine, isOnline: boolean): SyncState {
 export function DashboardScreenContainer(props: DashboardScreenContainerProps) {
   const [isOnline, setIsOnline] = useState(true);
   const [logoutError, setLogoutError] = useState<string | null>(null);
+  const [startSessionError, setStartSessionError] = useState<string | null>(null);
   const coordinatorRef = React.useRef<ReturnType<typeof createLogoutCoordinator> | null>(null);
   if (coordinatorRef.current === null) {
     coordinatorRef.current = createLogoutCoordinator(props.logoutManager);
@@ -69,6 +72,17 @@ export function DashboardScreenContainer(props: DashboardScreenContainerProps) {
     }
   };
 
+  const handleStartSession = async (workoutId: string) => {
+    setStartSessionError(null);
+    const result = await startSessionWithPersistence(props.userId, workoutId);
+    const outcome = resolveStartSessionOutcome(result);
+    if (outcome.navigateToActiveSession) {
+      props.onSessionStarted(outcome.sessionId);
+    } else {
+      setStartSessionError(outcome.errorMessage);
+    }
+  };
+
   return (
     <>
       {/* Transient logout error indication (Requirement 7.7), independent of onLogout */}
@@ -77,13 +91,18 @@ export function DashboardScreenContainer(props: DashboardScreenContainerProps) {
           <Text>{logoutError}</Text>
         </View>
       )}
+      {startSessionError !== null && (
+        <View testID="start-session-error-banner">
+          <Text>{startSessionError}</Text>
+        </View>
+      )}
       <DashboardScreen
         isOnline={isOnline}
         isLoading={isLoading}
         workouts={workouts.map((w) => ({ id: w.id, name: w.name }))}
         syncStatus={syncStatus}
         onCreateWorkout={props.onCreateWorkout}
-        onStartSession={props.onStartSession}
+        onStartSession={handleStartSession}
         onLogout={handleLogout}
       />
     </>

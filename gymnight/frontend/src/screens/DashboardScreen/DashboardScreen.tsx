@@ -10,7 +10,7 @@
  * - workouts: array of workout summaries to display
  * - syncStatus: current sync engine state
  * - onCreateWorkout: callback invoked when the user taps the CTA to create a workout
- * - onStartSession: callback invoked when the user starts an active session
+ * - onStartSession: callback invoked with a workout's id when the user taps it to start a session
  * - onLogout: callback invoked when the user logs out
  */
 
@@ -37,7 +37,7 @@ export interface DashboardScreenProps {
   workouts: DashboardWorkout[];
   syncStatus: SyncState;
   onCreateWorkout: () => void;
-  onStartSession: () => void;
+  onStartSession: (workoutId: string) => void;
   onLogout: () => void;
 }
 
@@ -93,31 +93,21 @@ export function DashboardScreen({
         </View>
       )}
 
-      {/* Success: Workout List */}
+      {/* Success: Workout List — tapping a workout starts a session for it */}
       {hasData && (
         <ScrollView testID="workout-list">
           {workouts.map((item) => (
-            <View
+            <TouchableOpacity
               key={item.id}
               style={styles.workoutCard}
               testID={`workout-item-${item.id}`}
+              onPress={() => onStartSession(item.id)}
+              accessibilityLabel={`Iniciar sessão de ${item.name}`}
             >
               <Text style={styles.workoutName}>{item.name}</Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
-      )}
-
-      {/* Start Session CTA */}
-      {hasData && (
-        <TouchableOpacity
-          testID="start-session-cta"
-          style={styles.ctaButton}
-          onPress={onStartSession}
-          accessibilityLabel="Iniciar sessão"
-        >
-          <Text style={styles.ctaButtonText}>Iniciar sessão</Text>
-        </TouchableOpacity>
       )}
 
       {/* Logout */}

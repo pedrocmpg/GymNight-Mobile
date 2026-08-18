@@ -80,8 +80,8 @@ export function AppNavigator(props: AppNavigatorProps) {
                   logoutManager={props.logoutManager}
                   userId={props.sessionStore.getCurrentSession()?.user_id ?? ''}
                   onCreateWorkout={() => navProps.navigation.navigate('WorkoutCreator')}
-                  onStartSession={() =>
-                    navProps.navigation.navigate('ActiveSession', { sessionId: '' })
+                  onSessionStarted={(sessionId) =>
+                    navProps.navigation.navigate('ActiveSession', { sessionId })
                   }
                   onLoggedOut={() => setPhase('auth')}
                 />
@@ -95,7 +95,12 @@ export function AppNavigator(props: AppNavigatorProps) {
               )}
             </Stack.Screen>
             <Stack.Screen name="ActiveSession">
-              {(navProps) => <ActiveSessionScreenContainer {...navProps} />}
+              {(navProps) => (
+                <ActiveSessionScreenContainer
+                  {...navProps}
+                  onSessionEnded={() => navProps.navigation.navigate('Dashboard')}
+                />
+              )}
             </Stack.Screen>
           </>
         )}

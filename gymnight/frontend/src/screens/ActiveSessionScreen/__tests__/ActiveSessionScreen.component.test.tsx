@@ -31,7 +31,9 @@ function renderActiveSession(overrides: Partial<ActiveSessionProps> = {}) {
     session: { id: 'session-1', started_at: new Date('2024-01-01T00:00:00.000Z').getTime() },
     loggedSets: [],
     totalVolume: 0,
+    exerciseOptions: [{ id: 'ex1', name: 'Supino Reto' }, { id: 'ex2', name: 'Agachamento' }],
     onLogSet: jest.fn(),
+    onEndSession: jest.fn(),
     ...overrides,
   };
   return { ...render(<ActiveSessionScreen {...defaultProps} />), props: defaultProps };
@@ -40,9 +42,9 @@ function renderActiveSession(overrides: Partial<ActiveSessionProps> = {}) {
 describe('ActiveSessionScreen — Error UI_State isolated by item', () => {
   it('shows error message only on the set that has an error', () => {
     const loggedSets: ActiveSessionLoggedSet[] = [
-      { id: 'set-1', exerciseId: 'ex1', weight: 80, reps: 10 },
-      { id: 'set-2', exerciseId: 'ex2', weight: 60, reps: 12, error: 'Falha ao persistir' },
-      { id: 'set-3', exerciseId: 'ex1', weight: 85, reps: 8 },
+      { id: 'set-1', exerciseId: 'ex1', exerciseName: 'Supino Reto', weight: 80, reps: 10 },
+      { id: 'set-2', exerciseId: 'ex2', exerciseName: 'Agachamento', weight: 60, reps: 12, error: 'Falha ao persistir' },
+      { id: 'set-3', exerciseId: 'ex1', exerciseName: 'Supino Reto', weight: 85, reps: 8 },
     ];
 
     const { getByTestId, queryByTestId } = renderActiveSession({ loggedSets });
@@ -58,8 +60,8 @@ describe('ActiveSessionScreen — Error UI_State isolated by item', () => {
 
   it('renders all sets normally when none have errors', () => {
     const loggedSets: ActiveSessionLoggedSet[] = [
-      { id: 'set-1', exerciseId: 'ex1', weight: 80, reps: 10 },
-      { id: 'set-2', exerciseId: 'ex2', weight: 60, reps: 12 },
+      { id: 'set-1', exerciseId: 'ex1', exerciseName: 'Supino Reto', weight: 80, reps: 10 },
+      { id: 'set-2', exerciseId: 'ex2', exerciseName: 'Agachamento', weight: 60, reps: 12 },
     ];
 
     const { queryByTestId, getByTestId } = renderActiveSession({ loggedSets });
@@ -75,9 +77,9 @@ describe('ActiveSessionScreen — Error UI_State isolated by item', () => {
 
   it('shows error on multiple items independently when multiple have errors', () => {
     const loggedSets: ActiveSessionLoggedSet[] = [
-      { id: 'set-1', exerciseId: 'ex1', weight: 80, reps: 10, error: 'Erro 1' },
-      { id: 'set-2', exerciseId: 'ex2', weight: 60, reps: 12 },
-      { id: 'set-3', exerciseId: 'ex1', weight: 85, reps: 8, error: 'Erro 3' },
+      { id: 'set-1', exerciseId: 'ex1', exerciseName: 'Supino Reto', weight: 80, reps: 10, error: 'Erro 1' },
+      { id: 'set-2', exerciseId: 'ex2', exerciseName: 'Agachamento', weight: 60, reps: 12 },
+      { id: 'set-3', exerciseId: 'ex1', exerciseName: 'Supino Reto', weight: 85, reps: 8, error: 'Erro 3' },
     ];
 
     const { getByTestId, queryByTestId } = renderActiveSession({ loggedSets });
@@ -92,7 +94,7 @@ describe('ActiveSessionScreen — Error UI_State isolated by item', () => {
 
   it('still renders set info text even when an error is present', () => {
     const loggedSets: ActiveSessionLoggedSet[] = [
-      { id: 'set-1', exerciseId: 'ex1', weight: 80, reps: 10, error: 'Falha' },
+      { id: 'set-1', exerciseId: 'ex1', exerciseName: 'Supino Reto', weight: 80, reps: 10, error: 'Falha' },
     ];
 
     const { getByTestId } = renderActiveSession({ loggedSets });
@@ -108,8 +110,8 @@ describe('ActiveSessionScreen — Interaction (log set)', () => {
     const onLogSet = jest.fn();
     const { getByTestId } = renderActiveSession({ onLogSet });
 
-    // Fill in the form
-    fireEvent.changeText(getByTestId('exercise-id-input'), 'ex1');
+    // Pick an exercise via chip, then fill in the form
+    fireEvent.press(getByTestId('exercise-option-ex1'));
     fireEvent.changeText(getByTestId('weight-input'), '100');
     fireEvent.changeText(getByTestId('reps-input'), '8');
 
@@ -120,13 +122,13 @@ describe('ActiveSessionScreen — Interaction (log set)', () => {
     expect(onLogSet).toHaveBeenCalledWith('ex1', 100, 8);
   });
 
-  it('does not call onLogSet if exerciseId is empty', () => {
+  it('does not call onLogSet if no exercise is selected', () => {
     const onLogSet = jest.fn();
     const { getByTestId } = renderActiveSession({ onLogSet });
 
     fireEvent.changeText(getByTestId('weight-input'), '100');
     fireEvent.changeText(getByTestId('reps-input'), '8');
-    // exercise-id-input left empty
+    // no exercise chip pressed
 
     fireEvent.press(getByTestId('log-set-button'));
 
@@ -137,7 +139,7 @@ describe('ActiveSessionScreen — Interaction (log set)', () => {
     const onLogSet = jest.fn();
     const { getByTestId } = renderActiveSession({ onLogSet });
 
-    fireEvent.changeText(getByTestId('exercise-id-input'), 'ex1');
+    fireEvent.press(getByTestId('exercise-option-ex1'));
     fireEvent.changeText(getByTestId('weight-input'), 'abc');
     fireEvent.changeText(getByTestId('reps-input'), '8');
 
@@ -150,13 +152,24 @@ describe('ActiveSessionScreen — Interaction (log set)', () => {
     const onLogSet = jest.fn();
     const { getByTestId } = renderActiveSession({ onLogSet });
 
-    fireEvent.changeText(getByTestId('exercise-id-input'), 'ex1');
+    fireEvent.press(getByTestId('exercise-option-ex1'));
     fireEvent.changeText(getByTestId('weight-input'), '100');
     fireEvent.changeText(getByTestId('reps-input'), '');
 
     fireEvent.press(getByTestId('log-set-button'));
 
     expect(onLogSet).not.toHaveBeenCalled();
+  });
+});
+
+describe('ActiveSessionScreen — Interaction (end session)', () => {
+  it('calls onEndSession when "Finalizar treino" is pressed', () => {
+    const onEndSession = jest.fn();
+    const { getByTestId } = renderActiveSession({ onEndSession });
+
+    fireEvent.press(getByTestId('end-session-button'));
+
+    expect(onEndSession).toHaveBeenCalledTimes(1);
   });
 });
 

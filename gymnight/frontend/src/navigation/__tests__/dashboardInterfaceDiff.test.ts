@@ -48,7 +48,7 @@ describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', (
       'utf-8'
     );
     expect(new Set(extractInterfaceMembers(activeSessionContent, 'ActiveSessionProps'))).toEqual(
-      new Set(['session', 'loggedSets', 'totalVolume', 'onLogSet'])
+      new Set(['session', 'loggedSets', 'totalVolume', 'exerciseOptions', 'onLogSet', 'onEndSession'])
     );
   });
 });

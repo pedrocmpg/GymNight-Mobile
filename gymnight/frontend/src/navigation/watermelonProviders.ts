@@ -6,6 +6,7 @@ import type {
   ActiveSessionDatabaseProvider,
   ActiveSession,
   ActiveSessionLoggedSet,
+  WorkoutExerciseOption,
 } from '../hooks/useObserveActiveSession';
 
 function mapObservable<TRecord, TMapped>(
@@ -123,6 +124,30 @@ export function createActiveSessionDatabaseProvider(db: Database): ActiveSession
           updatedAt: r._raw.updated_at,
         }))
       );
+    },
+    observeWorkoutExercises(workoutId: string): ReactiveObservable<WorkoutExerciseOption[]> {
+      const query = db.get('workout_exercises').query(Q.where('workout_id', workoutId));
+      return {
+        subscribe(observer) {
+          const sub = query.observe().subscribe({
+            next: async (records: any[]) => {
+              try {
+                const options = await Promise.all(
+                  records.map(async (r: any) => {
+                    const exercise = await r.exercise.fetch();
+                    return { id: exercise.id, name: exercise._raw.name };
+                  }),
+                );
+                observer.next?.(options);
+              } catch (err) {
+                observer.error?.(err);
+              }
+            },
+            error: (err: unknown) => observer.error?.(err),
+          });
+          return { unsubscribe: () => sub.unsubscribe() };
+        },
+      };
     },
   };
 }

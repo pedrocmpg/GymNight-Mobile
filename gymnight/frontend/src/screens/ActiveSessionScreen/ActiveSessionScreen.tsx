@@ -9,7 +9,9 @@
  * - session: the active session with id and started_at timestamp
  * - loggedSets: array of logged sets (each may have an isolated error)
  * - totalVolume: computed total volume to display
+ * - exerciseOptions: exercises the user can pick from to log a set
  * - onLogSet: callback invoked when the user logs a new set
+ * - onEndSession: callback invoked when the user finishes the workout
  *
  * Validates: Requirements 20.1, 20.2, 20.3
  */
@@ -28,16 +30,24 @@ import { colors, typography, spacing, radii } from '../../designSystem/tokens';
 export interface ActiveSessionLoggedSet {
   id: string;
   exerciseId: string;
+  exerciseName: string;
   weight: number;
   reps: number;
   error?: string;
+}
+
+export interface ActiveSessionExerciseOption {
+  id: string;
+  name: string;
 }
 
 export interface ActiveSessionProps {
   session: { id: string; started_at: number };
   loggedSets: ActiveSessionLoggedSet[];
   totalVolume: number;
+  exerciseOptions: ActiveSessionExerciseOption[];
   onLogSet: (exerciseId: string, weight: number, reps: number) => void;
+  onEndSession: () => void;
 }
 
 function formatElapsedTime(ms: number): string {
@@ -53,7 +63,9 @@ export function ActiveSessionScreen({
   session,
   loggedSets,
   totalVolume,
+  exerciseOptions,
   onLogSet,
+  onEndSession,
 }: ActiveSessionProps) {
   const [elapsed, setElapsed] = useState(() => Date.now() - session.started_at);
   const [exerciseId, setExerciseId] = useState('');
@@ -102,7 +114,7 @@ export function ActiveSessionScreen({
             testID={`logged-set-${item.id}`}
           >
             <Text style={styles.setItemText} testID={`set-info-${item.id}`}>
-              {item.exerciseId} — {item.weight}kg × {item.reps}
+              {item.exerciseName} — {item.weight}kg × {item.reps}
             </Text>
             {item.error && (
               <Text style={styles.errorText} testID={`set-error-${item.id}`}>
@@ -115,15 +127,29 @@ export function ActiveSessionScreen({
 
       {/* Set Logger Form */}
       <View style={styles.logForm} testID="set-logger-form">
-        <TextInput
-          testID="exercise-id-input"
-          style={styles.input}
-          placeholder="Exercício ID"
-          placeholderTextColor={colors.secondaryText}
-          value={exerciseId}
-          onChangeText={setExerciseId}
-          accessibilityLabel="Exercício ID"
-        />
+        <ScrollView horizontal testID="exercise-picker" style={styles.exercisePicker}>
+          {exerciseOptions.map((option) => (
+            <TouchableOpacity
+              key={option.id}
+              testID={`exercise-option-${option.id}`}
+              style={[
+                styles.exerciseChip,
+                exerciseId === option.id ? styles.exerciseChipSelected : null,
+              ]}
+              onPress={() => setExerciseId(option.id)}
+              accessibilityLabel={`Selecionar ${option.name}`}
+            >
+              <Text
+                style={[
+                  styles.exerciseChipText,
+                  exerciseId === option.id ? styles.exerciseChipTextSelected : null,
+                ]}
+              >
+                {option.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
         <TextInput
           testID="weight-input"
           style={styles.input}
@@ -153,6 +179,16 @@ export function ActiveSessionScreen({
           <Text style={styles.logButtonText}>Registrar Série</Text>
         </TouchableOpacity>
       </View>
+
+      {/* End Session */}
+      <TouchableOpacity
+        testID="end-session-button"
+        style={styles.endSessionButton}
+        onPress={onEndSession}
+        accessibilityLabel="Finalizar treino"
+      >
+        <Text style={styles.endSessionButtonText}>Finalizar treino</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -212,6 +248,39 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: radii.md,
     padding: spacing.sm,
+  },
+  exercisePicker: {
+    marginBottom: spacing.xs,
+  },
+  exerciseChip: {
+    backgroundColor: colors.background,
+    borderRadius: radii.lg,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    marginRight: spacing.xs,
+  },
+  exerciseChipSelected: {
+    backgroundColor: colors.primary,
+  },
+  exerciseChipText: {
+    color: colors.primaryText,
+    ...typography.caption,
+  },
+  exerciseChipTextSelected: {
+    color: colors.background,
+    fontWeight: '700',
+  },
+  endSessionButton: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.sm,
+    alignItems: 'center',
+    marginTop: spacing.xs,
+  },
+  endSessionButtonText: {
+    color: colors.error,
+    ...typography.body,
+    fontWeight: '700',
   },
   input: {
     backgroundColor: colors.background,

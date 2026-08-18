@@ -63,8 +63,26 @@ export interface UseObserveActiveSessionResult {
   loggedSets: ActiveSessionLoggedSet[];
   totalVolume: number;
   maxOneRmByExercise: Map<string, number>;
+  workoutExercises: WorkoutExerciseOption[];
   isLoading: boolean;
   error: Error | null;
+}
+
+/** Observable that emits an empty list once — used when there's no workoutId to scope by. */
+const EMPTY_WORKOUT_EXERCISES: ReactiveObservable<WorkoutExerciseOption[]> = {
+  subscribe(observer) {
+    observer.next?.([]);
+    return { unsubscribe: () => {} };
+  },
+};
+
+/**
+ * Exercício associado a um Workout (via WorkoutExercise), usado para restringir
+ * o picker da Active_Session_Screen aos exercícios do treino em andamento.
+ */
+export interface WorkoutExerciseOption {
+  id: string;
+  name: string;
 }
 
 /**
@@ -73,6 +91,7 @@ export interface UseObserveActiveSessionResult {
 export interface ActiveSessionDatabaseProvider {
   observeSession(sessionId: string): ReactiveObservable<ActiveSession>;
   observeLoggedSets(sessionId: string): ReactiveObservable<ActiveSessionLoggedSet[]>;
+  observeWorkoutExercises(workoutId: string): ReactiveObservable<WorkoutExerciseOption[]>;
 }
 
 /**
@@ -179,11 +198,24 @@ export function useObserveActiveSession(
     [loggedSets],
   );
 
+  // Exercícios do treino associado à sessão, para restringir o picker (fallback: lista vazia
+  // quando a sessão é freestyle/não tem workoutId — quem chama o hook decide o fallback de catálogo).
+  const workoutId = session?.workoutId ?? null;
+  const workoutExercisesResult = useReactiveQuery(
+    () => (workoutId ? provider.observeWorkoutExercises(workoutId) : EMPTY_WORKOUT_EXERCISES),
+    [workoutId, provider],
+  );
+  const workoutExercises = useMemo(
+    () => workoutExercisesResult.data ?? [],
+    [workoutExercisesResult.data],
+  );
+
   return {
     session,
     loggedSets,
     totalVolume,
     maxOneRmByExercise,
+    workoutExercises,
     isLoading: result.isLoading,
     error: result.error,
   };

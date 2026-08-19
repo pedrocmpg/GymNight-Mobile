@@ -6,19 +6,30 @@
  * 1. Loading UI_State: shows loading indicator, no data visible
  * 2. Empty UI_State: shows empty state CTA ("Criar primeiro treino")
  * 3. Offline UI_State: shows offline banner AND data (when data exists)
- * 4. Success UI_State: renders workout list
- * 5. Interaction: pressing "Criar primeiro treino" CTA calls onCreateWorkout
+ * 4. Success UI_State: renders workout list with rich per-workout stats
+ * 5. Weekly streak strip renders 7 day indicators
+ * 6. Interaction: pressing "Criar primeiro treino" CTA calls onCreateWorkout
  */
 
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { DashboardScreen, DashboardScreenProps } from '../DashboardScreen';
+import { DashboardScreen, DashboardScreenProps, DashboardWorkout } from '../DashboardScreen';
+
+function makeWorkout(overrides: Partial<DashboardWorkout> & { id: string; name: string }): DashboardWorkout {
+  return {
+    exerciseCount: 0,
+    avgSessionDurationMs: null,
+    lastTrainedDaysAgo: null,
+    ...overrides,
+  };
+}
 
 function renderDashboardScreen(overrides: Partial<DashboardScreenProps> = {}) {
   const defaultProps: DashboardScreenProps = {
     isOnline: true,
     isLoading: false,
     workouts: [],
+    weeklyStreak: [false, false, false, false, false, false, false],
     syncStatus: 'synced',
     onCreateWorkout: jest.fn(),
     onStartSession: jest.fn(),
@@ -42,7 +53,7 @@ describe('DashboardScreen — Loading UI_State', () => {
   it('does not show workout list when loading', () => {
     const { queryByTestId } = renderDashboardScreen({
       isLoading: true,
-      workouts: [{ id: '1', name: 'Treino A' }],
+      workouts: [makeWorkout({ id: '1', name: 'Treino A' })],
     });
     expect(queryByTestId('workout-list')).toBeNull();
   });
@@ -93,15 +104,15 @@ describe('DashboardScreen — Offline UI_State', () => {
     const { getByTestId } = renderDashboardScreen({
       isOnline: false,
       isLoading: false,
-      workouts: [{ id: '1', name: 'Treino A' }],
+      workouts: [makeWorkout({ id: '1', name: 'Treino A' })],
     });
     expect(getByTestId('offline-banner')).toBeTruthy();
   });
 
   it('shows data (workout list) simultaneously with offline banner', () => {
     const workouts = [
-      { id: '1', name: 'Treino A' },
-      { id: '2', name: 'Treino B' },
+      makeWorkout({ id: '1', name: 'Treino A' }),
+      makeWorkout({ id: '2', name: 'Treino B' }),
     ];
     const { getByTestId } = renderDashboardScreen({
       isOnline: false,
@@ -117,7 +128,7 @@ describe('DashboardScreen — Offline UI_State', () => {
     const { queryByTestId } = renderDashboardScreen({
       isOnline: true,
       isLoading: false,
-      workouts: [{ id: '1', name: 'Treino A' }],
+      workouts: [makeWorkout({ id: '1', name: 'Treino A' })],
     });
     expect(queryByTestId('offline-banner')).toBeNull();
   });
@@ -137,9 +148,9 @@ describe('DashboardScreen — Offline UI_State', () => {
 describe('DashboardScreen — Success UI_State', () => {
   it('renders workout list when workouts are available', () => {
     const workouts = [
-      { id: '1', name: 'Treino A' },
-      { id: '2', name: 'Treino B' },
-      { id: '3', name: 'Treino C' },
+      makeWorkout({ id: '1', name: 'Treino A' }),
+      makeWorkout({ id: '2', name: 'Treino B' }),
+      makeWorkout({ id: '3', name: 'Treino C' }),
     ];
     const { getByTestId } = renderDashboardScreen({
       workouts,
@@ -151,8 +162,8 @@ describe('DashboardScreen — Success UI_State', () => {
 
   it('renders each workout item with correct testID', () => {
     const workouts = [
-      { id: 'w1', name: 'Push Day' },
-      { id: 'w2', name: 'Pull Day' },
+      makeWorkout({ id: 'w1', name: 'Push Day' }),
+      makeWorkout({ id: 'w2', name: 'Pull Day' }),
     ];
     const { getByTestId } = renderDashboardScreen({
       workouts,
@@ -164,7 +175,7 @@ describe('DashboardScreen — Success UI_State', () => {
   });
 
   it('displays workout names in the list', () => {
-    const workouts = [{ id: '1', name: 'Leg Day' }];
+    const workouts = [makeWorkout({ id: '1', name: 'Leg Day' })];
     const { getByText } = renderDashboardScreen({
       workouts,
       isLoading: false,
@@ -173,9 +184,34 @@ describe('DashboardScreen — Success UI_State', () => {
     expect(getByText('Leg Day')).toBeTruthy();
   });
 
+  it('displays exerciseCount, average duration and last-trained stats per card', () => {
+    const workouts = [
+      makeWorkout({
+        id: 'w1',
+        name: 'Push Day',
+        exerciseCount: 6,
+        avgSessionDurationMs: 52 * 60000,
+        lastTrainedDaysAgo: 2,
+      }),
+    ];
+    const { getByText } = renderDashboardScreen({ workouts, isLoading: false, isOnline: true });
+    expect(getByText('6 exercícios')).toBeTruthy();
+    expect(getByText('52 min')).toBeTruthy();
+    expect(getByText('há 2 dias')).toBeTruthy();
+  });
+
+  it('displays "nunca" when lastTrainedDaysAgo is null and "—" when avgSessionDurationMs is null', () => {
+    const workouts = [
+      makeWorkout({ id: 'w1', name: 'Novo Treino', exerciseCount: 3, avgSessionDurationMs: null, lastTrainedDaysAgo: null }),
+    ];
+    const { getByText } = renderDashboardScreen({ workouts, isLoading: false, isOnline: true });
+    expect(getByText('nunca')).toBeTruthy();
+    expect(getByText('—')).toBeTruthy();
+  });
+
   it('does not show empty state when workouts are available', () => {
     const { queryByTestId } = renderDashboardScreen({
-      workouts: [{ id: '1', name: 'Treino' }],
+      workouts: [makeWorkout({ id: '1', name: 'Treino' })],
       isLoading: false,
     });
     expect(queryByTestId('empty-state')).toBeNull();
@@ -183,10 +219,26 @@ describe('DashboardScreen — Success UI_State', () => {
 
   it('does not show loading indicator in success state', () => {
     const { queryByTestId } = renderDashboardScreen({
-      workouts: [{ id: '1', name: 'Treino' }],
+      workouts: [makeWorkout({ id: '1', name: 'Treino' })],
       isLoading: false,
     });
     expect(queryByTestId('loading-indicator')).toBeNull();
+  });
+});
+
+describe('DashboardScreen — Weekly streak strip', () => {
+  it('renders 7 day indicators', () => {
+    const { getByTestId } = renderDashboardScreen({
+      weeklyStreak: [true, true, false, false, false, true, false],
+    });
+    for (let i = 0; i < 7; i++) {
+      expect(getByTestId(`streak-day-${i}`)).toBeTruthy();
+    }
+  });
+
+  it('renders the strip even when loading is false and there is no data', () => {
+    const { getByTestId } = renderDashboardScreen({ workouts: [] });
+    expect(getByTestId('weekly-streak')).toBeTruthy();
   });
 });
 
@@ -226,8 +278,8 @@ describe('DashboardScreen — Interaction (start session by tapping a workout)',
   it('calls onStartSession with the workout id when a workout card is pressed', () => {
     const onStartSession = jest.fn();
     const workouts = [
-      { id: 'w1', name: 'Push Day' },
-      { id: 'w2', name: 'Pull Day' },
+      makeWorkout({ id: 'w1', name: 'Push Day' }),
+      makeWorkout({ id: 'w2', name: 'Pull Day' }),
     ];
     const { getByTestId } = renderDashboardScreen({
       workouts,

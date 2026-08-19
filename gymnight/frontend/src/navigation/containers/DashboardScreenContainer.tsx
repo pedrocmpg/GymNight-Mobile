@@ -11,6 +11,7 @@ import { createDashboardDatabaseProvider } from '../watermelonProviders';
 import { createLogoutCoordinator } from '../logoutRouting';
 import { startSessionWithPersistence } from '../../screens/ActiveSessionScreen/startSessionWithPersistence';
 import { resolveStartSessionOutcome } from '../startSessionRouting';
+import { daysSince } from '../../hooks/historyDomainUtils';
 
 export interface DashboardScreenContainerProps {
   syncEngine: SyncEngine;
@@ -54,7 +55,7 @@ export function DashboardScreenContainer(props: DashboardScreenContainerProps) {
   }, []);
 
   const provider = React.useMemo(() => createDashboardDatabaseProvider(database), []);
-  const { workouts, isLoading } = useObserveDashboard(props.userId, provider);
+  const { workouts, weeklyStreak, isLoading } = useObserveDashboard(props.userId, provider);
   const syncStatus = useSyncStatus(props.syncEngine, isOnline);
 
   const handleLogout = async () => {
@@ -99,7 +100,14 @@ export function DashboardScreenContainer(props: DashboardScreenContainerProps) {
       <DashboardScreen
         isOnline={isOnline}
         isLoading={isLoading}
-        workouts={workouts.map((w) => ({ id: w.id, name: w.name }))}
+        workouts={workouts.map((w) => ({
+          id: w.id,
+          name: w.name,
+          exerciseCount: w.exerciseCount,
+          avgSessionDurationMs: w.avgSessionDurationMs,
+          lastTrainedDaysAgo: daysSince(w.lastTrainedAt),
+        }))}
+        weeklyStreak={weeklyStreak}
         syncStatus={syncStatus}
         onCreateWorkout={props.onCreateWorkout}
         onStartSession={handleStartSession}

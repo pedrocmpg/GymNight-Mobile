@@ -4,6 +4,12 @@
  * ActiveSessionScreen interfaces are untouched.
  *
  * Validates: Requirements 14.3, 14.4, 14.5
+ *
+ * Updated (dashboard-history-progress): DashboardScreenProps deliberately
+ * gained `weeklyStreak` (the streak strip) — the richer per-workout fields
+ * (exerciseCount, avgSessionDurationMs, lastTrainedDaysAgo) live on the
+ * `DashboardWorkout` item type, not on DashboardScreenProps itself, so this
+ * top-level Set only needs the one new member.
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -17,7 +23,7 @@ function extractInterfaceMembers(content: string, interfaceName: string): string
 }
 
 describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', () => {
-  it('DashboardScreenProps contains exactly the original members plus onStartSession and onLogout', () => {
+  it('DashboardScreenProps contains exactly the original members plus onStartSession, onLogout and weeklyStreak', () => {
     const content = fs.readFileSync(
       path.join(SCREENS_DIR, 'DashboardScreen', 'DashboardScreen.tsx'),
       'utf-8'
@@ -25,7 +31,16 @@ describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', (
     const members = extractInterfaceMembers(content, 'DashboardScreenProps');
 
     expect(new Set(members)).toEqual(
-      new Set(['isOnline', 'isLoading', 'workouts', 'syncStatus', 'onCreateWorkout', 'onStartSession', 'onLogout'])
+      new Set([
+        'isOnline',
+        'isLoading',
+        'workouts',
+        'weeklyStreak',
+        'syncStatus',
+        'onCreateWorkout',
+        'onStartSession',
+        'onLogout',
+      ])
     );
   });
 

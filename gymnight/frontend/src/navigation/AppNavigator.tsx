@@ -9,13 +9,13 @@ import type { SessionStore } from '../auth/sessionStore';
 import { runBootstrapRouting } from './bootstrapRouting';
 import { colors } from '../designSystem/tokens';
 import { AuthScreenContainer } from './containers/AuthScreenContainer';
-import { DashboardScreenContainer } from './containers/DashboardScreenContainer';
+import { MainTabNavigator } from './MainTabNavigator';
 import { WorkoutCreatorScreenContainer } from './containers/WorkoutCreatorScreenContainer';
 import { ActiveSessionScreenContainer } from './containers/ActiveSessionScreenContainer';
 
 export type RootStackParamList = {
   Auth: undefined;
-  Dashboard: undefined;
+  Main: undefined;
   WorkoutCreator: undefined;
   ActiveSession: { sessionId: string };
 };
@@ -32,7 +32,10 @@ export interface AppNavigatorProps {
 /**
  * Root navigator. Decides, at bootstrap and on every auth transition, whether
  * the active stack is the auth stack (Auth_Screen) or the authenticated stack
- * (Dashboard, WorkoutCreator, ActiveSession) — Requirements 5.1, 5.2, 6.1-6.4, 6.7.
+ * (Main [bottom tabs: Dashboard/Progress], WorkoutCreator, ActiveSession) —
+ * Requirements 5.1, 5.2, 6.1-6.4, 6.7. WorkoutCreator and ActiveSession are
+ * full-screen flows kept as Stack.Screen siblings of Main so they never show
+ * the tab bar (see MainTabNavigator.tsx).
  */
 export function AppNavigator(props: AppNavigatorProps) {
   const [phase, setPhase] = useState<'loading' | 'auth' | 'authenticated'>('loading');
@@ -72,10 +75,9 @@ export function AppNavigator(props: AppNavigatorProps) {
           </Stack.Screen>
         ) : (
           <>
-            <Stack.Screen name="Dashboard">
+            <Stack.Screen name="Main">
               {(navProps) => (
-                <DashboardScreenContainer
-                  {...navProps}
+                <MainTabNavigator
                   syncEngine={props.syncEngine}
                   logoutManager={props.logoutManager}
                   userId={props.sessionStore.getCurrentSession()?.user_id ?? ''}
@@ -90,7 +92,7 @@ export function AppNavigator(props: AppNavigatorProps) {
             <Stack.Screen name="WorkoutCreator">
               {(navProps) => (
                 <WorkoutCreatorScreenContainer
-                  onSaved={() => navProps.navigation.navigate('Dashboard')}
+                  onSaved={() => navProps.navigation.navigate('Main')}
                 />
               )}
             </Stack.Screen>
@@ -98,7 +100,7 @@ export function AppNavigator(props: AppNavigatorProps) {
               {(navProps) => (
                 <ActiveSessionScreenContainer
                   {...navProps}
-                  onSessionEnded={() => navProps.navigation.navigate('Dashboard')}
+                  onSessionEnded={() => navProps.navigation.navigate('Main')}
                 />
               )}
             </Stack.Screen>

@@ -15,7 +15,7 @@ describe('App_Navigator route names', () => {
       (m) => m[1]
     );
 
-    expect(routeNames).toEqual(['Auth', 'Dashboard', 'WorkoutCreator', 'ActiveSession']);
+    expect(routeNames).toEqual(['Auth', 'Main', 'WorkoutCreator', 'ActiveSession']);
     expect(new Set(routeNames).size).toBe(routeNames.length);
 
     const screenNameMatches = Array.from(content.matchAll(/<Stack\.Screen name="(\w+)"/g)).map(

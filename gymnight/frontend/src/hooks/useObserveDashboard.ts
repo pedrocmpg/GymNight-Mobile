@@ -17,6 +17,13 @@ import {
   type ReactiveObservable,
   type ReactiveQueryResult,
 } from './useReactiveQuery';
+import {
+  computeAverageSessionDuration,
+  computeWeeklyStreak,
+  countExercisesPerWorkout,
+  findLastTrainedAt,
+  type SessionForAggregation,
+} from './historyDomainUtils';
 
 /**
  * Interface mínima para dados de Workout retornados pelo hook.
@@ -27,6 +34,12 @@ export interface DashboardWorkout {
   name: string;
   createdAt: number;
   updatedAt: number;
+  /** Nº de exercícios distintos no treino. */
+  exerciseCount: number;
+  /** Duração média (ms) das sessões ENCERRADAS deste treino, ou null se não há nenhuma. */
+  avgSessionDurationMs: number | null;
+  /** Timestamp (started_at) da sessão ENCERRADA mais recente deste treino, ou null. */
+  lastTrainedAt: number | null;
 }
 
 /**
@@ -43,11 +56,23 @@ export interface DashboardWorkoutSession {
 }
 
 /**
+ * Interface mínima de Workout crua, antes de enriquecer com campos derivados.
+ */
+export interface RawDashboardWorkout {
+  id: string;
+  userId: string;
+  name: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/**
  * Resultado combinado do useObserveDashboard.
  */
 export interface DashboardData {
-  workouts: DashboardWorkout[];
+  workouts: RawDashboardWorkout[];
   recentSessions: DashboardWorkoutSession[];
+  workoutExercises: Array<{ workoutId: string; exerciseId: string }>;
 }
 
 /**
@@ -56,6 +81,8 @@ export interface DashboardData {
 export interface UseObserveDashboardResult {
   workouts: DashboardWorkout[];
   recentSessions: DashboardWorkoutSession[];
+  /** 7 posições, índice 0 = domingo da semana atual; true = houve sessão encerrada nesse dia. */
+  weeklyStreak: boolean[];
   isLoading: boolean;
   error: Error | null;
 }
@@ -64,8 +91,9 @@ export interface UseObserveDashboardResult {
  * Interface de database provider para injeção de dependência em testes.
  */
 export interface DashboardDatabaseProvider {
-  observeWorkouts(userId: string): ReactiveObservable<DashboardWorkout[]>;
+  observeWorkouts(userId: string): ReactiveObservable<RawDashboardWorkout[]>;
   observeSessions(userId: string): ReactiveObservable<DashboardWorkoutSession[]>;
+  observeWorkoutExercises(userId: string): ReactiveObservable<Array<{ workoutId: string; exerciseId: string }>>;
 }
 
 /**
@@ -134,30 +162,64 @@ export function useObserveDashboard(
   userId: string,
   provider: DashboardDatabaseProvider,
 ): UseObserveDashboardResult {
-  const result: ReactiveQueryResult<[DashboardWorkout[], DashboardWorkoutSession[]]> =
-    useReactiveQuery(
-      () =>
-        combineObservables(
-          provider.observeWorkouts(userId),
-          provider.observeSessions(userId),
-        ),
-      [userId, provider],
-    );
+  const result: ReactiveQueryResult<
+    [[RawDashboardWorkout[], DashboardWorkoutSession[]], Array<{ workoutId: string; exerciseId: string }>]
+  > = useReactiveQuery(
+    () =>
+      combineObservables(
+        combineObservables(provider.observeWorkouts(userId), provider.observeSessions(userId)),
+        provider.observeWorkoutExercises(userId),
+      ),
+    [userId, provider],
+  );
 
-  // Derivações usando useMemo sobre a emissão (Requirement 1.7)
-  const workouts = useMemo(
-    () => (result.data ? result.data[0] : []),
+  const rawWorkouts = useMemo(
+    () => (result.data ? result.data[0][0] : []),
     [result.data],
   );
 
   const recentSessions = useMemo(
+    () => (result.data ? result.data[0][1] : []),
+    [result.data],
+  );
+
+  const workoutExercises = useMemo(
     () => (result.data ? result.data[1] : []),
     [result.data],
   );
 
+  // Derivações puras (Requirement 1.7): campos ricos por workout + streak semanal.
+  const workouts = useMemo<DashboardWorkout[]>(() => {
+    const sessionsForAgg: SessionForAggregation[] = recentSessions.map((s) => ({
+      id: s.id,
+      workoutId: s.workoutId,
+      startedAt: s.startedAt,
+      endedAt: s.endedAt,
+    }));
+    const exerciseCountByWorkout = countExercisesPerWorkout(workoutExercises);
+
+    return rawWorkouts.map((w) => ({
+      ...w,
+      exerciseCount: exerciseCountByWorkout.get(w.id) ?? 0,
+      avgSessionDurationMs: computeAverageSessionDuration(sessionsForAgg, w.id),
+      lastTrainedAt: findLastTrainedAt(sessionsForAgg, w.id),
+    }));
+  }, [rawWorkouts, recentSessions, workoutExercises]);
+
+  const weeklyStreak = useMemo(() => {
+    const sessionsForAgg: SessionForAggregation[] = recentSessions.map((s) => ({
+      id: s.id,
+      workoutId: s.workoutId,
+      startedAt: s.startedAt,
+      endedAt: s.endedAt,
+    }));
+    return computeWeeklyStreak(sessionsForAgg);
+  }, [recentSessions]);
+
   return {
     workouts,
     recentSessions,
+    weeklyStreak,
     isLoading: result.isLoading,
     error: result.error,
   };

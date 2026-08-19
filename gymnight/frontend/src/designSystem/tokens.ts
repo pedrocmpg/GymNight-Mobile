@@ -16,12 +16,18 @@ export const colors = {
   secondaryText: '#9AA5B1',
   success: '#00E38C',
   error: '#FF3B5C',
+  primaryTint: 'rgba(57, 255, 20, 0.12)',
+  successTint: 'rgba(0, 227, 140, 0.14)',
+  errorTint: 'rgba(255, 59, 92, 0.14)',
 } as const;
 
 export const typography = {
   heading: { fontSize: 24, fontWeight: '700' as const },
   body: { fontSize: 16, fontWeight: '400' as const },
+  bodyBold: { fontSize: 16, fontWeight: '700' as const },
   caption: { fontSize: 12, fontWeight: '400' as const },
+  captionBold: { fontSize: 12, fontWeight: '700' as const },
+  metric: { fontSize: 28, fontWeight: '700' as const },
 } as const;
 
 export const spacing = {

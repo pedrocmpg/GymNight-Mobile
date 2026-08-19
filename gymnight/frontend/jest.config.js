@@ -19,9 +19,10 @@ module.exports = {
     '^expo-secure-store$': '<rootDir>/src/test/mocks/expoSecureStore.ts',
     '^@react-native-community/netinfo$': '<rootDir>/src/test/mocks/netinfo.ts',
     '^react-native$': '<rootDir>/src/test/mocks/reactNative.ts',
+    '^react-native-svg$': '<rootDir>/src/test/mocks/reactNativeSvg.ts',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-native-community|expo|@expo|zustand|@react-navigation|react-native-screens|react-native-safe-area-context)/)',
+    'node_modules/(?!(react-native|@react-native|@react-native-community|expo|@expo|zustand|@react-navigation|react-native-screens|react-native-safe-area-context|react-native-svg)/)',
   ],
   setupFiles: ['<rootDir>/src/test/setup.ts'],
   collectCoverageFrom: [

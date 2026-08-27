@@ -1,6 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useMemo } from 'react';
 import { Alert } from 'react-native';
+import { useFonts } from 'expo-font';
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_700Bold,
+  Inter_800ExtraBold,
+  Inter_900Black,
+} from '@expo-google-fonts/inter';
 import { validateEnvConfig } from './src/config/env';
 import { createSupabaseClient } from './src/auth/supabaseClient';
 import { createSupabaseAuthClientAdapter } from './src/auth/supabaseAuthClientAdapter';
@@ -63,6 +71,16 @@ function confirmationPrompt(): Promise<boolean> {
 export default function App() {
   const validation = useMemo(() => validateEnvConfig(), []);
 
+  // Cada peso da Inter e uma familia propria: no Android o `fontWeight` e
+  // ignorado quando ha `fontFamily` customizada (ver designSystem/tokens.ts).
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_700Bold,
+    Inter_800ExtraBold,
+    Inter_900Black,
+  });
+
   if (!validation.valid) {
     return <StartupErrorScreen offending={validation.offending} />;
   }
@@ -105,6 +123,7 @@ export default function App() {
   return (
     <>
       <AppNavigator
+        fontsLoaded={fontsLoaded}
         authManager={authManager}
         syncEngine={syncEngine}
         logoutManager={logoutManager}

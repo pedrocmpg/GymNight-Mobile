@@ -24,7 +24,10 @@ module.exports = {
   transformIgnorePatterns: [
     'node_modules/(?!(react-native|@react-native|@react-native-community|expo|@expo|zustand|@react-navigation|react-native-screens|react-native-safe-area-context|react-native-svg)/)',
   ],
-  setupFiles: ['<rootDir>/src/test/setup.ts'],
+  setupFiles: [
+    '<rootDir>/src/test/mocks/expoFont.ts',
+    '<rootDir>/src/test/setup.ts',
+  ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/test/**',

@@ -27,6 +27,13 @@ export interface AppNavigatorProps {
   syncEngine: SyncEngine;
   logoutManager: LogoutManager;
   sessionStore: SessionStore;
+  /**
+   * Whether the Inter families have finished loading (App.tsx owns the
+   * `useFonts` call). Folded into the existing bootstrap loading gate so the
+   * app never shows two loading screens in sequence. Defaults to `true` so
+   * existing callers and tests are unaffected.
+   */
+  fontsLoaded?: boolean;
 }
 
 /**
@@ -51,7 +58,9 @@ export function AppNavigator(props: AppNavigatorProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (phase === 'loading') {
+  const fontsLoaded = props.fontsLoaded ?? true;
+
+  if (phase === 'loading' || !fontsLoaded) {
     return (
       <View style={styles.loadingContainer} testID="app-loading">
         <ActivityIndicator size="large" color={colors.primary} testID="app-loading-indicator" />

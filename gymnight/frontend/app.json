@@ -8,7 +8,7 @@
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
-      "backgroundColor": "#0D0D0D"
+      "backgroundColor": "#0a0a0a"
     },
     "ios": {
       "supportsTablet": false,
@@ -16,13 +16,19 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#0D0D0D"
+        "backgroundColor": "#0a0a0a"
       },
       "package": "com.gymnight.mobile"
     },
     "plugins": [
-      ["@morrowdigital/watermelondb-expo-plugin", { "disableJsi": true }],
-      "expo-build-properties"
+      [
+        "@morrowdigital/watermelondb-expo-plugin",
+        {
+          "disableJsi": true
+        }
+      ],
+      "expo-build-properties",
+      "expo-font"
     ]
   }
 }

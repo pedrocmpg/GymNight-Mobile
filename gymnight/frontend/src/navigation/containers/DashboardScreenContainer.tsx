@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { DashboardScreen } from '../../screens/DashboardScreen/DashboardScreen';
+import { Banner } from '../../designSystem/components/Banner';
 import { useObserveDashboard } from '../../hooks/useObserveDashboard';
 import type { SyncEngine } from '../../sync/SyncEngine';
 import type { LogoutManager } from '../../auth/LogoutManager';
@@ -88,14 +88,10 @@ export function DashboardScreenContainer(props: DashboardScreenContainerProps) {
     <>
       {/* Transient logout error indication (Requirement 7.7), independent of onLogout */}
       {logoutError !== null && (
-        <View testID="logout-error-banner">
-          <Text>{logoutError}</Text>
-        </View>
+        <Banner message={logoutError} variant="error" testID="logout-error-banner" />
       )}
       {startSessionError !== null && (
-        <View testID="start-session-error-banner">
-          <Text>{startSessionError}</Text>
-        </View>
+        <Banner message={startSessionError} variant="error" testID="start-session-error-banner" />
       )}
       <DashboardScreen
         isOnline={isOnline}

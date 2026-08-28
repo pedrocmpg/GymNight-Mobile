@@ -1,13 +1,15 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActiveSessionScreen } from '../../screens/ActiveSessionScreen/ActiveSessionScreen';
+import { EmptyState } from '../../designSystem/components/EmptyState';
 import { useObserveActiveSession } from '../../hooks/useObserveActiveSession';
 import { useObserveExerciseCatalog } from '../../hooks/useObserveExerciseCatalog';
 import { createLoggedSet, persistLoggedSetWithIsolation } from '../../screens/ActiveSessionScreen/sessionLifecycle';
 import { endSessionWithPersistence } from '../../screens/ActiveSessionScreen/endSessionWithPersistence';
 import database from '../../db/database';
 import { createActiveSessionDatabaseProvider, createExerciseCatalogDatabaseProvider } from '../watermelonProviders';
-import { colors, typography, spacing, radii } from '../../designSystem/tokens';
+import { colors } from '../../designSystem/tokens';
 
 export interface ActiveSessionScreenContainerProps {
   route: { params: { sessionId: string } };
@@ -61,17 +63,14 @@ export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainer
 
   if (!session) {
     return (
-      <View style={styles.notFoundContainer} testID="session-not-found">
-        <Text style={styles.notFoundText}>Sessão não encontrada.</Text>
-        <TouchableOpacity
-          testID="session-not-found-back-button"
-          style={styles.backButton}
-          onPress={props.onSessionEnded}
-          accessibilityLabel="Voltar ao início"
-        >
-          <Text style={styles.backButtonText}>Voltar</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView style={styles.notFoundContainer} edges={['top']} testID="session-not-found">
+        <EmptyState
+          message="Sessão não encontrada."
+          actionLabel="Voltar"
+          onAction={props.onSessionEnded}
+          testID="session-not-found-empty"
+        />
+      </SafeAreaView>
     );
   }
 
@@ -102,24 +101,6 @@ const styles = StyleSheet.create({
   notFoundContainer: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: spacing.md,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  notFoundText: {
-    color: colors.secondaryText,
-    ...typography.body,
-    marginBottom: spacing.md,
-  },
-  backButton: {
-    backgroundColor: colors.primary,
-    borderRadius: radii.md,
-    padding: spacing.sm,
-    alignItems: 'center',
-  },
-  backButtonText: {
-    color: colors.background,
-    ...typography.body,
-    fontWeight: '700',
   },
 });

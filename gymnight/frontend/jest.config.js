@@ -20,6 +20,8 @@ module.exports = {
     '^@react-native-community/netinfo$': '<rootDir>/src/test/mocks/netinfo.ts',
     '^react-native$': '<rootDir>/src/test/mocks/reactNative.ts',
     '^react-native-svg$': '<rootDir>/src/test/mocks/reactNativeSvg.ts',
+    '^@expo/vector-icons$': '<rootDir>/src/test/mocks/expoVectorIcons.ts',
+    '^@expo/vector-icons/(.*)$': '<rootDir>/src/test/mocks/expoVectorIcons.ts',
   },
   transformIgnorePatterns: [
     'node_modules/(?!(react-native|@react-native|@react-native-community|expo|@expo|zustand|@react-navigation|react-native-screens|react-native-safe-area-context|react-native-svg)/)',

@@ -16,6 +16,7 @@ export const FlatList = 'FlatList';
 export const ActivityIndicator = 'ActivityIndicator';
 export const Pressable = 'Pressable';
 export const Image = 'Image';
+export const ImageBackground = 'ImageBackground';
 export const Switch = 'Switch';
 export const Modal = 'Modal';
 export const StyleSheet = {
@@ -29,6 +30,7 @@ export const Platform = {
 export const Dimensions = {
   get: () => ({ width: 375, height: 812, scale: 2, fontScale: 1 }),
 };
+export const useWindowDimensions = () => ({ width: 375, height: 812, scale: 2, fontScale: 1 });
 export const Alert = {
   alert: jest.fn(),
 };
@@ -52,11 +54,13 @@ export default {
   ActivityIndicator,
   Pressable,
   Image,
+  ImageBackground,
   Switch,
   Modal,
   StyleSheet,
   Platform,
   Dimensions,
+  useWindowDimensions,
   Alert,
   Animated,
 };

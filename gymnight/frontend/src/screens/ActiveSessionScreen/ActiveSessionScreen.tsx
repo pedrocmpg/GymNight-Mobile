@@ -25,6 +25,7 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing, radii } from '../../designSystem/tokens';
 
 export interface ActiveSessionLoggedSet {
@@ -91,7 +92,7 @@ export function ActiveSessionScreen({
   };
 
   return (
-    <View style={styles.container} testID="active-session-screen">
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']} testID="active-session-screen">
       {/* Timer */}
       <Text style={styles.timer} testID="session-timer">
         {formatElapsedTime(elapsed)}
@@ -189,7 +190,7 @@ export function ActiveSessionScreen({
       >
         <Text style={styles.endSessionButtonText}>Finalizar treino</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 

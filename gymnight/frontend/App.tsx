@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useMemo } from 'react';
 import { Alert } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import {
   Inter_400Regular,
@@ -121,7 +122,7 @@ export default function App() {
   const syncEngine = new SyncEngine(syncCycleRunner);
 
   return (
-    <>
+    <SafeAreaProvider>
       <AppNavigator
         fontsLoaded={fontsLoaded}
         authManager={authManager}
@@ -130,6 +131,6 @@ export default function App() {
         sessionStore={sessionStore}
       />
       <StatusBar style="light" />
-    </>
+    </SafeAreaProvider>
   );
 }

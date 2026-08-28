@@ -24,6 +24,7 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing, radii } from '../../designSystem/tokens';
 import { StatRow } from '../../designSystem/components/StatRow';
 import { type SyncState } from '../../sync/SyncStatusIndicator';
@@ -74,7 +75,7 @@ export function DashboardScreen({
   // Loading state: only show spinner
   if (isLoading) {
     return (
-      <View style={styles.container} testID="dashboard-screen">
+      <SafeAreaView style={styles.container} edges={['top']} testID="dashboard-screen">
         <View style={styles.loadingContainer} testID="loading-state">
           <ActivityIndicator
             testID="loading-indicator"
@@ -82,12 +83,12 @@ export function DashboardScreen({
             color={colors.primary}
           />
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container} testID="dashboard-screen">
+    <SafeAreaView style={styles.container} edges={['top']} testID="dashboard-screen">
       {/* Offline Banner */}
       {!isOnline && (
         <View style={styles.offlineBanner} testID="offline-banner">
@@ -168,7 +169,7 @@ export function DashboardScreen({
       >
         <Text style={styles.logoutButtonText}>Sair</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 

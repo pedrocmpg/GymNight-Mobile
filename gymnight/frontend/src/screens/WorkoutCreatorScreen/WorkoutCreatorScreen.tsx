@@ -24,6 +24,7 @@ import {
   Switch,
   StyleSheet,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing, radii } from '../../designSystem/tokens';
 import { buildExerciseInputs, canSaveWorkout, type SelectedExerciseEntry } from './workoutCreatorSelection';
 import type { ExerciseInput } from './saveWorkoutWithExercises';
@@ -68,7 +69,7 @@ export function WorkoutCreatorScreen({
   // Loading state: only show spinner
   if (isLoading) {
     return (
-      <View style={styles.container} testID="workout-creator-screen">
+      <SafeAreaView style={styles.container} edges={['top']} testID="workout-creator-screen">
         <View style={styles.loadingContainer} testID="loading-state">
           <ActivityIndicator
             testID="loading-indicator"
@@ -76,20 +77,20 @@ export function WorkoutCreatorScreen({
             color={colors.primary}
           />
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
   // Empty catalog state
   if (exercises.length === 0) {
     return (
-      <View style={styles.container} testID="workout-creator-screen">
+      <SafeAreaView style={styles.container} edges={['top']} testID="workout-creator-screen">
         <View style={styles.emptyContainer} testID="empty-state">
           <Text style={styles.emptyText} testID="empty-message">
             Catálogo de exercícios vazio. Conecte-se à rede para sincronizar.
           </Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -112,7 +113,7 @@ export function WorkoutCreatorScreen({
   };
 
   return (
-    <View style={styles.container} testID="workout-creator-screen">
+    <SafeAreaView style={styles.container} edges={['top']} testID="workout-creator-screen">
       {/* Workout Name Input */}
       <TextInput
         testID="workout-name-input"
@@ -195,7 +196,7 @@ export function WorkoutCreatorScreen({
       >
         <Text style={styles.saveButtonText}>Salvar</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 

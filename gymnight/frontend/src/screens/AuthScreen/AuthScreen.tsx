@@ -20,6 +20,7 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing, radii } from '../../designSystem/tokens';
 import { isSubmitEnabled } from './authValidation';
 
@@ -47,7 +48,7 @@ export function AuthScreen({
   };
 
   return (
-    <View style={styles.container} testID="auth-screen">
+    <SafeAreaView style={styles.container} edges={['top']} testID="auth-screen">
       {/* Offline Banner */}
       {!isOnline && (
         <View style={styles.offlineBanner} testID="offline-banner">
@@ -106,7 +107,7 @@ export function AuthScreen({
           <Text style={styles.buttonText}>Entrar</Text>
         )}
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 

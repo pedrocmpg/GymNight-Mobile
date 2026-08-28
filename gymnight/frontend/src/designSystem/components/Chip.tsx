@@ -1,8 +1,8 @@
 /**
- * Chip — pill selecionável usado no seletor horizontal de exercício da
- * ProgressScreen. Segue o mesmo visual dos chips já existentes em
- * ActiveSessionScreen (não extraído de lá para não expandir o escopo de risco
- * sobre uma tela já em produção — ver plano).
+ * Chip — pill selecionável usado no seletor horizontal de exercício.
+ *
+ * Alinhado aos tokens portados do desktop: não selecionado ganha fundo de
+ * card com borda; selecionado usa o verde com texto preto.
  */
 
 import React from 'react';
@@ -32,21 +32,24 @@ export function Chip({ label, selected, onPress, testID }: ChipProps) {
 
 const styles = StyleSheet.create({
   chip: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.lg,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radii.pill,
     paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: spacing.md,
     marginRight: spacing.xs,
   },
   chipSelected: {
     backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   chipText: {
     color: colors.primaryText,
     ...typography.caption,
   },
   chipTextSelected: {
-    color: colors.background,
-    fontWeight: '700',
+    color: colors.onPrimary,
+    fontFamily: typography.captionBold.fontFamily,
   },
 });

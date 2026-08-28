@@ -28,12 +28,11 @@ export function StatRow({ label, value, align = 'flex-start', testID }: StatRowP
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'column',
-    gap: spacing.xs / 4,
+    gap: spacing.xxs / 2,
   },
   value: {
     color: colors.primaryText,
-    ...typography.body,
-    fontWeight: '600',
+    ...typography.bodyBold,
   },
   label: {
     color: colors.secondaryText,

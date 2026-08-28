@@ -1,7 +1,20 @@
 # Redesign Visual — Portar a identidade do GymNight-Desktop para o Mobile
 
 > **Documento índice.** Leia este primeiro, depois execute as waves na ordem.
-> Escrito em 2026-08-26. Nenhuma linha de código foi alterada ainda — isto é a especificação completa.
+> Escrito em 2026-08-26.
+
+## Estado da execução
+
+| Wave | Documento | Status |
+|---|---|---|
+| **0** — Fundação | [`REDESIGN-01-FUNDACAO.md`](REDESIGN-01-FUNDACAO.md) | ✅ **Concluída** em 2026-08-27 |
+| **1** — Componentes | [`REDESIGN-02-COMPONENTES.md`](REDESIGN-02-COMPONENTES.md) | ✅ **Concluída** em 2026-08-28 |
+| **2** — Navegação/SafeArea | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §1 | ⬜ Pendente |
+| **3** — DashboardScreen | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §2 | ⬜ Pendente |
+| **4** — ActiveSessionScreen | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §3 | ⬜ Pendente |
+| **5** — Creator + Auth + Progress | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §4-6 | ⬜ Pendente |
+
+Depois das waves 0 e 1 a suíte está em **119 suites / 616 testes**, 100% verde (a baseline antes do redesign era 106/530).
 
 ## Arquivos desta especificação
 
@@ -82,10 +95,10 @@ Confirmadas com o usuário antes de escrever esta spec:
 As waves têm dependência estrita: cada uma depende da anterior.
 
 ```
-Wave 0  Fundação          → REDESIGN-01-FUNDACAO.md
+Wave 0  Fundação          → REDESIGN-01-FUNDACAO.md          ✅ CONCLUÍDA
         tokens.ts, Inter, ícones, assets, app.json
         ↓
-Wave 1  Componentes       → REDESIGN-02-COMPONENTES.md
+Wave 1  Componentes       → REDESIGN-02-COMPONENTES.md       ✅ CONCLUÍDA
         Button, Input, ScreenHeader, StatCard, DayDot, HeroBanner...
         ↓
 Wave 2  Navegação/SafeArea → REDESIGN-03-TELAS.md §1

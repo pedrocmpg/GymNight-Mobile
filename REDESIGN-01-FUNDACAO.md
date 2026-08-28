@@ -3,6 +3,27 @@
 > Parte de [`REDESIGN-VISUAL.md`](REDESIGN-VISUAL.md). Executar **antes** das outras waves.
 > Todos os caminhos são relativos a `gymnight/frontend/` salvo indicação contrária.
 
+## ✅ Concluída em 2026-08-27
+
+Commits: `b203c77` (deps) · `24fd846` (tokens) · `c1d351d` (Inter) · `7b769de` (assets + app.json).
+Resultado: **106 suites / 538 testes**, 100% verde.
+
+**Três desvios em relação ao que está especificado abaixo:**
+
+1. **`success` = `#65a30d`** (`C_GREEN_DK`), não `#a2ff00`. Era a saída recomendada pela própria §6 deste documento, para não quebrar o assert de cores distintas do `tokens.test.ts`.
+2. **`heading`, `metric`, `captionBold` e `successTint` foram mantidos** como aliases marcados `@deprecated`. A spec mandava renomear `heading` → `h1`, mas `ProgressScreen`, `ActiveSessionScreen` e `StartupErrorScreen` ainda os consomem — removê-los agora quebraria o build antes das waves 2–5 existirem. Saem quando essas telas forem migradas.
+3. **Hero em 1080×207**, não 1080×400. O original é 2341×448 (proporção ~5,2:1); forçar 400 de altura distorceria a imagem. A redução de peso que importava aconteceu: 1,8 MB → 319 KB.
+
+**Dois extras não previstos, necessários para a suíte rodar:**
+- `src/test/mocks/expoVectorIcons.ts` — o `@expo/vector-icons` toca o `RNVectorIconsManager` nativo já no import e derruba a suíte inteira fora do device.
+- `ImageBackground` e `useWindowDimensions` adicionados ao `src/test/mocks/reactNative.ts`.
+
+**Nota:** a suíte de tela não quebrou como esta spec previa — nenhuma delas asseverava literais de cor.
+
+⚠️ O `expo-font` entrou como config plugin no `app.json`, então a próxima execução em device exige **rebuild nativo** (`npx expo run:android --clean`).
+
+---
+
 Esta wave quebra testes de propósito (mudança de tokens). Corrigir antes de seguir para a Wave 1.
 
 ---

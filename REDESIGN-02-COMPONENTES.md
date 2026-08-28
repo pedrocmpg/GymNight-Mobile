@@ -3,6 +3,21 @@
 > Parte de [`REDESIGN-VISUAL.md`](REDESIGN-VISUAL.md). Depende da [Wave 0](REDESIGN-01-FUNDACAO.md).
 > Local: `gymnight/frontend/src/designSystem/components/`
 
+## ✅ Concluída em 2026-08-28
+
+**12 componentes novos** (`Button`, `Input`, `UnderlineInput`, `ScreenHeader`, `SectionTitle`, `StatCard`, `IconBadge`, `ProgressBar`, `SetCheckButton`, `DayDot`, `HeroBanner`, `Banner`, `EmptyState` — 13 contando o `EmptyState`) e **3 alterados** (`Card`, `Chip`, `StatRow`), cada um com o seu `__tests__/<Nome>.component.test.tsx`.
+
+Resultado: **119 suites / 616 testes**, 100% verde. `tsc --noEmit` e `eslint` limpos nos arquivos novos.
+
+**Dois desvios em relação ao que está especificado abaixo:**
+
+1. **`IconBadge` usa `accessibilityRole="none"`**, não `accessibilityElementsHidden` + `importantForAccessibility="no-hide-descendants"`. Esconder o badge da árvore de acessibilidade também o esconde das queries do `@testing-library/react-native`, deixando o componente impossível de testar por `testID`. `role="none"` mantém a intenção (o badge é decorativo — o significado vem do texto ao lado) sem tornar o componente opaco.
+2. **`HeroBanner` usa um `<Svg>` por faixa de degradê**, em vez de um único Svg com quatro `<Rect>` posicionados. Posicionar a faixa direita/inferior dentro de um Svg único exigiria a largura medida do container (`translateX="100%"` não é confiável no react-native-svg). Com um Svg absoluto por faixa, cada uma é dimensionada pelo próprio layout do RN e nada precisa ser medido.
+
+**Dois tokens novos** foram necessários para cumprir a regra de "nenhum literal de cor fora de `tokens.ts`":
+- `colors.mutedText` (`#3a3a3a`) — o "—" do dia sem treino (`dashboard.py:190`)
+- `colors.scrim` (`#000000`) — os degradês do hero (`dashboard.py:44`)
+
 ## Estado atual
 
 A biblioteca inteira são **3 componentes**: `Card.tsx`, `Chip.tsx`, `StatRow.tsx`. Todo o resto (botões, inputs, banners, cabeçalhos, estados vazios) está copiado e colado nas 5 telas. Esta wave transforma esses padrões repetidos em componentes reais e adiciona os que a linguagem do desktop exige.
@@ -350,9 +365,9 @@ Aproveitar esta wave para **eliminar a duplicação de chips** do `ActiveSession
 
 ## Checklist de conclusão da Wave 1
 
-- [ ] 11 componentes novos criados: `Button`, `Input`, `UnderlineInput`, `ScreenHeader`, `SectionTitle`, `StatCard`, `IconBadge`, `ProgressBar`, `SetCheckButton`, `DayDot`, `HeroBanner`, `Banner`, `EmptyState`
-- [ ] 3 componentes existentes atualizados: `Card` (default `bordered`), `Chip`, `StatRow`
-- [ ] Um `__tests__/<Nome>.component.test.tsx` por componente novo, no padrão dos existentes
-- [ ] `Card.component.test.tsx` atualizado para o novo default
-- [ ] `npx tsc --noEmit` limpo
-- [ ] Nenhum literal de cor fora de `tokens.ts` nos componentes novos
+- [x] Componentes novos criados: `Button`, `Input`, `UnderlineInput`, `ScreenHeader`, `SectionTitle`, `StatCard`, `IconBadge`, `ProgressBar`, `SetCheckButton`, `DayDot`, `HeroBanner`, `Banner`, `EmptyState`
+- [x] 3 componentes existentes atualizados: `Card` (default `bordered`), `Chip`, `StatRow`
+- [x] Um `__tests__/<Nome>.component.test.tsx` por componente novo, no padrão dos existentes
+- [x] `Card.component.test.tsx` atualizado para o novo default
+- [x] `npx tsc --noEmit` limpo
+- [x] Nenhum literal de cor fora de `tokens.ts` nos componentes novos (dois tokens novos: `mutedText`, `scrim`)

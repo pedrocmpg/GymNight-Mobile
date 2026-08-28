@@ -1,6 +1,12 @@
 import { Q, type Database } from '@nozbe/watermelondb';
 import type { ReactiveObservable } from '../hooks/useReactiveQuery';
-import type { DashboardDatabaseProvider, DashboardWorkout, DashboardWorkoutSession } from '../hooks/useObserveDashboard';
+import type {
+  DashboardDatabaseProvider,
+  DashboardLoggedSet,
+  DashboardUserProfile,
+  DashboardWorkout,
+  DashboardWorkoutSession,
+} from '../hooks/useObserveDashboard';
 import type { ExerciseCatalogDatabaseProvider, CatalogExercise } from '../hooks/useObserveExerciseCatalog';
 import type {
   ActiveSessionDatabaseProvider,
@@ -20,6 +26,98 @@ function mapObservable<TRecord, TMapped>(
         next: (value) => observer.next?.(mapper(value)),
         error: (err) => observer.error?.(err),
       });
+    },
+  };
+}
+
+/**
+ * Registro cru de `logged_sets` como o WatermelonDB devolve — id no topo e as
+ * colunas em `_raw`. Evita propagar `any` pelo helper compartilhado abaixo.
+ */
+interface LoggedSetRecord {
+  id: string;
+  _raw: {
+    session_id: string;
+    exercise_id: string;
+    weight: number;
+    repetitions: number;
+    estimated_one_rm: number;
+    completed_at: number;
+    created_at: number;
+    updated_at: number;
+  };
+}
+
+/**
+ * Observa todos os logged_sets de um usuário.
+ *
+ * `logged_sets` não tem `user_id` — o vínculo é via `session_id`. Como o repo
+ * evita `Q.on()` (sem precedente no mock de teste), a consulta é um join
+ * client-side: observa as sessões do usuário e, para cada uma, mantém uma
+ * subscrição aos seus logged_sets, recombinando a cada emissão.
+ *
+ * Compartilhado entre o Dashboard e o Progress — antes vivia duplicado dentro
+ * de createHistoryDatabaseProvider.
+ */
+function observeLoggedSetsForUser(
+  db: Database,
+  userId: string,
+): ReactiveObservable<LoggedSetRecord[]> {
+  const sessionsQuery = db.get('workout_sessions').query(Q.where('user_id', userId));
+
+  return {
+    subscribe(observer) {
+      let sessionSubs: Array<{ unsubscribe: () => void }> = [];
+      let latestBySessionId = new Map<string, LoggedSetRecord[]>();
+      let errored = false;
+
+      const emit = () => {
+        if (errored) return;
+        const all: LoggedSetRecord[] = [];
+        for (const records of latestBySessionId.values()) {
+          for (const r of records) all.push(r);
+        }
+        observer.next?.(all);
+      };
+
+      const subSessions = sessionsQuery.observe().subscribe({
+        next: (sessions) => {
+          sessionSubs.forEach((s) => s.unsubscribe());
+          sessionSubs = [];
+          latestBySessionId = new Map();
+
+          if (sessions.length === 0) {
+            emit();
+            return;
+          }
+
+          for (const session of sessions) {
+            const loggedSetsQuery = db.get('logged_sets').query(Q.where('session_id', session.id));
+            const sub = loggedSetsQuery.observe().subscribe({
+              next: (records) => {
+                latestBySessionId.set(session.id, records as unknown as LoggedSetRecord[]);
+                emit();
+              },
+              error: (err: unknown) => {
+                errored = true;
+                observer.error?.(err);
+              },
+            });
+            sessionSubs.push(sub);
+          }
+        },
+        error: (err: unknown) => {
+          errored = true;
+          observer.error?.(err);
+        },
+      });
+
+      return {
+        unsubscribe: () => {
+          subSessions.unsubscribe();
+          sessionSubs.forEach((s) => s.unsubscribe());
+        },
+      };
     },
   };
 }
@@ -107,6 +205,33 @@ export function createDashboardDatabaseProvider(db: Database): DashboardDatabase
         },
       };
     },
+    observeLoggedSets(userId: string): ReactiveObservable<DashboardLoggedSet[]> {
+      return mapObservable(observeLoggedSetsForUser(db, userId), (records) =>
+        records.map((r) => ({
+          id: r.id,
+          sessionId: r._raw.session_id,
+          exerciseId: r._raw.exercise_id,
+          weight: r._raw.weight,
+          repetitions: r._raw.repetitions,
+          estimatedOneRm: r._raw.estimated_one_rm,
+        })),
+      );
+    },
+    observeProfile(userId: string): ReactiveObservable<DashboardUserProfile | null> {
+      // Consulta por id em vez de .find(): `find` rejeita quando o registro
+      // ainda não chegou pelo sync, e o hero precisa apenas degradar para null.
+      const query = db.get('users').query(Q.where('id', userId));
+      return mapObservable(query.observe(), (records: any[]) => {
+        const r = records[0];
+        if (!r) return null;
+        return {
+          id: r.id,
+          name: r._raw.name,
+          weight: r._raw.weight ?? null,
+          height: r._raw.height ?? null,
+        };
+      });
+    },
   };
 }
 
@@ -128,79 +253,19 @@ export function createHistoryDatabaseProvider(db: Database): HistoryDatabaseProv
       );
     },
     observeAllLoggedSets(userId: string): ReactiveObservable<ActiveSessionLoggedSet[]> {
-      // logged_sets não tem user_id direto — join client-side via workout_sessions
-      // do usuário, mesmo padrão usado em observeWorkoutExercises acima. Para cada
-      // sessão do usuário, busca (uma vez) os logged_sets daquela sessão e recombina
-      // sempre que a lista de sessões OU os logged_sets de qualquer sessão mudarem.
-      const sessionsQuery = db.get('workout_sessions').query(Q.where('user_id', userId));
-
-      return {
-        subscribe(observer) {
-          let sessionSubs: Array<{ unsubscribe: () => void }> = [];
-          let latestBySessionId = new Map<string, any[]>();
-          let errored = false;
-
-          const emit = () => {
-            if (errored) return;
-            const all: ActiveSessionLoggedSet[] = [];
-            for (const records of latestBySessionId.values()) {
-              for (const r of records) {
-                all.push({
-                  id: r.id,
-                  sessionId: r._raw.session_id,
-                  exerciseId: r._raw.exercise_id,
-                  weight: r._raw.weight,
-                  repetitions: r._raw.repetitions,
-                  estimatedOneRm: r._raw.estimated_one_rm,
-                  completedAt: r._raw.completed_at,
-                  createdAt: r._raw.created_at,
-                  updatedAt: r._raw.updated_at,
-                });
-              }
-            }
-            observer.next?.(all);
-          };
-
-          const subSessions = sessionsQuery.observe().subscribe({
-            next: (sessions: any[]) => {
-              sessionSubs.forEach((s) => s.unsubscribe());
-              sessionSubs = [];
-              latestBySessionId = new Map();
-
-              if (sessions.length === 0) {
-                emit();
-                return;
-              }
-
-              for (const session of sessions) {
-                const loggedSetsQuery = db.get('logged_sets').query(Q.where('session_id', session.id));
-                const sub = loggedSetsQuery.observe().subscribe({
-                  next: (records: any[]) => {
-                    latestBySessionId.set(session.id, records);
-                    emit();
-                  },
-                  error: (err: unknown) => {
-                    errored = true;
-                    observer.error?.(err);
-                  },
-                });
-                sessionSubs.push(sub);
-              }
-            },
-            error: (err: unknown) => {
-              errored = true;
-              observer.error?.(err);
-            },
-          });
-
-          return {
-            unsubscribe: () => {
-              subSessions.unsubscribe();
-              sessionSubs.forEach((s) => s.unsubscribe());
-            },
-          };
-        },
-      };
+      return mapObservable(observeLoggedSetsForUser(db, userId), (records) =>
+        records.map((r) => ({
+          id: r.id,
+          sessionId: r._raw.session_id,
+          exerciseId: r._raw.exercise_id,
+          weight: r._raw.weight,
+          repetitions: r._raw.repetitions,
+          estimatedOneRm: r._raw.estimated_one_rm,
+          completedAt: r._raw.completed_at,
+          createdAt: r._raw.created_at,
+          updatedAt: r._raw.updated_at,
+        })),
+      );
     },
     observeExercises(): ReactiveObservable<CatalogExercise[]> {
       const query = db.get('exercises').query();

@@ -81,8 +81,27 @@ Sem `style` nenhum: o `Text` sai na cor padrão (preto) sobre fundo preto — **
 
 # Wave 3 — DashboardScreen (a tela mais transformada)
 
+## Concluida em 2026-08-28
+
+Resultado: **124 suites / 694 testes**, 100% verde (a Wave 2 terminou em 122/648). `eslint` caiu de 288 para **284** problemas — a extracao do join de `logged_sets` eliminou 4 erros pre-existentes, e nenhum novo foi introduzido.
+
+Entregue conforme as secoes 3.1-3.4 abaixo. Notas de execucao:
+
+1. **As agregacoes novas foram para `historyDomainUtils.ts`, nao `domainUtils.ts`.** O spec sugeria `domainUtils.ts`, mas todas as funcoes irmas (`computeWeeklyStreak`, `buildRecentSessionSummaries`, `daysSince`) ja viviam no `historyDomainUtils.ts`, que e justamente o modulo de agregacao de historico. Cinco funcoes novas: `reorderWeekMondayFirst`, `countTrainingDaysThisWeek`, `formatVolume`, `computeWeekStreak` e `formatRelativeDay`.
+2. **O join client-side de `logged_sets` virou helper compartilhado.** O `createHistoryDatabaseProvider` ja tinha essa consulta inteira inline; o Dashboard precisava da mesma coisa. Extraida como `observeLoggedSetsForUser()` em vez de duplicada — e o que derrubou os 4 erros de lint.
+3. **`observeProfile` usa `query(Q.where('id', userId))`, nao `.find()`.** O `find` rejeita quando o registro ainda nao chegou pelo sync; o hero so precisa degradar para `null`.
+4. **O CTA do empty state mudou de testID.** Ele agora e renderizado pelo `EmptyState` da Wave 1, que deriva o testID do botao como `${testID}-action` — entao `create-workout-cta` virou `create-workout-action`. O botao "+ Novo" do cabecalho e um segundo ponto de entrada, com testID proprio (`create-workout-button`).
+5. **`dashboardInterfaceDiff.test.ts` foi atualizado.** E um teste-guarda que fixa os membros de `DashboardScreenProps`; ganhou `profile`, `stats` e `recentSessions`. Os tres sao **opcionais**, entao a tela continua renderizavel so com os props originais. A parte que o teste realmente protege — as outras tres telas intocadas — segue valendo.
+6. **As tres `StatRow` por treino viraram uma linha de subtitulo** (`"5 exercicios - media 52 min"`), no padrao `_WorkoutItem` do desktop. Dois testes existentes foram ajustados para o texto composto.
+
+Testes novos: `src/hooks/__tests__/dashboardAggregations.test.ts` (25) e `src/screens/DashboardScreen/__tests__/DashboardScreen.wave3.test.tsx` (21). Verificados contra a arvore anterior via `git stash`: **43 dos 46 falham** sem as mudancas desta wave.
+
+Pendencia herdada: os 6 arquivos com erro de `tsc` (`AuthManager.property22/23/24`, `schema.test.ts`, `useReactiveQuery.property1`, `pullApply.property13`) continuam iguais — sao pre-existentes, expostos pelo `npm install` da Wave 0, e nao tem relacao com o redesign.
+
+---
+
 **Arquivos**: `src/screens/DashboardScreen/DashboardScreen.tsx`, `computeDashboardUIState.ts`, `src/hooks/useObserveDashboard.ts`, `src/hooks/domainUtils.ts`
-**Origem**: `dashboard.py`, método `_build` (linhas 267–361)
+**Origem**: `dashboard.py`, metodo `_build` (linhas 267-361)
 
 ## 3.1 O que existe hoje
 
@@ -369,12 +388,12 @@ Já é a tela mais próxima do alvo — é a única que usa `Card`, `Chip` e `St
 
 # Checklist final das waves 2–5
 
-- [ ] `SafeAreaProvider` no `App.tsx` e `SafeAreaView` nas 5 telas
-- [ ] Tab bar restilizada com ícones FontAwesome5
-- [ ] Banners de erro dos containers visíveis (bug corrigido)
-- [ ] Dashboard: hero, 4 stat cards, atividade semanal, seus treinos, treinos recentes
-- [ ] Botão "+ Novo" acessível com treinos já existentes (bug corrigido)
-- [ ] `reorderWeekMondayFirst` + agregações do dashboard como funções puras testadas
+- [x] `SafeAreaProvider` no `App.tsx` e `SafeAreaView` nas 5 telas
+- [x] Tab bar restilizada com ícones FontAwesome5
+- [x] Banners de erro dos containers visíveis (bug corrigido)
+- [x] Dashboard: hero, 4 stat cards, atividade semanal, seus treinos, treinos recentes
+- [x] Botão "+ Novo" acessível com treinos já existentes (bug corrigido)
+- [x] `reorderWeekMondayFirst` + agregações do dashboard como funções puras testadas
 - [ ] ActiveSession com cards de exercício, grade de séries e rodapé fixo
 - [ ] Overlay de confirmação de saída e tela de resumo
 - [ ] "← Voltar" funcional no WorkoutCreator e no ActiveSession (bug corrigido)

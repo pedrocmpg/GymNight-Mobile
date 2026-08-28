@@ -209,3 +209,146 @@ export function buildRecentSessionSummaries(
       totalVolume: computeVolume(loggedSetsBySessionId.get(s.id) ?? []),
     }));
 }
+
+// ---------------------------------------------------------------------------
+// Wave 3 — agregações do Dashboard (port de dashboard.py)
+// ---------------------------------------------------------------------------
+
+/**
+ * Reordena um array de 7 posições indexado por domingo=0 para segunda→domingo.
+ *
+ * O `computeWeeklyStreak` acima produz o array com domingo no índice 0 (é o que
+ * `Date.getDay()` devolve), mas o desktop exibe a semana começando na segunda
+ * (`dashboard.py:383`: `loop_to_dow = [1, 2, 3, 4, 5, 6, 0]`). Esta função é a
+ * ponte entre os dois — aplicá-la só na camada de exibição mantém o contrato do
+ * `weeklyStreak` intacto para todo o resto do código.
+ *
+ * @param week - Array de exatamente 7 posições, índice 0 = domingo
+ * @returns Novo array de 7 posições, índice 0 = segunda e índice 6 = domingo
+ */
+export function reorderWeekMondayFirst<T>(week: T[]): T[] {
+  return [...week.slice(1), week[0]];
+}
+
+/**
+ * Conta em quantos DIAS DISTINTOS dos últimos 7 (inclusive hoje) houve pelo
+ * menos uma sessão encerrada. É o card "Treinos esta semana" do desktop
+ * (`dashboard.py:305`), que conta dias e não sessões — treinar duas vezes no
+ * mesmo dia conta como um.
+ *
+ * @param sessions - Array de sessões (pode ser vazio)
+ * @param now - Função que retorna o instante atual (ms); injetável para testes
+ * @returns Número de dias distintos treinados, entre 0 e 7
+ */
+export function countTrainingDaysThisWeek(
+  sessions: SessionForAggregation[],
+  now: () => number = Date.now,
+): number {
+  const nowMs = now();
+  const windowStartMs = nowMs - 7 * 24 * 60 * 60 * 1000;
+
+  const days = new Set<string>();
+  for (const s of sessions) {
+    if (s.endedAt === null) continue;
+    if (s.startedAt < windowStartMs || s.startedAt > nowMs) continue;
+    const d = new Date(s.startedAt);
+    days.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+  }
+  return days.size;
+}
+
+/**
+ * Formata um volume em kg no padrão do desktop (`dashboard.py:405`): acima de
+ * 1000 vira `"12.4k"`, abaixo disso é o inteiro arredondado.
+ *
+ * @param volume - Volume total em kg (>= 0)
+ * @returns String formatada, sem a unidade
+ */
+export function formatVolume(volume: number): string {
+  if (volume >= 1000) {
+    return `${(volume / 1000).toFixed(1)}k`;
+  }
+  return String(Math.round(volume));
+}
+
+/** Início da semana (SEGUNDA, 00:00 local) que contém `timestampMs`. */
+function startOfWeekMonday(timestampMs: number): number {
+  const d = new Date(timestampMs);
+  d.setHours(0, 0, 0, 0);
+  // getDay(): domingo=0 … sábado=6. Recuar até a segunda-feira; domingo recua 6.
+  const daysSinceMonday = (d.getDay() + 6) % 7;
+  d.setDate(d.getDate() - daysSinceMonday);
+  return d.getTime();
+}
+
+/**
+ * Conta o streak em SEMANAS consecutivas com pelo menos um treino encerrado —
+ * port de `_calculate_streak` (`dashboard.py:460-510`).
+ *
+ * A semana começa na segunda-feira. A contagem parte da semana atual e anda
+ * para trás enquanto encontrar semanas consecutivas com treino. Se a semana
+ * mais recente com treino for anterior à semana passada, o streak foi quebrado
+ * e o resultado é 0 — treinar "semana atual" ou "semana passada" mantém vivo.
+ *
+ * @param sessions - Array de sessões (pode ser vazio)
+ * @param now - Função que retorna o instante atual (ms); injetável para testes
+ * @returns Número de semanas consecutivas (>= 0)
+ */
+export function computeWeekStreak(
+  sessions: SessionForAggregation[],
+  now: () => number = Date.now,
+): number {
+  const weeksWithTraining = new Set<number>();
+  for (const s of sessions) {
+    if (s.endedAt === null) continue;
+    weeksWithTraining.add(startOfWeekMonday(s.startedAt));
+  }
+  if (weeksWithTraining.size === 0) return 0;
+
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  const currentWeek = startOfWeekMonday(now());
+  const lastWeek = currentWeek - WEEK_MS;
+
+  // Ponto de partida: a semana atual, se treinou nela; senão a passada, se
+  // treinou nela. Qualquer coisa mais antiga significa streak quebrado.
+  let cursor: number;
+  if (weeksWithTraining.has(currentWeek)) {
+    cursor = currentWeek;
+  } else if (weeksWithTraining.has(lastWeek)) {
+    cursor = lastWeek;
+  } else {
+    return 0;
+  }
+
+  let streak = 0;
+  while (weeksWithTraining.has(cursor)) {
+    streak += 1;
+    cursor -= WEEK_MS;
+  }
+  return streak;
+}
+
+/**
+ * Descrição relativa de quando uma sessão aconteceu, no padrão do desktop
+ * (`dashboard.py:529`): `Hoje` / `Ontem` / `há N dias`.
+ *
+ * Compara DIAS DE CALENDÁRIO locais, não diferença de 24h — uma sessão às 23h
+ * de ontem é "Ontem" mesmo tendo menos de 24h de idade.
+ *
+ * @param timestampMs - Instante da sessão (ms)
+ * @param now - Função que retorna o instante atual (ms); injetável para testes
+ * @returns String relativa em português
+ */
+export function formatRelativeDay(timestampMs: number, now: () => number = Date.now): string {
+  const startOfDay = (ms: number) => {
+    const d = new Date(ms);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  };
+  const diffDays = Math.round(
+    (startOfDay(now()) - startOfDay(timestampMs)) / (24 * 60 * 60 * 1000),
+  );
+  if (diffDays <= 0) return 'Hoje';
+  if (diffDays === 1) return 'Ontem';
+  return `há ${diffDays} dias`;
+}

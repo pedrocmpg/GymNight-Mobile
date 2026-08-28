@@ -10,6 +10,13 @@
  * (exerciseCount, avgSessionDurationMs, lastTrainedDaysAgo) live on the
  * `DashboardWorkout` item type, not on DashboardScreenProps itself, so this
  * top-level Set only needs the one new member.
+ *
+ * Updated (redesign wave 3): a Dashboard passou a portar a estrutura do
+ * GymNight-Desktop e ganhou mais três membros — `profile` (hero), `stats`
+ * (grade 2×2 de métricas) e `recentSessions` (card "Treinos recentes"). Os
+ * três são OPCIONAIS, então a tela continua renderizável só com os props
+ * originais. As outras três telas seguem intocadas, que é o que este teste
+ * de fato protege.
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -23,7 +30,7 @@ function extractInterfaceMembers(content: string, interfaceName: string): string
 }
 
 describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', () => {
-  it('DashboardScreenProps contains exactly the original members plus onStartSession, onLogout and weeklyStreak', () => {
+  it('DashboardScreenProps contains exactly the original members plus onStartSession, onLogout, weeklyStreak and the wave-3 additions', () => {
     const content = fs.readFileSync(
       path.join(SCREENS_DIR, 'DashboardScreen', 'DashboardScreen.tsx'),
       'utf-8'
@@ -40,6 +47,9 @@ describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', (
         'onCreateWorkout',
         'onStartSession',
         'onLogout',
+        'profile',
+        'stats',
+        'recentSessions',
       ])
     );
   });

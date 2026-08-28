@@ -55,7 +55,8 @@ export function DashboardScreenContainer(props: DashboardScreenContainerProps) {
   }, []);
 
   const provider = React.useMemo(() => createDashboardDatabaseProvider(database), []);
-  const { workouts, weeklyStreak, isLoading } = useObserveDashboard(props.userId, provider);
+  const { workouts, weeklyStreak, profile, stats, recentSummaries, isLoading } =
+    useObserveDashboard(props.userId, provider);
   const syncStatus = useSyncStatus(props.syncEngine, isOnline);
 
   const handleLogout = async () => {
@@ -104,6 +105,9 @@ export function DashboardScreenContainer(props: DashboardScreenContainerProps) {
           lastTrainedDaysAgo: daysSince(w.lastTrainedAt),
         }))}
         weeklyStreak={weeklyStreak}
+        profile={profile}
+        stats={stats}
+        recentSessions={recentSummaries}
         syncStatus={syncStatus}
         onCreateWorkout={props.onCreateWorkout}
         onStartSession={handleStartSession}

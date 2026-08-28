@@ -26,6 +26,7 @@ export const colors = {
   primaryText: '#ffffff',     // C_TEXT
   secondaryText: '#6b7280',   // C_TEXT2 / C_TEXT3
   tertiaryText: '#9ca3af',    // unidades nos stat cards (dashboard.py:111)
+  mutedText: '#3a3a3a',       // "—" do dia sem treino (dashboard.py:190)
 
   // C_GREEN_DK: valor próprio para não colidir com `primary` — tokens.test.ts
   // exige que as chaves obrigatórias sejam distintas entre si.
@@ -37,6 +38,7 @@ export const colors = {
   successTint: 'rgba(101, 163, 13, 0.14)',
   errorTint: 'rgba(239, 68, 68, 0.14)',
   overlay: 'rgba(0, 0, 0, 0.85)',           // active_workout.py:964
+  scrim: '#000000',                         // degrades do hero (dashboard.py:44)
 } as const;
 
 /**

@@ -86,7 +86,7 @@ describe('DashboardScreen — Empty UI_State', () => {
       workouts: [],
       isLoading: false,
     });
-    expect(getByTestId('create-workout-cta')).toBeTruthy();
+    expect(getByTestId('create-workout-action')).toBeTruthy();
     expect(getByText('Criar primeiro treino')).toBeTruthy();
   });
 
@@ -141,7 +141,7 @@ describe('DashboardScreen — Offline UI_State', () => {
     });
     expect(getByTestId('offline-banner')).toBeTruthy();
     expect(getByTestId('empty-state')).toBeTruthy();
-    expect(getByTestId('create-workout-cta')).toBeTruthy();
+    expect(getByTestId('create-workout-action')).toBeTruthy();
   });
 });
 
@@ -184,6 +184,9 @@ describe('DashboardScreen — Success UI_State', () => {
     expect(getByText('Leg Day')).toBeTruthy();
   });
 
+  // Wave 3: as três StatRow separadas viraram uma única linha de subtítulo,
+  // no padrão _WorkoutItem do desktop (dashboard.py:202-226) — nome + subtítulo
+  // à esquerda, "último treino" como valor à direita.
   it('displays exerciseCount, average duration and last-trained stats per card', () => {
     const workouts = [
       makeWorkout({
@@ -195,8 +198,7 @@ describe('DashboardScreen — Success UI_State', () => {
       }),
     ];
     const { getByText } = renderDashboardScreen({ workouts, isLoading: false, isOnline: true });
-    expect(getByText('6 exercícios')).toBeTruthy();
-    expect(getByText('52 min')).toBeTruthy();
+    expect(getByText('6 exercícios · média 52 min')).toBeTruthy();
     expect(getByText('há 2 dias')).toBeTruthy();
   });
 
@@ -206,7 +208,7 @@ describe('DashboardScreen — Success UI_State', () => {
     ];
     const { getByText } = renderDashboardScreen({ workouts, isLoading: false, isOnline: true });
     expect(getByText('nunca')).toBeTruthy();
-    expect(getByText('—')).toBeTruthy();
+    expect(getByText('3 exercícios · média —')).toBeTruthy();
   });
 
   it('does not show empty state when workouts are available', () => {
@@ -251,7 +253,7 @@ describe('DashboardScreen — Interaction (create workout CTA)', () => {
       onCreateWorkout,
     });
 
-    const ctaButton = getByTestId('create-workout-cta');
+    const ctaButton = getByTestId('create-workout-action');
     fireEvent.press(ctaButton);
 
     expect(onCreateWorkout).toHaveBeenCalledTimes(1);
@@ -265,7 +267,7 @@ describe('DashboardScreen — Interaction (create workout CTA)', () => {
       onCreateWorkout,
     });
 
-    const ctaButton = getByTestId('create-workout-cta');
+    const ctaButton = getByTestId('create-workout-action');
     fireEvent.press(ctaButton);
     fireEvent.press(ctaButton);
     fireEvent.press(ctaButton);

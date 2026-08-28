@@ -1,9 +1,10 @@
 import React from 'react';
-import Svg, { Path } from 'react-native-svg';
+import { View, StyleSheet } from 'react-native';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import type { SyncEngine } from '../sync/SyncEngine';
 import type { LogoutManager } from '../auth/LogoutManager';
-import { colors } from '../designSystem/tokens';
+import { colors, typography, spacing, glow } from '../designSystem/tokens';
 import { DashboardScreenContainer } from './containers/DashboardScreenContainer';
 import { ProgressScreenContainer } from './containers/ProgressScreenContainer';
 
@@ -14,20 +15,15 @@ export type MainTabParamList = {
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-function TreinosIcon({ color }: { color: string }) {
+/**
+ * Ícone de aba. Os nomes são os mesmos que o desktop usa na navegação
+ * (`fa5s.home` / `fa5s.chart-line`); a aba ativa ganha o glow neon.
+ */
+function TabIcon({ name, color, focused }: { name: string; color: string; focused: boolean }) {
   return (
-    <Svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <Path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-      <Path d="M9 22V12h6v10" />
-    </Svg>
-  );
-}
-
-function ProgressoIcon({ color }: { color: string }) {
-  return (
-    <Svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <Path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-    </Svg>
+    <View style={focused ? glow(colors.primary, 14, 0.5) : undefined}>
+      <FontAwesome5 name={name} size={20} color={color} solid />
+    </View>
   );
 }
 
@@ -45,20 +41,26 @@ export interface MainTabNavigatorProps {
  * Progress). WorkoutCreator and ActiveSession are full-screen flows that stay
  * as sibling Stack.Screens outside this navigator (see AppNavigator.tsx) —
  * they never show the tab bar, by React Navigation's default nesting rules.
+ *
+ * O desktop usa pílulas horizontais no topo (window.py:331), mas a tab bar
+ * inferior é decisão deliberada do mobile — o que mudou aqui é só a estética.
  */
 export function MainTabNavigator(props: MainTabNavigatorProps) {
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: 'rgba(154, 165, 177, 0.2)' },
+        tabBarStyle: styles.tabBar,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.secondaryText,
+        tabBarLabelStyle: styles.tabLabel,
       }}
     >
       <Tab.Screen
         name="Treinos"
-        options={{ tabBarIcon: ({ color }) => <TreinosIcon color={color} /> }}
+        options={{
+          tabBarIcon: ({ color, focused }) => <TabIcon name="home" color={color} focused={focused} />,
+        }}
       >
         {() => (
           <DashboardScreenContainer
@@ -73,10 +75,28 @@ export function MainTabNavigator(props: MainTabNavigatorProps) {
       </Tab.Screen>
       <Tab.Screen
         name="Progresso"
-        options={{ tabBarIcon: ({ color }) => <ProgressoIcon color={color} /> }}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="chart-line" color={color} focused={focused} />
+          ),
+        }}
       >
         {() => <ProgressScreenContainer userId={props.userId} />}
       </Tab.Screen>
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: colors.surface,
+    borderTopColor: colors.border,
+    borderTopWidth: 1,
+    height: 62,
+    paddingBottom: spacing.xs,
+    paddingTop: spacing.xs,
+  },
+  tabLabel: {
+    ...typography.caption,
+  },
+});

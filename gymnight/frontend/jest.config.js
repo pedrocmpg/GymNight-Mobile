@@ -20,6 +20,7 @@ module.exports = {
     '^@react-native-community/netinfo$': '<rootDir>/src/test/mocks/netinfo.ts',
     '^react-native$': '<rootDir>/src/test/mocks/reactNative.ts',
     '^react-native-svg$': '<rootDir>/src/test/mocks/reactNativeSvg.ts',
+    '^react-native-safe-area-context$': '<rootDir>/src/test/mocks/reactNativeSafeAreaContext.ts',
     '^@expo/vector-icons$': '<rootDir>/src/test/mocks/expoVectorIcons.ts',
     '^@expo/vector-icons/(.*)$': '<rootDir>/src/test/mocks/expoVectorIcons.ts',
   },

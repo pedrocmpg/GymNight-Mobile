@@ -9,12 +9,12 @@
 |---|---|---|
 | **0** — Fundação | [`REDESIGN-01-FUNDACAO.md`](REDESIGN-01-FUNDACAO.md) | ✅ **Concluída** em 2026-08-27 |
 | **1** — Componentes | [`REDESIGN-02-COMPONENTES.md`](REDESIGN-02-COMPONENTES.md) | ✅ **Concluída** em 2026-08-28 |
-| **2** — Navegação/SafeArea | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §1 | ⬜ Pendente |
+| **2** — Navegação/SafeArea | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §1 | ✅ **Concluída** em 2026-08-28 |
 | **3** — DashboardScreen | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §2 | ⬜ Pendente |
 | **4** — ActiveSessionScreen | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §3 | ⬜ Pendente |
 | **5** — Creator + Auth + Progress | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §4-6 | ⬜ Pendente |
 
-Depois das waves 0 e 1 a suíte está em **119 suites / 616 testes**, 100% verde (a baseline antes do redesign era 106/530).
+Depois das waves 0, 1 e 2 a suíte está em **122 suites / 648 testes**, 100% verde (a baseline antes do redesign era 106/530).
 
 ## Arquivos desta especificação
 
@@ -101,7 +101,7 @@ Wave 0  Fundação          → REDESIGN-01-FUNDACAO.md          ✅ CONCLUÍDA
 Wave 1  Componentes       → REDESIGN-02-COMPONENTES.md       ✅ CONCLUÍDA
         Button, Input, ScreenHeader, StatCard, DayDot, HeroBanner...
         ↓
-Wave 2  Navegação/SafeArea → REDESIGN-03-TELAS.md §1
+Wave 2  Navegação/SafeArea → REDESIGN-03-TELAS.md §1     ✅ CONCLUÍDA
         ↓
 Wave 3  DashboardScreen    → REDESIGN-03-TELAS.md §2   (a tela mais transformada)
         ↓

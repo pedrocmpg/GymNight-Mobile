@@ -7,6 +7,20 @@
 
 # Wave 2 — Navegação, SafeArea e correções de casca
 
+## ✅ Concluída em 2026-08-28
+
+Resultado: **122 suites / 648 testes**, 100% verde (a Wave 1 terminou em 119/616). `eslint` sem nenhum problema novo (97 pré-existentes antes e depois, idênticos).
+
+Entregue conforme especificado nas seções 2.1–2.4 abaixo. Três notas de execução:
+
+1. **`src/test/mocks/reactNativeSafeAreaContext.ts`** — extra não previsto. O `react-native-safe-area-context` toca o TurboModule nativo já no `import` (via `InitialWindow.native.ts`), então bastava uma tela importá-lo para derrubar toda suíte que a renderizasse. Mesmo padrão do `expoVectorIcons.ts` da Wave 1.
+2. **9 raízes convertidas, não 5.** Além da raiz principal de cada tela, `DashboardScreen`, `ProgressScreen` e `WorkoutCreatorScreen` têm raízes de early-return (loading, catálogo vazio) que também colidiam com a status bar.
+3. **`StartupErrorScreen` deliberadamente não usa `SafeAreaView`** — ele renderiza *fora* do `SafeAreaProvider`, já que o `App.tsx` só monta o provider depois da validação de env passar. O conteúdo é centralizado verticalmente, então não encosta na status bar de qualquer forma.
+
+Testes novos (inspeção estática, seguindo a convenção do repo para invariantes que não dão para renderizar — ver `bootstrapWiring.test.ts`): `safeAreaWiring.test.ts`, `MainTabNavigator.style.test.ts`, `containerBanners.test.ts`. Verificados contra a árvore anterior via `git stash`: **26 dos 32 falham** sem as mudanças desta wave.
+
+---
+
 ## 2.1 `src/navigation/MainTabNavigator.tsx`
 
 Hoje:

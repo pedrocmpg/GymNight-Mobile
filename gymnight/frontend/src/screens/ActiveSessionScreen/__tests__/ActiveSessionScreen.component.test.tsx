@@ -163,11 +163,24 @@ describe('ActiveSessionScreen — Interaction (log set)', () => {
 });
 
 describe('ActiveSessionScreen — Interaction (end session)', () => {
-  it('calls onEndSession when "Finalizar treino" is pressed', () => {
+  // Wave 4: "Finalizar Treino" passou a abrir a tela de resumo; quem encerra de
+  // fato é o "Voltar para Treinos" do resumo (active_workout.py:778).
+  it('shows the summary screen when "Finalizar Treino" is pressed', () => {
     const onEndSession = jest.fn();
     const { getByTestId } = renderActiveSession({ onEndSession });
 
     fireEvent.press(getByTestId('end-session-button'));
+
+    expect(getByTestId('session-summary')).toBeTruthy();
+    expect(onEndSession).not.toHaveBeenCalled();
+  });
+
+  it('calls onEndSession from the summary screen', () => {
+    const onEndSession = jest.fn();
+    const { getByTestId } = renderActiveSession({ onEndSession });
+
+    fireEvent.press(getByTestId('end-session-button'));
+    fireEvent.press(getByTestId('summary-back-button'));
 
     expect(onEndSession).toHaveBeenCalledTimes(1);
   });

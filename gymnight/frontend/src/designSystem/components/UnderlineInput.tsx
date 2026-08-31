@@ -16,11 +16,21 @@ import { colors, typography, spacing } from '../tokens';
 export interface UnderlineInputProps extends Omit<TextInputProps, 'style'> {
   /** Pinta a linha de base de vermelho. */
   hasError?: boolean;
+  /**
+   * Exibe o texto apagado. Marca o valor como referência da sessão anterior
+   * ("fantasma"), e não como algo que o usuário digitou nesta sessão. Ao editar
+   * o campo, quem chama deve desligar esta flag — o valor passou a ser dele.
+   */
+  isGhost?: boolean;
+  /** Trava o campo (série já gravada). Mantém o texto legível, sem cursor. */
+  isLocked?: boolean;
   testID?: string;
 }
 
 export function UnderlineInput({
   hasError = false,
+  isGhost = false,
+  isLocked = false,
   testID,
   onFocus,
   onBlur,
@@ -33,7 +43,14 @@ export function UnderlineInput({
       testID={testID}
       placeholderTextColor={colors.secondaryText}
       selectionColor={colors.primary}
-      style={[styles.input, isFocused && styles.focused, hasError && styles.errored]}
+      editable={!isLocked && rest.editable !== false}
+      style={[
+        styles.input,
+        isGhost && styles.ghost,
+        isLocked && styles.locked,
+        isFocused && styles.focused,
+        hasError && styles.errored,
+      ]}
       onFocus={(event) => {
         setIsFocused(true);
         onFocus?.(event);
@@ -67,5 +84,13 @@ const styles = StyleSheet.create({
   errored: {
     borderBottomWidth: 2,
     borderBottomColor: colors.error,
+  },
+  // Valor da sessão anterior: legível, mas visivelmente "não é seu ainda".
+  ghost: {
+    color: colors.secondaryText,
+  },
+  locked: {
+    color: colors.primaryText,
+    borderBottomColor: 'transparent',
   },
 });

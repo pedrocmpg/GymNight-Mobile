@@ -367,7 +367,13 @@ export function createActiveSessionDatabaseProvider(db: Database): ActiveSession
                 const options = await Promise.all(
                   records.map(async (r: any) => {
                     const exercise = await r.exercise.fetch();
-                    return { id: exercise.id, name: exercise._raw.name };
+                    return {
+                      id: exercise.id,
+                      name: exercise._raw.name,
+                      seriesTarget: r._raw.series_target ?? 0,
+                      repsTarget: r._raw.reps_target ?? 0,
+                      weightTarget: r._raw.weight_target ?? 0,
+                    };
                   }),
                 );
                 observer.next?.(options);
@@ -378,6 +384,84 @@ export function createActiveSessionDatabaseProvider(db: Database): ActiveSession
             error: (err: unknown) => observer.error?.(err),
           });
           return { unsubscribe: () => sub.unsubscribe() };
+        },
+      };
+    },
+    observeWorkoutName(workoutId: string): ReactiveObservable<string | null> {
+      // Query por id em vez de .find(): o find rejeita quando o registro ainda
+      // não chegou pelo sync, e o título só precisa degradar para null.
+      const query = db.get('workouts').query(Q.where('id', workoutId));
+      return mapObservable(query.observe(), (records: any[]) =>
+        records[0] ? records[0]._raw.name : null,
+      );
+    },
+    observePreviousSessionSets(
+      workoutId: string,
+      currentSessionId: string,
+    ): ReactiveObservable<ActiveSessionLoggedSet[]> {
+      // Join client-side (convenção do repo — nunca Q.on): observa as sessões do
+      // treino, escolhe a última ENCERRADA que não seja a atual, e então observa
+      // as séries dela. Re-subscreve quando a sessão escolhida muda.
+      const sessionsQuery = db
+        .get('workout_sessions')
+        .query(Q.where('workout_id', workoutId));
+
+      return {
+        subscribe(observer) {
+          let setsSub: { unsubscribe: () => void } | null = null;
+          let currentPreviousId: string | null = null;
+
+          const sessionsSub = sessionsQuery.observe().subscribe({
+            next: (records: any[]) => {
+              const previous = records
+                .filter(
+                  (r) => r.id !== currentSessionId && (r._raw.ended_at ?? null) !== null,
+                )
+                .sort((a, b) => b._raw.started_at - a._raw.started_at)[0];
+
+              const previousId = previous ? previous.id : null;
+              if (previousId === currentPreviousId) return;
+              currentPreviousId = previousId;
+
+              setsSub?.unsubscribe();
+              setsSub = null;
+
+              if (!previousId) {
+                observer.next?.([]);
+                return;
+              }
+
+              setsSub = db
+                .get('logged_sets')
+                .query(Q.where('session_id', previousId))
+                .observe()
+                .subscribe({
+                  next: (setRecords: any[]) =>
+                    observer.next?.(
+                      setRecords.map((r) => ({
+                        id: r.id,
+                        sessionId: r._raw.session_id,
+                        exerciseId: r._raw.exercise_id,
+                        weight: r._raw.weight,
+                        repetitions: r._raw.repetitions,
+                        estimatedOneRm: r._raw.estimated_one_rm,
+                        completedAt: r._raw.completed_at,
+                        createdAt: r._raw.created_at,
+                        updatedAt: r._raw.updated_at,
+                      })),
+                    ),
+                  error: (err: unknown) => observer.error?.(err),
+                });
+            },
+            error: (err: unknown) => observer.error?.(err),
+          });
+
+          return {
+            unsubscribe: () => {
+              setsSub?.unsubscribe();
+              sessionsSub.unsubscribe();
+            },
+          };
         },
       };
     },

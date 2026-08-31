@@ -64,6 +64,10 @@ export interface UseObserveActiveSessionResult {
   totalVolume: number;
   maxOneRmByExercise: Map<string, number>;
   workoutExercises: WorkoutExerciseOption[];
+  /** Séries da última sessão encerrada deste treino (base do fantasma da grade). */
+  previousSessionSets: ActiveSessionLoggedSet[];
+  /** Nome do treino da sessão; null em treino livre ou enquanto não carregou. */
+  workoutName: string | null;
   isLoading: boolean;
   error: Error | null;
 }
@@ -76,13 +80,36 @@ const EMPTY_WORKOUT_EXERCISES: ReactiveObservable<WorkoutExerciseOption[]> = {
   },
 };
 
+/** Fallback para o nome do treino quando a sessão é livre. */
+const EMPTY_WORKOUT_NAME: ReactiveObservable<string | null> = {
+  subscribe(observer) {
+    observer.next?.(null);
+    return { unsubscribe: () => {} };
+  },
+};
+
+/** Mesmo fallback vazio, para as séries da sessão anterior. */
+const EMPTY_PREVIOUS_SETS: ReactiveObservable<ActiveSessionLoggedSet[]> = {
+  subscribe(observer) {
+    observer.next?.([]);
+    return { unsubscribe: () => {} };
+  },
+};
+
 /**
  * Exercício associado a um Workout (via WorkoutExercise), usado para restringir
  * o picker da Active_Session_Screen aos exercícios do treino em andamento.
+ *
+ * Os três alvos (`seriesTarget`/`repsTarget`/`weightTarget`) são gravados pelo
+ * WorkoutCreatorScreen desde sempre, mas até a Wave 4 nenhum leitor os expunha —
+ * a grade de séries do treino ativo é o primeiro consumidor.
  */
 export interface WorkoutExerciseOption {
   id: string;
   name: string;
+  seriesTarget: number;
+  repsTarget: number;
+  weightTarget: number;
 }
 
 /**
@@ -92,6 +119,17 @@ export interface ActiveSessionDatabaseProvider {
   observeSession(sessionId: string): ReactiveObservable<ActiveSession>;
   observeLoggedSets(sessionId: string): ReactiveObservable<ActiveSessionLoggedSet[]>;
   observeWorkoutExercises(workoutId: string): ReactiveObservable<WorkoutExerciseOption[]>;
+  /**
+   * Séries da última sessão ENCERRADA do mesmo treino, excluindo a sessão atual.
+   * Alimentam o valor "fantasma" da grade. Opcional: um provider que não a
+   * implemente simplesmente não mostra fantasma (a grade cai nos alvos).
+   */
+  /** Nome do treino da sessão, para o título. Opcional. */
+  observeWorkoutName?(workoutId: string): ReactiveObservable<string | null>;
+  observePreviousSessionSets?(
+    workoutId: string,
+    currentSessionId: string,
+  ): ReactiveObservable<ActiveSessionLoggedSet[]>;
 }
 
 /**
@@ -210,12 +248,36 @@ export function useObserveActiveSession(
     [workoutExercisesResult.data],
   );
 
+  // Séries da última sessão encerrada do mesmo treino — origem do fantasma.
+  const previousSetsResult = useReactiveQuery(
+    () =>
+      workoutId && provider.observePreviousSessionSets
+        ? provider.observePreviousSessionSets(workoutId, sessionId)
+        : EMPTY_PREVIOUS_SETS,
+    [workoutId, sessionId, provider],
+  );
+  const previousSessionSets = useMemo(
+    () => previousSetsResult.data ?? [],
+    [previousSetsResult.data],
+  );
+
+  const workoutNameResult = useReactiveQuery(
+    () =>
+      workoutId && provider.observeWorkoutName
+        ? provider.observeWorkoutName(workoutId)
+        : EMPTY_WORKOUT_NAME,
+    [workoutId, provider],
+  );
+  const workoutName = workoutNameResult.data ?? null;
+
   return {
     session,
     loggedSets,
     totalVolume,
     maxOneRmByExercise,
     workoutExercises,
+    previousSessionSets,
+    workoutName,
     isLoading: result.isLoading,
     error: result.error,
   };

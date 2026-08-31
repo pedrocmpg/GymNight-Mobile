@@ -251,6 +251,35 @@ Outra convenção documentada: consultas cruzando tabelas são feitas com **join
 
 # Wave 4 — ActiveSessionScreen
 
+## ✅ Concluída em 2026-08-31
+
+Resultado: **126 suítes / 754 testes**, 100% verde (a Wave 3 terminou em 124/694). `eslint` **283 problemas** contra 284 antes; `tsc --noEmit` caiu de **43 para 16 erros** — tipar os alvos em `WorkoutExerciseOption` resolveu um bloco inteiro de erros pré-existentes.
+
+**A decisão da §4.1 foi tomada: a grade foi adotada, com uma feature a mais que o desktop não tem.**
+
+O usuário pediu que a linha já abrisse com o que ele levantou da última vez, "apagado". Confirmado contra a fonte: o desktop **não faz isso** — `active_workout.py:622,629` usa placeholder fixo `"0"`/`"10-12"` e nunca consulta histórico. Então o fantasma é feature nova, não port.
+
+Decisões confirmadas com o usuário antes de executar:
+
+1. **Fantasma vem da última sessão**, casado pela **mesma posição de série** (série 3 de hoje mostra a série 3 da última vez). Cascata: última sessão → alvo do `WorkoutCreator` → vazio.
+2. **Série gravada não desmarca.** O check trava; nada some do histórico por toque acidental no meio do treino. Editar uma série já gravada fica como pendência (precisa de uma tela de histórico, que não existe).
+3. **Treino livre mantém o formulário atual**, reestilizado. Sem `workoutId` não há alvos para montar grade — a tela passou a ter **dois modos**.
+4. **A tela de resumo entrou nesta wave.**
+
+Notas de execução:
+
+- **`sessionLifecycle.ts` não foi reescrito**, ao contrário do que a §4.1 previa. `createLoggedSet` e `persistLoggedSetWithIsolation` servem à grade sem alteração; o que a grade acrescenta é uma camada nova (`setGrid.ts`) de funções puras ao lado. **As 5 suítes de property test (`property42..48`) passaram intocadas.**
+- **`observeWorkoutExercises` descartava os três alvos** (`{ id, name }` apenas). `series_target`/`reps_target`/`weight_target` eram gravados pelo `WorkoutCreatorScreen` desde sempre e **nunca lidos por ninguém** — eram dados mortos no banco até aqui.
+- **"Finalizar Treino" agora abre o resumo**, e quem encerra de fato é o "Voltar para Treinos". Isso mudou 1 teste existente (virou 2).
+- **O "Voltar" sai sem encerrar a sessão** — ela continua retomável, que é o contrato do `isResumableSession`.
+- `UnderlineInput` ganhou `isGhost` e `isLocked`. Como ele traduz essas props em estilo sem repassá-las ao `TextInput`, **os testes asseram sobre o estilo renderizado**, não sobre a prop.
+- `toHaveTextContent` **não existe neste setup** (sem `jest-native`); a alternativa é achatar `props.children`.
+
+Testes novos: `setGrid.test.ts` (31) e `ActiveSessionScreen.wave4.test.tsx` (29). Verificados contra a árvore anterior via `git stash`: **24 de 28 falham** sem as mudanças (as duas suítes quebram no import de `setGrid.ts`).
+
+**Fica de fora:** o "+ Adicionar Exercício" da §4.3 — exige um seletor com busca sobre o catálogo e a gravação de um `workout_exercise` novo no meio da sessão, que é escopo próprio.
+
+
 **Arquivos**: `src/screens/ActiveSessionScreen/ActiveSessionScreen.tsx`, `sessionLifecycle.ts`, `startSessionWithPersistence.ts`, `endSessionWithPersistence.ts`
 **Origem**: `active_workout.py`, `_build_workout_page` (65–197) e `_create_exercise_card` (544–652)
 
@@ -394,8 +423,8 @@ Já é a tela mais próxima do alvo — é a única que usa `Card`, `Chip` e `St
 - [x] Dashboard: hero, 4 stat cards, atividade semanal, seus treinos, treinos recentes
 - [x] Botão "+ Novo" acessível com treinos já existentes (bug corrigido)
 - [x] `reorderWeekMondayFirst` + agregações do dashboard como funções puras testadas
-- [ ] ActiveSession com cards de exercício, grade de séries e rodapé fixo
-- [ ] Overlay de confirmação de saída e tela de resumo
+- [x] ActiveSession com cards de exercício, grade de séries e rodapé fixo
+- [x] Overlay de confirmação de saída e tela de resumo
 - [ ] "← Voltar" funcional no WorkoutCreator e no ActiveSession (bug corrigido)
 - [ ] `OneRmChart` responsivo e sem literal de cor
 - [ ] Zero literais de cor fora de `tokens.ts` em `src/screens/` e `src/navigation/`

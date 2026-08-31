@@ -72,8 +72,21 @@ describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', (
       path.join(SCREENS_DIR, 'ActiveSessionScreen', 'ActiveSessionScreen.tsx'),
       'utf-8'
     );
+    // Wave 4 acrescentou workoutName/previousSessionSets/hasWorkout/onBack, todos
+    // OPCIONAIS — a tela continua renderizável só com os props originais.
     expect(new Set(extractInterfaceMembers(activeSessionContent, 'ActiveSessionProps'))).toEqual(
-      new Set(['session', 'loggedSets', 'totalVolume', 'exerciseOptions', 'onLogSet', 'onEndSession'])
+      new Set([
+        'session',
+        'loggedSets',
+        'totalVolume',
+        'exerciseOptions',
+        'onLogSet',
+        'onEndSession',
+        'workoutName',
+        'previousSessionSets',
+        'hasWorkout',
+        'onBack',
+      ])
     );
   });
 });

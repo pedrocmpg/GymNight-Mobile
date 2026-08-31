@@ -14,6 +14,8 @@ import { colors } from '../../designSystem/tokens';
 export interface ActiveSessionScreenContainerProps {
   route: { params: { sessionId: string } };
   onSessionEnded: () => void;
+  /** Sai da sessão sem encerrá-la (o "← Voltar" do header, com confirmação). */
+  onBack?: () => void;
 }
 
 async function persistLoggedSet(data: {
@@ -47,7 +49,14 @@ export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainer
   const sessionId = props.route.params.sessionId;
   const provider = React.useMemo(() => createActiveSessionDatabaseProvider(database), []);
   const catalogProvider = React.useMemo(() => createExerciseCatalogDatabaseProvider(database), []);
-  const { session, loggedSets, totalVolume, workoutExercises } = useObserveActiveSession(sessionId, provider);
+  const {
+    session,
+    loggedSets,
+    totalVolume,
+    workoutExercises,
+    previousSessionSets,
+    workoutName,
+  } = useObserveActiveSession(sessionId, provider);
   const { exercises: catalogExercises } = useObserveExerciseCatalog(catalogProvider);
 
   const handleLogSet = (exerciseId: string, weight: number, reps: number) => {
@@ -76,7 +85,12 @@ export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainer
 
   // Prefer the exercises belonging to this session's workout; fall back to the
   // full catalog for freestyle sessions (no workoutId) or empty workouts.
-  const exerciseOptions = workoutExercises.length > 0 ? workoutExercises : catalogExercises;
+  const hasWorkout = workoutExercises.length > 0;
+  // O catálogo não tem alvos: sem treino definido a grade não se monta e a tela
+  // cai no formulário livre, que é o comportamento pretendido.
+  const exerciseOptions = hasWorkout
+    ? workoutExercises
+    : catalogExercises.map((e) => ({ id: e.id, name: e.name }));
   const nameById = new Map(exerciseOptions.map((e) => [e.id, e.name]));
 
   return (
@@ -88,11 +102,22 @@ export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainer
         exerciseName: nameById.get(s.exerciseId) ?? s.exerciseId,
         weight: s.weight,
         reps: s.repetitions,
+        completedAt: s.completedAt,
       }))}
       totalVolume={totalVolume}
       exerciseOptions={exerciseOptions}
       onLogSet={handleLogSet}
       onEndSession={handleEndSession}
+      workoutName={workoutName}
+      hasWorkout={hasWorkout}
+      previousSessionSets={previousSessionSets.map((s) => ({
+        id: s.id,
+        exerciseId: s.exerciseId,
+        weight: s.weight,
+        repetitions: s.repetitions,
+        completedAt: s.completedAt,
+      }))}
+      onBack={props.onBack}
     />
   );
 }

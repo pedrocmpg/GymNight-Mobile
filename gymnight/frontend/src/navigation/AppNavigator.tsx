@@ -110,6 +110,8 @@ export function AppNavigator(props: AppNavigatorProps) {
                 <ActiveSessionScreenContainer
                   {...navProps}
                   onSessionEnded={() => navProps.navigation.navigate('Main')}
+                  // Sai da sessão SEM encerrá-la: ela continua retomável.
+                  onBack={() => navProps.navigation.navigate('Main')}
                 />
               )}
             </Stack.Screen>

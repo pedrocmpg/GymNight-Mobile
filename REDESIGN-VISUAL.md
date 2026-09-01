@@ -10,11 +10,19 @@
 | **0** — Fundação | [`REDESIGN-01-FUNDACAO.md`](REDESIGN-01-FUNDACAO.md) | ✅ **Concluída** em 2026-08-27 |
 | **1** — Componentes | [`REDESIGN-02-COMPONENTES.md`](REDESIGN-02-COMPONENTES.md) | ✅ **Concluída** em 2026-08-28 |
 | **2** — Navegação/SafeArea | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §1 | ✅ **Concluída** em 2026-08-28 |
-| **3** — DashboardScreen | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §2 | ⬜ Pendente |
-| **4** — ActiveSessionScreen | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §3 | ⬜ Pendente |
-| **5** — Creator + Auth + Progress | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §4-6 | ⬜ Pendente |
+| **3** — DashboardScreen | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §2 | ✅ **Concluída** em 2026-08-28 |
+| **4** — ActiveSessionScreen | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §3 | ✅ **Concluída** em 2026-08-31 |
+| **5** — Creator + Auth + Progress | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §5 | ⬜ Pendente |
 
-Depois das waves 0, 1 e 2 a suíte está em **122 suites / 648 testes**, 100% verde (a baseline antes do redesign era 106/530).
+Depois da wave 4 a suíte está em **126 suites / 754 testes**, 100% verde (a baseline antes do redesign era 106/530).
+
+## ⚠️ Continuação: a série PARIDADE
+
+Esta série trata de **aparência**. Ao terminar a Wave 4 ficou claro que o mobile também está longe do desktop em **funcionalidade** — e que três bloqueios impedem o app de funcionar num celular (o sync nunca é disparado, o catálogo de exercícios nasce vazio, e não há infraestrutura de migration).
+
+A continuação está em **[`PARIDADE-00-INDICE.md`](PARIDADE-00-INDICE.md)**, que cobre da Wave 4.5 à 10.
+
+⚠️ **A Wave 4.5 (destravar) vem ANTES da Wave 5 desta série.** A Wave 5 restiliza o `WorkoutCreatorScreen`, que é a lista do catálogo — com o catálogo vazio, é impossível ver o que se está estilizando.
 
 ## Arquivos desta especificação
 

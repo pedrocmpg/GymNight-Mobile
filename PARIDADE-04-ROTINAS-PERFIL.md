@@ -162,8 +162,13 @@ Property tests a partir do **77**:
 
 ## 5. Verificação
 
-1. `npx tsc --noEmit` — 16 erros pré-existentes, nem um a mais
-2. `npx jest` — nenhuma regressão
-3. `npx eslint src --ext .ts,.tsx` — nenhum problema novo
-4. Suítes novas validadas via `git stash`
+**Tudo roda em Docker** (ver [`PARIDADE-00-INDICE.md`](PARIDADE-00-INDICE.md) §Verificação):
+
+```bash
+docker compose -f docker-compose.test.yml run --rm frontend-tsc    # 16 erros pré-existentes, nem um a mais
+docker compose -f docker-compose.test.yml run --rm frontend-test   # nenhuma regressão
+docker compose -f docker-compose.test.yml run --rm frontend-lint   # nenhum problema novo
+docker compose -f docker-compose.test.yml run --rm backend-test    # `users.goal` passa a ser exercitada
+```
+Depois disso: suítes novas validadas contra a árvore anterior via `git stash`
 5. Fluxo manual: criar treino → editar nome → adicionar exercício → remover outro → salvar → reabrir e conferir que bateu, **e que o histórico do exercício removido continua no Progresso**

@@ -1,0 +1,31 @@
+# ============================================================================
+# GymNight Frontend — imagem SÓ para testes
+# ============================================================================
+# Roda jest, tsc e eslint num ambiente reproduzível. NÃO serve para build de
+# app: o bundle Android exige JDK + Android SDK + Gradle, que rodam na máquina
+# do usuário, não aqui (ver "Ambiente Local — Toolchain e Docker" no vault).
+#
+# Node 20 LTS: o `package.json` não declara `engines`, e a máquina local usa
+# Node 24. Fixar a versão aqui é justamente o ponto — a suíte passa a rodar
+# sempre na mesma, independente do que estiver instalado no host.
+# ============================================================================
+
+FROM node:20-slim
+
+ENV CI=true \
+    NODE_ENV=test
+
+WORKDIR /app
+
+# Camada de dependências separada do código-fonte: mudar um .tsx não invalida
+# o cache do npm ci, que é a parte cara do build.
+COPY package.json package-lock.json* ./
+
+# `npm ci` exige lockfile e instala exatamente o que está nele — é o que torna
+# a execução reproduzível. Cai para `npm install` se o lockfile não existir.
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+COPY . .
+
+# Sem CMD default de propósito: o docker-compose define qual comando roda
+# (test / tsc / lint), e assim uma imagem só serve aos três.

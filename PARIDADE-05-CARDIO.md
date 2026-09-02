@@ -131,8 +131,13 @@ Property tests a partir do **85**:
 
 ## 7. Verificação
 
-1. `npx tsc --noEmit` — 16 erros pré-existentes, nem um a mais
-2. `npx jest` — nenhuma regressão
-3. `npx eslint src --ext .ts,.tsx` — nenhum problema novo
-4. Suítes novas validadas via `git stash`
+**Tudo roda em Docker** (ver [`PARIDADE-00-INDICE.md`](PARIDADE-00-INDICE.md) §Verificação):
+
+```bash
+docker compose -f docker-compose.test.yml run --rm frontend-tsc    # 16 erros pré-existentes, nem um a mais
+docker compose -f docker-compose.test.yml run --rm frontend-test   # nenhuma regressão
+docker compose -f docker-compose.test.yml run --rm frontend-lint   # nenhum problema novo
+docker compose -f docker-compose.test.yml run --rm backend-test    # sync de `cardio_logs` contra o Postgres real
+```
+Depois disso: suítes novas validadas contra a árvore anterior via `git stash`
 5. Fluxo manual: cardio avulso → aparece no histórico; cardio dentro do treino → aparece no resumo e **não** altera o contador de séries

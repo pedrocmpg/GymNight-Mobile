@@ -235,10 +235,17 @@ Property tests a partir do **61** (a Wave 4.5 usa até o 60):
 
 ## 7. Verificação
 
-1. `npx tsc --noEmit` — 16 erros pré-existentes, nem um a mais
-2. `npx jest` — nenhuma regressão sobre a baseline da wave anterior
-3. `npx eslint src --ext .ts,.tsx` — nenhum problema novo
-4. Suítes novas validadas via `git stash`
+**Tudo roda em Docker** (ver [`PARIDADE-00-INDICE.md`](PARIDADE-00-INDICE.md) §Verificação):
+
+```bash
+docker compose -f docker-compose.test.yml run --rm frontend-tsc    # 16 erros pré-existentes, nem um a mais
+docker compose -f docker-compose.test.yml run --rm frontend-test   # nenhuma regressão sobre a wave anterior
+docker compose -f docker-compose.test.yml run --rm frontend-lint   # nenhum problema novo
+docker compose -f docker-compose.test.yml run --rm backend-test    # a migration alembic nova roda aqui
+```
+
+⚠️ Esta é a wave que mais depende do `backend-test`: a migration alembic é aplicada contra o Postgres real do compose, não contra mock. Se ela estiver quebrada, é aqui que aparece.
+Depois disso: suítes novas validadas contra a árvore anterior via `git stash`
 
 ### ⚠️ 7.1 O teste de migration — insubstituível
 
@@ -253,6 +260,11 @@ Property tests a partir do **61** (a Wave 4.5 usa até o 60):
 
 Se o `schemaMigrations` estiver errado, o passo 4 mostra um banco vazio — e é exatamente o que aconteceria com o usuário real.
 
-O usuário optou por testar em device só no fim de tudo. **Esta é a exceção que vale abrir.** Mesmo sem celular, dá para exercitar o caminho de upgrade contra um SQLite local, ou ao menos escrever um teste que aplique a migration sobre um banco populado na v1 e verifique as linhas depois.
+O usuário optou por testar em device só no fim de tudo — mas **o Docker cobre boa parte disto sem celular nenhum**:
+
+- A migration **alembic** (backend) roda contra o Postgres real do compose a cada `backend-test`. Se ela estiver quebrada, falha ali.
+- A migration do **WatermelonDB** (cliente) é a que Jest não prova sozinha. Escrever um teste que aplique a migration sobre um banco populado na v1 e verifique as linhas depois — roda dentro do `frontend-test` como qualquer outro.
+
+O que continua sem cobertura é o SQLite real do Android. Esse fica para o teste em device do fim.
 
 Não seguir para a Wave 7 sem essa confirmação: as waves seguintes empilham em cima deste schema, e descobrir o erro depois significa desfazer tudo.

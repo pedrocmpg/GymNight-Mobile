@@ -1,0 +1,18 @@
+# node_modules do host é Windows e pode conter binários nativos incompatíveis
+# com o Linux do container — o `npm ci` do Dockerfile.test reinstala tudo.
+node_modules
+
+# Build nativo Android não roda em container (precisa de JDK + SDK + Gradle).
+android
+ios
+.expo
+.expo-shared
+
+# Artefatos de teste e cache
+coverage
+*.log
+.DS_Store
+
+# Segredos nunca entram na imagem
+.env
+.env.local

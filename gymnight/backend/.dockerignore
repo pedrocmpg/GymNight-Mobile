@@ -1,0 +1,17 @@
+# venv do host é do Windows — o pip install do Dockerfile reinstala no Linux.
+venv
+.venv
+
+# Caches
+__pycache__
+*.pyc
+.pytest_cache
+.hypothesis
+.mypy_cache
+
+# ⚠️ Segredos: o .env deste diretório está commitado no repositório e contém
+# ADMIN_SECRET (ver PARIDADE-06-ADIADOS §4). Não entra na imagem — o
+# docker-compose.test.yml injeta as variáveis de teste por `environment`.
+.env
+.env.*
+!.env.example

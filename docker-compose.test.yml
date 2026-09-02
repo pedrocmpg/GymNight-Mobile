@@ -1,0 +1,125 @@
+# ============================================================================
+# GymNight — ambiente de TESTES em Docker
+# ============================================================================
+# Toda a verificação das specs PARIDADE-* roda por aqui, para que o resultado
+# não dependa do que está instalado na máquina de quem executa.
+#
+# Uso (a partir da raiz do repositório):
+#
+#   docker compose -f docker-compose.test.yml run --rm frontend-test
+#   docker compose -f docker-compose.test.yml run --rm frontend-tsc
+#   docker compose -f docker-compose.test.yml run --rm frontend-lint
+#   docker compose -f docker-compose.test.yml run --rm backend-test
+#   docker compose -f docker-compose.test.yml down -v     # limpar ao final
+#
+# `run --rm` (e não `up`) porque são tarefas que rodam e terminam, não serviços
+# de longa duração — o código de saída do comando vira o código de saída do
+# `docker compose run`, que é o que faz o CI falhar quando um teste quebra.
+#
+# ⚠️ Isto NÃO cobre build do app Android: bundle exige JDK + Android SDK +
+# Gradle, que rodam na máquina do usuário. Ver "Ambiente Local — Toolchain e
+# Docker" no vault.
+# ============================================================================
+
+services:
+  # --------------------------------------------------------------------------
+  # Postgres para os testes de integração do backend
+  # --------------------------------------------------------------------------
+  # Porta 5433 no host para não colidir com um Postgres nativo em 5432. Sem
+  # volume nomeado de propósito: banco de teste deve nascer limpo a cada
+  # `down -v`, e as migrations do alembic são reaplicadas pelo conftest.
+  test-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: gymnight
+      POSTGRES_PASSWORD: gymnight_test
+      POSTGRES_DB: gymnight_test
+    ports:
+      - "5433:5432"
+    # tmpfs: o banco vive só em memória. Deixa a suíte bem mais rápida e
+    # garante que nada sobrevive entre execuções.
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gymnight -d gymnight_test"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+  # --------------------------------------------------------------------------
+  # Backend — pytest
+  # --------------------------------------------------------------------------
+  backend-test:
+    build:
+      context: ./gymnight/backend
+      dockerfile: Dockerfile
+    depends_on:
+      test-db:
+        # Espera o healthcheck passar. Sem isto o pytest sobe antes do Postgres
+        # aceitar conexão e os testes de integração falham por corrida.
+        condition: service_healthy
+    environment:
+      # O conftest de integração pula TODOS os testes de integração quando
+      # TEST_DATABASE_URL está ausente — então ela é obrigatória aqui.
+      TEST_DATABASE_URL: postgresql://gymnight:gymnight_test@test-db:5432/gymnight_test
+      DATABASE_URL: postgresql://gymnight:gymnight_test@test-db:5432/gymnight_test
+      # Valores fictícios: a suíte não fala com o Supabase real, mas o
+      # pydantic-settings exige que os campos existam.
+      SUPABASE_URL: https://test.supabase.co
+      SUPABASE_JWT_SECRET: test-jwt-secret-not-a-real-key
+      ADMIN_SECRET: test-admin-secret
+      RATE_LIMIT_ENABLED: "false"
+      TOMBSTONE_RETENTION_DAYS: "90"
+      LOG_LEVEL: WARNING
+    volumes:
+      # Código montado para não precisar rebuildar a imagem a cada edição.
+      - ./gymnight/backend:/app
+      # Volume anônimo protegendo o venv/cache da imagem de ser encoberto
+      # pelo bind mount acima.
+      - /app/.pytest_cache
+    command: python -m pytest -q
+
+  # --------------------------------------------------------------------------
+  # Frontend — jest, tsc e eslint
+  # --------------------------------------------------------------------------
+  # Os três compartilham a mesma imagem e o mesmo bloco de volumes. O
+  # `node_modules` é volume nomeado, não bind mount: o do host é do Windows e
+  # pode conter binários nativos incompatíveis com o Linux do container.
+  #
+  # ⚠️ O `.gitignore` da RAIZ é montado porque `secretHygiene.test.ts` o lê
+  # (dois níveis acima de frontend/). Sem ele a suíte falha em 1 teste dentro
+  # do container e passa fora — exatamente o tipo de divergência que rodar em
+  # Docker deveria eliminar.
+  frontend-test:
+    build:
+      context: ./gymnight/frontend
+      dockerfile: Dockerfile.test
+    volumes:
+      - ./gymnight/frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - ./.gitignore:/.gitignore:ro
+    command: npx jest
+
+  frontend-tsc:
+    build:
+      context: ./gymnight/frontend
+      dockerfile: Dockerfile.test
+    volumes:
+      - ./gymnight/frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - ./.gitignore:/.gitignore:ro
+    command: npx tsc --noEmit
+
+  frontend-lint:
+    build:
+      context: ./gymnight/frontend
+      dockerfile: Dockerfile.test
+    volumes:
+      - ./gymnight/frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - ./.gitignore:/.gitignore:ro
+    command: npx eslint src --ext .ts,.tsx
+
+volumes:
+  frontend_node_modules:

@@ -97,7 +97,7 @@ Ninguém vai validar nada em hardware até a última wave. Isso torna a suíte a
 
 Contramedidas embutidas em todas as specs:
 
-- Nenhuma wave termina sem `tsc` + `jest` + `eslint` nas baselines.
+- Nenhuma wave termina sem os quatro alvos do Docker nas baselines (ver §Verificação).
 - Toda função pura nova é validada contra a árvore anterior via `git stash` (a suíte nova **tem** que falhar sem a mudança).
 - **Sync e migration são justamente o que Jest menos consegue provar.** Ao fim da Wave 6, fazer o teste manual do caminho de upgrade contra um SQLite local, mesmo sem celular — está detalhado em `PARIDADE-02`.
 
@@ -131,29 +131,63 @@ Levantamento completo, para não se perder nada.
 
 ---
 
-## Baselines para verificação
+## Verificação — tudo roda em Docker
 
-Estado no início desta série (fim da Wave 4, commit `42a5a57`):
+**Decisão do usuário: toda a verificação destas waves roda em container**, não com a toolchain da máquina. O `docker-compose.test.yml` na raiz define os quatro alvos:
 
-| Métrica | Valor |
+```bash
+# a partir da raiz do repositório
+docker compose -f docker-compose.test.yml run --rm frontend-test   # jest
+docker compose -f docker-compose.test.yml run --rm frontend-tsc    # tsc --noEmit
+docker compose -f docker-compose.test.yml run --rm frontend-lint   # eslint
+docker compose -f docker-compose.test.yml run --rm backend-test    # pytest + Postgres real
+
+docker compose -f docker-compose.test.yml down -v                  # limpar ao final
+```
+
+`run --rm` e não `up`: são tarefas que terminam, e o código de saída do comando vira o do `docker compose run` — é o que faz o CI falhar quando um teste quebra.
+
+### Baselines medidas em container
+
+Rodadas de fato ao criar esta infraestrutura (fim da Wave 4, commit `42a5a57`):
+
+| Alvo | Baseline |
 |---|---|
-| `npx jest` | **126 suites / 754 testes**, 100% verde |
-| `npx eslint src --ext .ts,.tsx` | **283 problemas** (282 erros + 1 warning) |
-| `npx tsc --noEmit` | **16 erros**, todos pré-existentes em 6 arquivos de teste |
+| `frontend-test` | **126 suites / 754 testes**, 100% verde |
+| `frontend-tsc` | **16 erros**, todos pré-existentes em 6 arquivos de teste |
+| `frontend-lint` | **283 problemas** (282 erros + 1 warning) |
+| `backend-test` | **80 passam / 1 falha conhecida** |
 
-Rodar os três ao fim de **cada** wave. Nenhum pode piorar.
+Rodar os quatro ao fim de **cada** wave. Nenhum pode piorar.
 
-Os 16 erros de `tsc` estão documentados em `Armadilhas e Débito Técnico.md` no vault: `AuthManager.property22/23/24` (mocks incompletos de `SecureStoragePort`), `schema.test.ts` (chama `tableSchema(...)` como função), `useReactiveQuery.property1` (`.record` numa union) e `pullApply.property13` (`number | null` em `number | undefined`). Não afetam execução — o Babel não faz type-check.
+Os números do frontend são **idênticos aos do host** — a paridade foi verificada. Os 16 erros de `tsc` estão documentados em `Armadilhas e Débito Técnico.md` no vault: `AuthManager.property22/23/24` (mocks incompletos de `SecureStoragePort`), `schema.test.ts` (chama `tableSchema(...)` como função), `useReactiveQuery.property1` (`.record` numa union) e `pullApply.property13` (`number | null` em `number | undefined`). Não afetam execução — o Babel não faz type-check.
 
-### Device físico
+### ⚠️ A falha conhecida do backend
 
-O projeto **não usa emulador** (ver `Setup Device USB.md` no vault):
+`tests/test_correlation_id_properties.py::test_property_10_structured_log_fields_present` falha na suíte completa e **passa quando rodada isolada** — é poluição de estado global de logging entre testes, **pré-existente e não causada pelo Docker**. Enquanto não for corrigida, a baseline do backend é "80 passam, essa uma falha". Se qualquer outra falhar, é regressão.
+
+Vale notar que essa suíte **não roda na máquina do usuário**: `structlog` não está instalado nativamente, e o arquivo estoura `ModuleNotFoundError` já no import. Em Docker ela roda — então o container cobre mais do que o host, não menos.
+
+### O que o Docker NÃO cobre
+
+**Build e execução do app Android.** O bundle exige JDK, Android SDK e Gradle, que rodam na máquina do usuário (ver `Ambiente Local — Toolchain e Docker` no vault). O projeto também **não usa emulador** (`Setup Device USB.md`):
 
 ```
 scripts/setup-device.cmd <IP> <SUPABASE_URL> <ANON_KEY>
-uvicorn app.main:app --host 0.0.0.0     # no backend
 npx expo run:android --clean            # rebuild nativo obrigatório
 ```
+
+Para o backend, o container do compose já substitui o `uvicorn` local — o app no device aponta para ele.
+
+### Arquivos desta infraestrutura
+
+| Arquivo | Papel |
+|---|---|
+| `docker-compose.test.yml` | Os quatro alvos + Postgres de teste |
+| `gymnight/backend/Dockerfile` | Imagem do backend, com `HEALTHCHECK` |
+| `gymnight/frontend/Dockerfile.test` | Imagem só de teste do frontend (Node 20) |
+
+⚠️ O `gymnight/backend/Dockerfile` **não existia** e o `tests/smoke/test_dockerfile.py` já o exigia — eram 2 testes falhando desde sempre. Criá-lo fez parte desta mudança.
 
 ---
 

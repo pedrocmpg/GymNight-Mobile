@@ -210,10 +210,15 @@ Mais testes de componente/inspeção:
 
 ## 5. Verificação
 
-1. `npx tsc --noEmit` — 16 erros pré-existentes, nem um a mais
-2. `npx jest` — baseline **126 suites / 754 testes**; esta wave só acrescenta
-3. `npx eslint src --ext .ts,.tsx` — baseline **283 problemas**, nenhum novo
-4. Suítes novas validadas contra a árvore anterior via `git stash` — têm que falhar sem a mudança
+**Tudo roda em Docker** (ver [`PARIDADE-00-INDICE.md`](PARIDADE-00-INDICE.md) §Verificação). A partir da raiz do repositório:
+
+```bash
+docker compose -f docker-compose.test.yml run --rm frontend-tsc    # 16 erros pré-existentes, nem um a mais
+docker compose -f docker-compose.test.yml run --rm frontend-test   # baseline 126 suites / 754 testes; esta wave só acrescenta
+docker compose -f docker-compose.test.yml run --rm frontend-lint   # baseline 283 problemas, nenhum novo
+docker compose -f docker-compose.test.yml run --rm backend-test    # baseline 80 passam / 1 falha conhecida
+```
+Depois disso: suítes novas validadas contra a árvore anterior via `git stash` — têm que falhar sem a mudança
 
 ### Aceitação em device
 
@@ -232,4 +237,4 @@ instalação limpa
 
 Se qualquer passo falhar, **não seguir para a Wave 5** — todas as waves seguintes assumem esta fundação.
 
-⚠️ Lembrete: o usuário optou por testar em device **só no fim de tudo**. Isso significa que este teste de aceitação vai ficar pendente por várias waves. Vale ao menos exercitar o ciclo de sync contra o backend local rodando (`uvicorn app.main:app --host 0.0.0.0`) antes de seguir.
+⚠️ Lembrete: o usuário optou por testar em device **só no fim de tudo**. Isso significa que este teste de aceitação vai ficar pendente por várias waves. Vale ao menos exercitar o ciclo de sync contra o backend do compose (`docker compose -f docker-compose.test.yml up backend-test`, ou o serviço rodando em modo servidor) antes de seguir.

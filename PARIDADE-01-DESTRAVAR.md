@@ -238,3 +238,35 @@ instalação limpa
 Se qualquer passo falhar, **não seguir para a Wave 5** — todas as waves seguintes assumem esta fundação.
 
 ⚠️ Lembrete: o usuário optou por testar em device **só no fim de tudo**. Isso significa que este teste de aceitação vai ficar pendente por várias waves. Vale ao menos exercitar o ciclo de sync contra o backend do compose (`docker compose -f docker-compose.test.yml up backend-test`, ou o serviço rodando em modo servidor) antes de seguir.
+
+---
+
+## Resultado da execução (2026-09-09)
+
+Executada integralmente. `useSyncTrigger.ts` liga os três gatilhos
+(offline→online debounce 2s, timer 30s foreground+online via `AppState`,
+manual via pull-to-refresh no Dashboard); `lastPulledAt.ts` ganhou
+`hydrateLastPulledAt()` via `expo-secure-store`, chamada uma vez no
+bootstrap do `App.tsx`, mantendo `loadLastPulledAt()` síncrono (opção
+recomendada pela spec). O dot de `syncStatus` passou a ser renderizado
+no hero do Dashboard.
+
+Backend: migration `008_seed_exercise_catalog.py` semeia 210 exercícios
+(não 200 — a contagem real do `muscle_usage_map.md` bate com a nota de
+rodapé do próprio arquivo, não com o número solto no título). Regras de
+parsing/normalização portadas para `app/database/seed_helpers.py`,
+reaproveitável pela Wave 6. `muscle_usage_map.md` foi copiado para
+`app/database/seed_data/` — a migration não pode depender do repositório
+`GymNight-Desktop` em tempo de execução (container/deploy não o têm).
+
+Testes novos: `useSyncTrigger.property57-59`, `lastPulledAt.property60`
+(frontend); estrutura da migration + `seed_helpers` + seed real contra
+Postgres (backend). Suite final: frontend-test 130/768, backend-test
+100 passam (mesma 1 falha pré-existente). Todos validados via
+`git stash` antes do commit.
+
+**Nota de proveniência:** esta wave já havia sido registrada como
+concluída no segundo cérebro (vault) em 2026-09-04, mas o trabalho nunca
+chegou a este repositório nem a `origin/main` — foi refeita do zero
+nesta sessão a partir desta spec. Ver `Log de Mudanças.md` no vault,
+entrada 2026-09-09, para o registro completo do que aconteceu.

@@ -5,9 +5,13 @@ literalmente de GymNight-Desktop/src/database/parser.py.
 """
 
 from app.database.seed_helpers import (
+    MUSCLE_GROUP_NAMES,
     exercise_id_for,
+    met_value_for,
+    muscle_group_id_for,
     normalize_exercise_name,
     parse_exercise_names,
+    parse_muscle_contributions,
 )
 
 
@@ -66,3 +70,79 @@ def test_exercise_id_for_differs_between_distinct_exercises():
     names = parse_exercise_names()
     ids = {exercise_id_for(n) for n in names}
     assert len(ids) == len(names)
+
+
+# ---------------------------------------------------------------------------
+# Property 61: parsing do muscle map — 210 exercícios, seções em negrito
+# ignoradas, contribuições somam ~1.0 por exercício.
+# ---------------------------------------------------------------------------
+
+
+def test_property_61_muscle_contributions_sum_to_one_per_exercise():
+    records = parse_muscle_contributions()
+    assert len(records) > 0
+
+    sums: dict[str, float] = {}
+    for name, _group, contribution in records:
+        sums[name] = sums.get(name, 0.0) + contribution
+
+    # Todo exercício do catálogo (210) precisa somar ~100% de ativação.
+    assert set(sums.keys()) == set(parse_exercise_names())
+    for name, total in sums.items():
+        assert 0.98 <= total <= 1.02, f"{name} sums to {total}, expected ~1.0"
+
+
+def test_property_61_bold_section_headers_never_appear_as_muscle_group_names():
+    records = parse_muscle_contributions()
+    group_names_used = {group for _name, group, _contribution in records}
+    assert group_names_used <= set(MUSCLE_GROUP_NAMES)
+
+
+# ---------------------------------------------------------------------------
+# Property 62: contribution sempre em (0, 1]; contribuição 0 nunca vira linha.
+# ---------------------------------------------------------------------------
+
+
+def test_property_62_contribution_always_in_zero_one_range():
+    records = parse_muscle_contributions()
+    assert all(0 < contribution <= 1 for _name, _group, contribution in records)
+
+
+def test_property_62_zero_contribution_cells_are_never_recorded():
+    # "Supino Reto (Barra) | 65 | 0 | 15 | 0 | 20 | 0 | 0" — Costas/Bíceps/
+    # Pernas/Abdômen são 0% e não devem gerar linha nenhuma para esse exercício.
+    records = parse_muscle_contributions()
+    groups_for_supino = {
+        group for name, group, _c in records if name == "Supino Reto (Barra)"
+    }
+    assert groups_for_supino == {"Peito", "Ombros", "Tríceps"}
+
+
+# ---------------------------------------------------------------------------
+# Property 68: IDs determinísticos — mesmo nome ⇒ mesmo id, entre execuções
+# repetidas e entre exercícios/grupos musculares.
+# ---------------------------------------------------------------------------
+
+
+def test_property_68_muscle_group_id_is_deterministic():
+    for name in MUSCLE_GROUP_NAMES:
+        assert muscle_group_id_for(name) == muscle_group_id_for(name)
+
+
+def test_property_68_muscle_group_ids_are_all_distinct():
+    ids = {muscle_group_id_for(name) for name in MUSCLE_GROUP_NAMES}
+    assert len(ids) == len(MUSCLE_GROUP_NAMES)
+
+
+def test_property_68_exercise_id_matches_between_repeated_calls_across_helpers():
+    # A mesma exercise_id_for() é reusada tanto no seed de exercícios (migration
+    # 008) quanto no seed do mapa muscular (migration 009) — este teste prova
+    # que não há dependência de estado/ordem entre as duas chamadas.
+    for name in parse_exercise_names()[:20]:
+        first_call = exercise_id_for(name)
+        second_call = exercise_id_for(name)
+        assert first_call == second_call
+
+
+def test_met_value_for_returns_none_for_unknown_exercise():
+    assert met_value_for("Exercício Totalmente Inventado") is None

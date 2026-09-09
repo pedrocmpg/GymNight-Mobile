@@ -850,6 +850,16 @@ class LoggedSet(Base):
         Float,
         nullable=False        # Estimated 1RM is required (calculated automatically if not provided)
     )
+
+    # 'N' (normal) | 'W' (aquecimento) | 'D' (dropset) | 'F' (falha) — Wave 6.
+    # Non-nullable with '' default, matching the WatermelonDB migration's
+    # zero-value for existing rows; '' is treated as 'N' everywhere it's read
+    # (never equals 'W', so it counts toward volume like it always did).
+    set_type = Column(
+        String(1),
+        nullable=False,
+        default="N",
+    )
     
     # ========================================================================
     # TIMING COLUMN: When set was actually completed

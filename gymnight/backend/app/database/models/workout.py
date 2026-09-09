@@ -203,11 +203,20 @@ class Workout(Base):
         String(255),
         nullable=False        # Name is required
     )
-    
+
+    # Free-text description, editable via the Wave 8 edit-workout flow.
+    # Non-nullable with '' default: matches the WatermelonDB migration's
+    # zero-value for existing rows, so no special-casing is needed on read.
+    description = Column(
+        String(1000),
+        nullable=False,
+        default="",
+    )
+
     # ========================================================================
     # SYNC TIMESTAMP COLUMNS: WatermelonDB synchronization protocol
     # ========================================================================
-    
+
     # Unix timestamp in milliseconds when workout template was first created
     # See User model documentation for detailed timestamp rationale.
     # Same sync protocol architecture: tracks creation time for sync queries.
@@ -588,11 +597,20 @@ class WorkoutExercise(Base):
         Float,
         nullable=False        # Target weight is required
     )
-    
+
+    # Display order within the workout (Wave 8 — edit-workout preserves the
+    # order exercises were selected in). Non-nullable with 0 default, matching
+    # the WatermelonDB migration's zero-value for existing rows.
+    order_index = Column(
+        Integer,
+        nullable=False,
+        default=0,
+    )
+
     # ========================================================================
     # SYNC TIMESTAMP COLUMNS: WatermelonDB synchronization protocol
     # ========================================================================
-    
+
     # Unix timestamp in milliseconds when workout exercise was first added to template
     # See User model documentation for detailed timestamp rationale.
     # Same sync protocol architecture: tracks creation time for sync queries.

@@ -32,6 +32,11 @@ SYNCABLE_TABLES = [
     "workout_exercises",
     "workout_sessions",
     "logged_sets",
+    # Wave 6
+    "muscle_groups",
+    "exercise_muscle_map",
+    "exercise_met_values",
+    "cardio_logs",
 ]
 
 

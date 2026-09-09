@@ -58,6 +58,12 @@ from .workout import Workout, WorkoutExercise
 # Modelos de histórico de treino (com validador Epley)
 from .history import WorkoutSession, LoggedSet
 
+# Catálogo muscular compartilhado (Wave 6, pull-only)
+from .muscle import MuscleGroup, ExerciseMuscleMap, ExerciseMetValue
+
+# Cardio (Wave 6 — schema criado agora, consumido na Wave 9)
+from .cardio import CardioLog
+
 # Infraestrutura de sincronização (DeletedRecord + Triggers PostgreSQL)
 from .sync import (
     DeletedRecord,
@@ -94,6 +100,10 @@ __all__ = [
     "WorkoutExercise",
     "WorkoutSession",
     "LoggedSet",
+    "MuscleGroup",
+    "ExerciseMuscleMap",
+    "ExerciseMetValue",
+    "CardioLog",
     "DeletedRecord",
     
     # Strings DDL de Triggers (para migrações Alembic)

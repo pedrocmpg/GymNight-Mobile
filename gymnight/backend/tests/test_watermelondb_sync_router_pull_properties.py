@@ -49,6 +49,12 @@ REQUIRED_TABLES = {
     "workout_exercises",
     "workout_sessions",
     "logged_sets",
+    # Wave 6 (PARIDADE-02-CATALOGO-MUSCULAR.md): catálogo muscular pull-only
+    # + cardio_logs (schema criado agora, consumido na Wave 9).
+    "muscle_groups",
+    "exercise_muscle_map",
+    "exercise_met_values",
+    "cardio_logs",
 }
 
 REQUIRED_TABLE_KEYS = {"created", "updated", "deleted"}
@@ -213,7 +219,8 @@ def test_property_1_pull_response_completeness(last_pulled_at: int) -> None:
     For any valid Pull call (any last_pulled_at >= 0, any authenticated user),
     the response must:
     - Return HTTP 200
-    - Contain a `changes` dict with exactly the 6 required table keys
+    - Contain a `changes` dict with exactly the required table keys (see
+      REQUIRED_TABLES — 6 original + 4 from Wave 6)
     - Each table entry must have exactly the keys: created, updated, deleted
     - Contain a `timestamp` field that is an integer
     """

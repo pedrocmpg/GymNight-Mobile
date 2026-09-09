@@ -183,6 +183,12 @@ class User(Base):
         nullable=True,        # Optional field
     )
 
+    # Up to 2 training goals, serialized as "Hipertrofia,Saúde" (Wave 8 onboarding).
+    goal = Column(
+        String(255),
+        nullable=True,
+    )
+
     # ========================================================================
     # ORM VALIDATORS: Secondary safety-net validation before DB writes
     # ========================================================================

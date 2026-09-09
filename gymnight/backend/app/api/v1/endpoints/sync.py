@@ -25,9 +25,13 @@ from app.core.limiter import limiter
 from app.core.security import get_current_user
 from app.database.connection import get_db
 from app.database.models import (
+    CardioLog,
     DeletedRecord,
     Exercise,
+    ExerciseMetValue,
+    ExerciseMuscleMap,
     LoggedSet,
+    MuscleGroup,
     User,
     Workout,
     WorkoutExercise,
@@ -169,6 +173,29 @@ def pull(
         .all()
     )
 
+    # Wave 6: catálogo muscular — pull-only, sem filtro de usuário (como exercises).
+    muscle_groups_rows = db.query(MuscleGroup).filter(
+        MuscleGroup.updated_at > last_pulled_at,
+    ).all()
+    exercise_muscle_map_rows = db.query(ExerciseMuscleMap).filter(
+        ExerciseMuscleMap.updated_at > last_pulled_at,
+    ).all()
+    exercise_met_values_rows = db.query(ExerciseMetValue).filter(
+        ExerciseMetValue.updated_at > last_pulled_at,
+    ).all()
+
+    # Wave 6/9: cardio_logs — JOIN com workout_sessions (sem user_id direto),
+    # mesmo padrão de logged_sets.
+    cardio_logs_rows = (
+        db.query(CardioLog)
+        .join(WorkoutSession, CardioLog.session_id == WorkoutSession.id)
+        .filter(
+            WorkoutSession.user_id == current_user_id,
+            CardioLog.updated_at > last_pulled_at,
+        )
+        .all()
+    )
+
     # Req 5.7: tombstones — user_id == uid OU NULL (exercícios deletados do catálogo)
     tombstones = db.query(DeletedRecord).filter(
         DeletedRecord.deleted_at > last_pulled_at,
@@ -191,6 +218,18 @@ def pull(
     )
     sessions_created, sessions_updated = _split_created_updated(sessions_rows, last_pulled_at)
     logged_sets_created, logged_sets_updated = _split_created_updated(logged_sets_rows, last_pulled_at)
+    muscle_groups_created, muscle_groups_updated = _split_created_updated(
+        muscle_groups_rows, last_pulled_at
+    )
+    exercise_muscle_map_created, exercise_muscle_map_updated = _split_created_updated(
+        exercise_muscle_map_rows, last_pulled_at
+    )
+    exercise_met_values_created, exercise_met_values_updated = _split_created_updated(
+        exercise_met_values_rows, last_pulled_at
+    )
+    cardio_logs_created, cardio_logs_updated = _split_created_updated(
+        cardio_logs_rows, last_pulled_at
+    )
 
     # Req 6.1: todas as 6 tabelas obrigatórias presentes mesmo quando vazias
     changes = {
@@ -223,6 +262,29 @@ def pull(
             "created": logged_sets_created,
             "updated": logged_sets_updated,
             "deleted": deleted_by_table.get("logged_sets", []),
+        },
+        # Wave 6: catálogos pull-only, sem trigger de tombstone — "deleted"
+        # fica sempre vazio (deletar linhas de catálogo não é uma operação
+        # suportada hoje).
+        "muscle_groups": {
+            "created": muscle_groups_created,
+            "updated": muscle_groups_updated,
+            "deleted": deleted_by_table.get("muscle_groups", []),
+        },
+        "exercise_muscle_map": {
+            "created": exercise_muscle_map_created,
+            "updated": exercise_muscle_map_updated,
+            "deleted": deleted_by_table.get("exercise_muscle_map", []),
+        },
+        "exercise_met_values": {
+            "created": exercise_met_values_created,
+            "updated": exercise_met_values_updated,
+            "deleted": deleted_by_table.get("exercise_met_values", []),
+        },
+        "cardio_logs": {
+            "created": cardio_logs_created,
+            "updated": cardio_logs_updated,
+            "deleted": deleted_by_table.get("cardio_logs", []),
         },
     }
 
@@ -343,7 +405,25 @@ def _validate_push_ownership(
                     detail="Forbidden: logged_set references session not owned by user",
                 )
 
+    # --- Tabela `cardio_logs`: ownership indireta via WorkoutSession (Wave 9) ---
+    cardio_changes = changes.get("cardio_logs")
+    if cardio_changes:
+        for record in cardio_changes.created + cardio_changes.updated:
+            session = (
+                db.query(WorkoutSession)
+                .filter(WorkoutSession.id == record["session_id"])
+                .first()
+            )
+            if session is None or session.user_id != current_user_id:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Forbidden: cardio_log references session not owned by user",
+                )
+
     # exercises: SKIP — catálogo compartilhado, sem verificação de ownership (Req 7.5)
+    # muscle_groups/exercise_muscle_map/exercise_met_values: SKIP — catálogos
+    # pull-only (Wave 6). O cliente nunca deve enviá-las; se enviar, o payload
+    # é simplesmente ignorado (nenhum handler de push existe para elas).
 
 
 # ============================================================================
@@ -642,6 +722,54 @@ def _push_logged_sets(
             db.delete(obj)
 
 
+def _push_cardio_logs(
+    changes: Optional[TableChanges],
+    current_user_id: str,
+    db: Session,
+) -> None:
+    """
+    Persiste criações, atualizações e deleções de cardio_logs (Wave 9).
+
+    Ownership é verificado indiretamente via JOIN com WorkoutSession — mesmo
+    padrão de `_push_logged_sets`.
+    """
+    if not changes:
+        return
+
+    for rec in changes.created:
+        if db.query(CardioLog).filter(CardioLog.id == rec["id"]).first() is None:
+            filtered = {k: v for k, v in rec.items() if hasattr(CardioLog, k)}
+            db.add(CardioLog(**filtered))
+
+    for rec in changes.updated:
+        obj = (
+            db.query(CardioLog)
+            .join(WorkoutSession, CardioLog.session_id == WorkoutSession.id)
+            .filter(
+                CardioLog.id == rec["id"],
+                WorkoutSession.user_id == current_user_id,
+            )
+            .first()
+        )
+        if obj:
+            for k, v in rec.items():
+                if hasattr(obj, k):
+                    setattr(obj, k, v)
+
+    for record_id in changes.deleted:
+        obj = (
+            db.query(CardioLog)
+            .join(WorkoutSession, CardioLog.session_id == WorkoutSession.id)
+            .filter(
+                CardioLog.id == record_id,
+                WorkoutSession.user_id == current_user_id,
+            )
+            .first()
+        )
+        if obj:
+            db.delete(obj)
+
+
 # ============================================================================
 # PUSH ENDPOINT
 # ============================================================================
@@ -673,13 +801,16 @@ def push(
     # (implementados nas tasks 5.1–5.6; chamadas reais adicionadas na task 5.7)
     try:
         # FK order: exercises → users → workouts → workout_exercises
-        #           → workout_sessions → logged_sets
+        #           → workout_sessions → logged_sets → cardio_logs
+        # muscle_groups/exercise_muscle_map/exercise_met_values: sem handler,
+        # catálogos pull-only (Wave 6).
         _push_exercises(payload.changes.get("exercises"), db)
         _push_users(payload.changes.get("users"), current_user_id, db)
         _push_workouts(payload.changes.get("workouts"), current_user_id, db)
         _push_workout_exercises(payload.changes.get("workout_exercises"), current_user_id, db)
         _push_workout_sessions(payload.changes.get("workout_sessions"), current_user_id, db)
         _push_logged_sets(payload.changes.get("logged_sets"), current_user_id, db)
+        _push_cardio_logs(payload.changes.get("cardio_logs"), current_user_id, db)
 
         db.commit()
         return {"status": "ok"}

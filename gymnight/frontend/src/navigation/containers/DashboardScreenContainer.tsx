@@ -4,6 +4,7 @@ import { DashboardScreen } from '../../screens/DashboardScreen/DashboardScreen';
 import { Banner } from '../../designSystem/components/Banner';
 import { useObserveDashboard } from '../../hooks/useObserveDashboard';
 import type { SyncEngine } from '../../sync/SyncEngine';
+import { useSyncTrigger } from '../../sync/useSyncTrigger';
 import type { LogoutManager } from '../../auth/LogoutManager';
 import type { SyncState } from '../../sync/SyncStatusIndicator';
 import database from '../../db/database';
@@ -58,6 +59,7 @@ export function DashboardScreenContainer(props: DashboardScreenContainerProps) {
   const { workouts, weeklyStreak, profile, stats, recentSummaries, isLoading } =
     useObserveDashboard(props.userId, provider);
   const syncStatus = useSyncStatus(props.syncEngine, isOnline);
+  const { requestSync } = useSyncTrigger(props.syncEngine);
 
   const handleLogout = async () => {
     if (coordinatorRef.current!.isPending()) return; // Requirement 7.8: ignore concurrent triggers
@@ -109,6 +111,7 @@ export function DashboardScreenContainer(props: DashboardScreenContainerProps) {
         stats={stats}
         recentSessions={recentSummaries}
         syncStatus={syncStatus}
+        onRefresh={requestSync}
         onCreateWorkout={props.onCreateWorkout}
         onStartSession={handleStartSession}
         onLogout={handleLogout}

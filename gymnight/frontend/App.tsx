@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
@@ -28,6 +28,7 @@ import {
 } from './src/auth/logoutAdapters';
 import { SyncEngine } from './src/sync/SyncEngine';
 import { createSyncCycleRunner } from './src/sync/syncCycleRunner';
+import { hydrateLastPulledAt } from './src/sync/lastPulledAt';
 import database from './src/db/database';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { StartupErrorScreen } from './src/navigation/StartupErrorScreen';
@@ -71,6 +72,12 @@ function confirmationPrompt(): Promise<boolean> {
 
 export default function App() {
   const validation = useMemo(() => validateEnvConfig(), []);
+
+  // Hidrata o cursor de sync a partir do SecureStore uma vez no bootstrap
+  // (best-effort — não bloqueia o primeiro render; ver src/sync/lastPulledAt.ts).
+  useEffect(() => {
+    void hydrateLastPulledAt();
+  }, []);
 
   // Cada peso da Inter e uma familia propria: no Android o `fontWeight` e
   // ignorado quando ha `fontFamily` customizada (ver designSystem/tokens.ts).

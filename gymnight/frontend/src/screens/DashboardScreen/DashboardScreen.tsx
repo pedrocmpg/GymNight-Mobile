@@ -28,6 +28,7 @@ import {
   View,
   Text,
   ScrollView,
+  RefreshControl,
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
@@ -47,7 +48,7 @@ import {
   formatVolume,
   reorderWeekMondayFirst,
 } from '../../hooks/historyDomainUtils';
-import { type SyncState } from '../../sync/SyncStatusIndicator';
+import { getSyncStatusColor, type SyncState } from '../../sync/SyncStatusIndicator';
 
 export interface DashboardWorkout {
   id: string;
@@ -89,6 +90,8 @@ export interface DashboardScreenProps {
   profile?: DashboardProfile | null;
   stats?: DashboardStatsProps;
   recentSessions?: DashboardRecentSession[];
+  /** Pull-to-refresh: dispara um ciclo de sync manual (Wave 4.5). */
+  onRefresh?: () => void;
   onCreateWorkout: () => void;
   onStartSession: (workoutId: string) => void;
   onLogout: () => void;
@@ -202,6 +205,7 @@ export function DashboardScreen({
   profile,
   stats = EMPTY_STATS,
   recentSessions = [],
+  onRefresh,
   onCreateWorkout,
   onStartSession,
   onLogout,
@@ -225,7 +229,20 @@ export function DashboardScreen({
 
   return (
     <SafeAreaView style={styles.container} edges={['top']} testID="dashboard-screen">
-      <ScrollView contentContainerStyle={styles.scrollContent} testID="dashboard-scroll">
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        testID="dashboard-scroll"
+        refreshControl={
+          onRefresh ? (
+            <RefreshControl
+              testID="dashboard-refresh-control"
+              refreshing={syncStatus === 'syncing'}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+            />
+          ) : undefined
+        }
+      >
         {/* Offline Banner */}
         {!isOnline && (
           <Banner
@@ -237,10 +254,17 @@ export function DashboardScreen({
 
         {/* Hero — saudação + perfil (dashboard.py:261-265) */}
         <HeroBanner testID="dashboard-hero">
-          <Text style={styles.greeting}>
-            BOM TREINO
-            {greetingName ? <Text style={styles.greetingName}>, {greetingName}</Text> : null}
-          </Text>
+          <View style={styles.heroHeaderRow}>
+            <Text style={styles.greeting}>
+              BOM TREINO
+              {greetingName ? <Text style={styles.greetingName}>, {greetingName}</Text> : null}
+            </Text>
+            <View
+              testID="sync-status-indicator"
+              accessibilityLabel={`Status de sincronização: ${syncStatus}`}
+              style={[styles.syncDot, { backgroundColor: getSyncStatusColor(syncStatus) }]}
+            />
+          </View>
           {subtitle ? (
             <Text style={styles.heroSubtitle} testID="hero-subtitle">
               {subtitle}
@@ -400,6 +424,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  heroHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  syncDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   greeting: {
     ...typography.h1,

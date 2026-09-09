@@ -51,6 +51,10 @@ describe('Bootstrap_Sequence wiring (App.tsx)', () => {
     expect(content).toMatch(/new SyncEngine\(syncCycleRunner\)/);
   });
 
+  it('hydrates lastPulledAt from SecureStore once at bootstrap (PARIDADE wave 4.5)', () => {
+    expect(content).toMatch(/hydrateLastPulledAt\(\)/);
+  });
+
   it('renders AppNavigator with authManager, syncEngine, logoutManager, sessionStore (Requirement 5.4)', () => {
     expect(content).toMatch(/<AppNavigator[\s\S]*?authManager={authManager}[\s\S]*?\/>/);
     expect(content).toMatch(/syncEngine={syncEngine}/);

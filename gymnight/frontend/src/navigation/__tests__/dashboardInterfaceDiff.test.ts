@@ -17,6 +17,9 @@
  * três são OPCIONAIS, então a tela continua renderizável só com os props
  * originais. As outras três telas seguem intocadas, que é o que este teste
  * de fato protege.
+ *
+ * Updated (PARIDADE wave 4.5): `onRefresh` (OPCIONAL) liga o pull-to-refresh
+ * ao gatilho manual de `useSyncTrigger`.
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -50,6 +53,7 @@ describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', (
         'profile',
         'stats',
         'recentSessions',
+        'onRefresh',
       ])
     );
   });

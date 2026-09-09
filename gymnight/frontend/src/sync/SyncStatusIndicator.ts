@@ -10,7 +10,7 @@
  *   'syncing' → colors.primary
  *   'offline' → colors.primary
  */
-import { colors } from '@/designSystem/tokens';
+import { colors } from '../designSystem/tokens';
 
 /**
  * All possible sync states exposed by the SyncEngine/useSyncStatus hook.

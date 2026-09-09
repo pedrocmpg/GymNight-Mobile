@@ -43,6 +43,35 @@ export const Animated = {
   View: 'Animated.View',
   Text: 'Animated.Text',
 };
+export const RefreshControl = 'RefreshControl';
+
+export type AppStateStatus = 'active' | 'background' | 'inactive';
+type AppStateListener = (state: AppStateStatus) => void;
+let _appStateCurrent: AppStateStatus = 'active';
+const _appStateListeners: Set<AppStateListener> = new Set();
+export const AppState = {
+  get currentState(): AppStateStatus {
+    return _appStateCurrent;
+  },
+  addEventListener: (_type: 'change', listener: AppStateListener) => {
+    _appStateListeners.add(listener);
+    return {
+      remove: () => {
+        _appStateListeners.delete(listener);
+      },
+    };
+  },
+  /** Test helper: simulate a foreground/background transition. */
+  __setState: (state: AppStateStatus) => {
+    _appStateCurrent = state;
+    _appStateListeners.forEach((l) => l(state));
+  },
+  /** Test helper: reset to default (active, no listeners). */
+  __reset: () => {
+    _appStateCurrent = 'active';
+    _appStateListeners.clear();
+  },
+};
 
 export default {
   View,
@@ -63,4 +92,6 @@ export default {
   useWindowDimensions,
   Alert,
   Animated,
+  RefreshControl,
+  AppState,
 };

@@ -9,6 +9,7 @@ import { resolveWorkoutSaveOutcome } from '../workoutCreatorRouting';
 
 export interface WorkoutCreatorScreenContainerProps {
   onSaved: () => void;
+  onBack?: () => void;
 }
 
 /**
@@ -34,6 +35,12 @@ export function WorkoutCreatorScreenContainer(props: WorkoutCreatorScreenContain
   };
 
   return (
-    <WorkoutCreatorScreen isLoading={isLoading} exercises={exercises} error={error} onSave={handleSave} />
+    <WorkoutCreatorScreen
+      isLoading={isLoading}
+      exercises={exercises}
+      error={error}
+      onSave={handleSave}
+      onBack={props.onBack}
+    />
   );
 }

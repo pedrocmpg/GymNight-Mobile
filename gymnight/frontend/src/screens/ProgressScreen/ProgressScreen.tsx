@@ -16,7 +16,7 @@
  */
 
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing, radii } from '../../designSystem/tokens';
 import { Card } from '../../designSystem/components/Card';
@@ -87,7 +87,7 @@ export function ProgressScreen({
     return (
       <SafeAreaView style={styles.container} edges={['top']} testID="progress-screen">
         <View style={styles.loadingContainer} testID="progress-loading-state">
-          <Text style={styles.loadingText}>Carregando...</Text>
+          <ActivityIndicator testID="progress-loading-indicator" size="large" color={colors.primary} />
         </View>
       </SafeAreaView>
     );
@@ -95,7 +95,7 @@ export function ProgressScreen({
 
   return (
     <SafeAreaView style={styles.container} edges={['top']} testID="progress-screen">
-      <Text style={styles.title}>Progresso</Text>
+      <Text style={styles.title}>PROGRESSO</Text>
 
       {exercises.length > 0 && (
         <ScrollView horizontal testID="exercise-selector" style={styles.chipRow} showsHorizontalScrollIndicator={false}>
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.primaryText,
-    ...typography.heading,
+    ...typography.h1,
     marginBottom: spacing.sm,
   },
   chipRow: {
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   },
   chartValue: {
     color: colors.primaryText,
-    ...typography.metric,
+    ...typography.stat,
   },
   deltaBadge: {
     borderRadius: radii.lg,

@@ -68,8 +68,10 @@ describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', (
       path.join(SCREENS_DIR, 'WorkoutCreatorScreen', 'WorkoutCreatorScreen.tsx'),
       'utf-8'
     );
+    // Wave 5 (visual restante) acrescentou `onBack`, OPCIONAL — o ScreenHeader
+    // só aparece quando o container passa o callback.
     expect(new Set(extractInterfaceMembers(workoutContent, 'WorkoutCreatorScreenProps'))).toEqual(
-      new Set(['isLoading', 'exercises', 'error', 'onSave'])
+      new Set(['isLoading', 'exercises', 'error', 'onSave', 'onBack'])
     );
 
     const activeSessionContent = fs.readFileSync(

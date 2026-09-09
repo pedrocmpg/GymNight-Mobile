@@ -102,6 +102,7 @@ export function AppNavigator(props: AppNavigatorProps) {
               {(navProps) => (
                 <WorkoutCreatorScreenContainer
                   onSaved={() => navProps.navigation.navigate('Main')}
+                  onBack={() => navProps.navigation.navigate('Main')}
                 />
               )}
             </Stack.Screen>

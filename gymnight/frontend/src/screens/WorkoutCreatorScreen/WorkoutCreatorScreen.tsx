@@ -6,19 +6,21 @@
  * series/reps/weight target for each selected exercise.
  * Uses Design_Tokens exclusively for styling.
  *
+ * Porta `workouts.py` `_build_create_page` (REDESIGN-03-TELAS.md §5.1).
+ *
  * Props:
  * - isLoading: whether data is still loading (e.g., exercise catalog being fetched)
  * - exercises: array of exercises available in the catalog
  * - error: validation error message (e.g., invalid workout name) or null
  * - onSave: callback invoked with (name, exerciseInputs) when the user saves a valid workout
+ * - onBack: quando presente, mostra o ScreenHeader com botão de voltar — antes desta wave
+ *   a única forma de sair da tela era salvando (headerShown: false no stack raiz).
  */
 
 import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   ActivityIndicator,
   ScrollView,
   Switch,
@@ -26,6 +28,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing, radii } from '../../designSystem/tokens';
+import { ScreenHeader } from '../../designSystem/components/ScreenHeader';
+import { Input } from '../../designSystem/components/Input';
+import { Card } from '../../designSystem/components/Card';
+import { Button } from '../../designSystem/components/Button';
 import { buildExerciseInputs, canSaveWorkout, type SelectedExerciseEntry } from './workoutCreatorSelection';
 import type { ExerciseInput } from './saveWorkoutWithExercises';
 
@@ -39,6 +45,7 @@ export interface WorkoutCreatorScreenProps {
   exercises: WorkoutCreatorExercise[];
   error: string | null;
   onSave: (name: string, exercises: ExerciseInput[]) => void;
+  onBack?: () => void;
 }
 
 interface SelectionState {
@@ -62,6 +69,7 @@ export function WorkoutCreatorScreen({
   exercises,
   error,
   onSave,
+  onBack,
 }: WorkoutCreatorScreenProps) {
   const [workoutName, setWorkoutName] = useState('');
   const [selection, setSelection] = useState<Record<string, SelectionState>>({});
@@ -70,6 +78,7 @@ export function WorkoutCreatorScreen({
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container} edges={['top']} testID="workout-creator-screen">
+        <ScreenHeader onBack={onBack} testID="workout-creator-header" />
         <View style={styles.loadingContainer} testID="loading-state">
           <ActivityIndicator
             testID="loading-indicator"
@@ -85,6 +94,7 @@ export function WorkoutCreatorScreen({
   if (exercises.length === 0) {
     return (
       <SafeAreaView style={styles.container} edges={['top']} testID="workout-creator-screen">
+        <ScreenHeader onBack={onBack} testID="workout-creator-header" />
         <View style={styles.emptyContainer} testID="empty-state">
           <Text style={styles.emptyText} testID="empty-message">
             Catálogo de exercícios vazio. Conecte-se à rede para sincronizar.
@@ -114,12 +124,18 @@ export function WorkoutCreatorScreen({
 
   return (
     <SafeAreaView style={styles.container} edges={['top']} testID="workout-creator-screen">
+      <ScreenHeader onBack={onBack} testID="workout-creator-header" />
+
+      <Text style={styles.title}>CRIAR TREINO</Text>
+      <Text style={styles.subtitle}>
+        Monte seu treino personalizado com exercícios, séries e repetições.
+      </Text>
+
       {/* Workout Name Input */}
-      <TextInput
+      <Input
         testID="workout-name-input"
-        style={styles.nameInput}
-        placeholder="Nome do treino"
-        placeholderTextColor={colors.secondaryText}
+        label="Nome do treino"
+        placeholder="Ex: Treino D — Ombro"
         value={workoutName}
         onChangeText={setWorkoutName}
         accessibilityLabel="Nome do treino"
@@ -137,65 +153,74 @@ export function WorkoutCreatorScreen({
         {exercises.map((exercise) => {
           const state = getState(exercise.id);
           return (
-            <View key={exercise.id} style={styles.exerciseRow} testID={`exercise-row-${exercise.id}`}>
+            <Card
+              key={exercise.id}
+              bordered={false}
+              style={styles.exerciseRow}
+              testID={`exercise-row-${exercise.id}`}
+            >
               <View style={styles.exerciseRowHeader}>
                 <Text style={styles.exerciseName}>{exercise.name}</Text>
                 <Switch
                   testID={`exercise-toggle-${exercise.id}`}
                   value={state.checked}
                   onValueChange={(checked) => setState(exercise.id, { checked })}
+                  trackColor={{ true: colors.primary, false: colors.border }}
+                  thumbColor={colors.primaryText}
                   accessibilityLabel={`Selecionar ${exercise.name}`}
                 />
               </View>
               {state.checked && (
-                <View style={styles.targetsRow}>
-                  <TextInput
-                    testID={`series-input-${exercise.id}`}
-                    style={styles.targetInput}
-                    placeholder="Séries"
-                    placeholderTextColor={colors.secondaryText}
-                    value={state.seriesTarget}
-                    onChangeText={(v) => setState(exercise.id, { seriesTarget: v })}
-                    keyboardType="numeric"
-                    accessibilityLabel={`Séries para ${exercise.name}`}
-                  />
-                  <TextInput
-                    testID={`reps-input-${exercise.id}`}
-                    style={styles.targetInput}
-                    placeholder="Reps"
-                    placeholderTextColor={colors.secondaryText}
-                    value={state.repsTarget}
-                    onChangeText={(v) => setState(exercise.id, { repsTarget: v })}
-                    keyboardType="numeric"
-                    accessibilityLabel={`Repetições para ${exercise.name}`}
-                  />
-                  <TextInput
-                    testID={`weight-input-${exercise.id}`}
-                    style={styles.targetInput}
-                    placeholder="Peso (kg)"
-                    placeholderTextColor={colors.secondaryText}
-                    value={state.weightTarget}
-                    onChangeText={(v) => setState(exercise.id, { weightTarget: v })}
-                    keyboardType="numeric"
-                    accessibilityLabel={`Peso para ${exercise.name}`}
-                  />
+                <View style={styles.targetsBlock}>
+                  <View style={styles.targetsHeaderRow}>
+                    <Text style={styles.targetsColumnLabel}>Séries</Text>
+                    <Text style={styles.targetsColumnLabel}>Reps</Text>
+                    <Text style={styles.targetsColumnLabel}>Peso (kg)</Text>
+                  </View>
+                  <View style={styles.targetsRow}>
+                    <View style={styles.targetInputWrapper}>
+                      <Input
+                        testID={`series-input-${exercise.id}`}
+                        value={state.seriesTarget}
+                        onChangeText={(v) => setState(exercise.id, { seriesTarget: v })}
+                        keyboardType="numeric"
+                        accessibilityLabel={`Séries para ${exercise.name}`}
+                      />
+                    </View>
+                    <View style={styles.targetInputWrapper}>
+                      <Input
+                        testID={`reps-input-${exercise.id}`}
+                        value={state.repsTarget}
+                        onChangeText={(v) => setState(exercise.id, { repsTarget: v })}
+                        keyboardType="numeric"
+                        accessibilityLabel={`Repetições para ${exercise.name}`}
+                      />
+                    </View>
+                    <View style={styles.targetInputWrapper}>
+                      <Input
+                        testID={`weight-input-${exercise.id}`}
+                        value={state.weightTarget}
+                        onChangeText={(v) => setState(exercise.id, { weightTarget: v })}
+                        keyboardType="numeric"
+                        accessibilityLabel={`Peso para ${exercise.name}`}
+                      />
+                    </View>
+                  </View>
                 </View>
               )}
-            </View>
+            </Card>
           );
         })}
       </ScrollView>
 
       {/* Save Button */}
-      <TouchableOpacity
+      <Button
         testID="save-workout-button"
-        style={[styles.saveButton, !canSave ? styles.saveButtonDisabled : null]}
+        label="Salvar"
         onPress={handleSave}
         disabled={!canSave}
         accessibilityLabel="Salvar treino"
-      >
-        <Text style={styles.saveButtonText}>Salvar</Text>
-      </TouchableOpacity>
+      />
     </SafeAreaView>
   );
 }
@@ -204,7 +229,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: spacing.md,
+    paddingHorizontal: spacing.md,
   },
   loadingContainer: {
     flex: 1,
@@ -221,27 +246,28 @@ const styles = StyleSheet.create({
     ...typography.body,
     textAlign: 'center',
   },
-  nameInput: {
-    backgroundColor: colors.surface,
+  title: {
+    ...typography.h2,
     color: colors.primaryText,
-    borderRadius: radii.md,
-    padding: spacing.sm,
-    marginBottom: spacing.sm,
-    ...typography.body,
+  },
+  subtitle: {
+    ...typography.sub,
+    color: colors.secondaryText,
+    marginTop: spacing.xxs,
+    marginBottom: spacing.md,
   },
   errorText: {
     color: colors.error,
     ...typography.caption,
-    marginBottom: spacing.sm,
+    marginTop: spacing.xs,
   },
   exerciseList: {
     flex: 1,
+    marginTop: spacing.sm,
     marginBottom: spacing.sm,
   },
   exerciseRow: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    padding: spacing.sm,
+    backgroundColor: colors.cardAlt,
     marginBottom: spacing.xs,
   },
   exerciseRowHeader: {
@@ -253,31 +279,24 @@ const styles = StyleSheet.create({
     color: colors.primaryText,
     ...typography.body,
   },
+  targetsBlock: {
+    marginTop: spacing.sm,
+  },
+  targetsHeaderRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginBottom: spacing.xxs,
+  },
+  targetsColumnLabel: {
+    flex: 1,
+    ...typography.captionBold,
+    color: colors.secondaryText,
+  },
   targetsRow: {
     flexDirection: 'row',
-    marginTop: spacing.xs,
+    gap: spacing.xs,
   },
-  targetInput: {
+  targetInputWrapper: {
     flex: 1,
-    backgroundColor: colors.background,
-    color: colors.primaryText,
-    borderRadius: radii.sm,
-    padding: spacing.xs,
-    marginRight: spacing.xs,
-    ...typography.body,
-  },
-  saveButton: {
-    backgroundColor: colors.primary,
-    borderRadius: radii.md,
-    padding: spacing.sm,
-    alignItems: 'center',
-  },
-  saveButtonDisabled: {
-    backgroundColor: colors.surface,
-  },
-  saveButtonText: {
-    color: colors.background,
-    ...typography.body,
-    fontWeight: '700',
   },
 });

@@ -4,6 +4,10 @@
  * Displays login/sign-up form with UI states for loading, offline, and error.
  * Uses Design_Tokens exclusively for styling.
  *
+ * Porta o lockup da marca da titlebar do desktop (window.py:94-106),
+ * REDESIGN-03-TELAS.md §5.2. Não há cadastro nem "esqueci a senha" —
+ * fora do escopo deste redesign (REDESIGN-VISUAL.md §6).
+ *
  * Props:
  * - isOnline: whether the device is connected
  * - isLoading: whether a request is in flight
@@ -12,16 +16,13 @@
  */
 
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, typography, spacing, radii } from '../../designSystem/tokens';
+import { FontAwesome5 } from '@expo/vector-icons';
+import { colors, typography, spacing } from '../../designSystem/tokens';
+import { Banner } from '../../designSystem/components/Banner';
+import { Input } from '../../designSystem/components/Input';
+import { Button } from '../../designSystem/components/Button';
 import { isSubmitEnabled } from './authValidation';
 
 export interface AuthScreenProps {
@@ -49,28 +50,28 @@ export function AuthScreen({
 
   return (
     <SafeAreaView style={styles.container} edges={['top']} testID="auth-screen">
+      {/* Lockup da marca — window.py:94-106 */}
+      <View style={styles.brand}>
+        <FontAwesome5 name="bolt" size={18} color={colors.primary} solid />
+        <Text style={styles.brandName}>GYMNight</Text>
+      </View>
+
       {/* Offline Banner */}
       {!isOnline && (
-        <View style={styles.offlineBanner} testID="offline-banner">
-          <Text style={styles.offlineBannerText}>
-            Sem conexão. Autenticação requer internet.
-          </Text>
-        </View>
+        <Banner
+          message="Sem conexão. Autenticação requer internet."
+          variant="info"
+          testID="offline-banner"
+        />
       )}
 
       {/* Error Banner */}
-      {error && (
-        <View style={styles.errorBanner} testID="error-banner">
-          <Text style={styles.errorBannerText}>{error}</Text>
-        </View>
-      )}
+      {error && <Banner message={error} variant="error" testID="error-banner" />}
 
       {/* Email Input */}
-      <TextInput
+      <Input
         testID="email-input"
-        style={styles.input}
         placeholder="Email"
-        placeholderTextColor={colors.secondaryText}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -79,11 +80,9 @@ export function AuthScreen({
       />
 
       {/* Password Input */}
-      <TextInput
+      <Input
         testID="password-input"
-        style={styles.input}
         placeholder="Senha"
-        placeholderTextColor={colors.secondaryText}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -91,22 +90,15 @@ export function AuthScreen({
       />
 
       {/* Submit Button */}
-      <TouchableOpacity
+      <Button
         testID="submit-button"
-        style={[styles.button, !canSubmit && styles.buttonDisabled]}
+        label="Entrar"
         onPress={handleSubmit}
         disabled={!canSubmit}
+        loading={isLoading}
         accessibilityLabel="submit"
-      >
-        {isLoading ? (
-          <ActivityIndicator
-            testID="loading-indicator"
-            color={colors.background}
-          />
-        ) : (
-          <Text style={styles.buttonText}>Entrar</Text>
-        )}
-      </TouchableOpacity>
+        style={styles.submitButton}
+      />
     </SafeAreaView>
   );
 }
@@ -117,52 +109,23 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     padding: spacing.md,
     justifyContent: 'center',
+    gap: spacing.sm,
   },
-  offlineBanner: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    padding: spacing.sm,
-    marginBottom: spacing.sm,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
-  },
-  offlineBannerText: {
-    color: colors.primary,
-    ...typography.body,
-  },
-  errorBanner: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    padding: spacing.sm,
-    marginBottom: spacing.sm,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.error,
-  },
-  errorBannerText: {
-    color: colors.error,
-    ...typography.body,
-  },
-  input: {
-    backgroundColor: colors.surface,
-    color: colors.primaryText,
-    borderRadius: radii.md,
-    padding: spacing.sm,
-    marginBottom: spacing.sm,
-    ...typography.body,
-  },
-  button: {
-    backgroundColor: colors.primary,
-    borderRadius: radii.md,
-    padding: spacing.sm,
+  brand: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.lg,
+  },
+  brandName: {
+    ...typography.h3,
+    fontFamily: typography.h2.fontFamily,
+    fontSize: 15,
+    color: colors.primaryText,
+    letterSpacing: 1,
+  },
+  submitButton: {
     marginTop: spacing.xs,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: colors.background,
-    ...typography.body,
-    fontWeight: '700',
   },
 });

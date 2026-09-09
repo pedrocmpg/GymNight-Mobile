@@ -32,13 +32,16 @@ describe('AuthScreen — Loading UI_State', () => {
   });
 
   it('shows a loading indicator when isLoading is true', () => {
+    // Wave 5 (visual restante): o botão agora é o Button do design system,
+    // cujo indicador de loading segue a convenção `${testID}-loading`
+    // (ver Button.component.test.tsx), não um testID solto.
     const { getByTestId } = renderAuthScreen({ isLoading: true });
-    expect(getByTestId('loading-indicator')).toBeTruthy();
+    expect(getByTestId('submit-button-loading')).toBeTruthy();
   });
 
   it('does not show loading indicator when isLoading is false', () => {
     const { queryByTestId } = renderAuthScreen({ isLoading: false });
-    expect(queryByTestId('loading-indicator')).toBeNull();
+    expect(queryByTestId('submit-button-loading')).toBeNull();
   });
 });
 

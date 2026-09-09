@@ -425,8 +425,29 @@ Já é a tela mais próxima do alvo — é a única que usa `Card`, `Chip` e `St
 - [x] `reorderWeekMondayFirst` + agregações do dashboard como funções puras testadas
 - [x] ActiveSession com cards de exercício, grade de séries e rodapé fixo
 - [x] Overlay de confirmação de saída e tela de resumo
-- [ ] "← Voltar" funcional no WorkoutCreator e no ActiveSession (bug corrigido)
-- [ ] `OneRmChart` responsivo e sem literal de cor
-- [ ] Zero literais de cor fora de `tokens.ts` em `src/screens/` e `src/navigation/`
-- [ ] Zero `fontWeight` remanescente (a Inter usa família por peso)
+- [x] "← Voltar" funcional no WorkoutCreator e no ActiveSession (bug corrigido)
+- [x] `OneRmChart` responsivo e sem literal de cor
+- [x] Zero literais de cor fora de `tokens.ts` em `src/screens/` e `src/navigation/`
+- [x] Zero `fontWeight` remanescente (a Inter usa família por peso)
+
+## Resultado da execução — Wave 5 (2026-09-09)
+
+Executada integralmente. `WorkoutCreatorScreen` ganhou `ScreenHeader`
+(`onBack` opcional, propagado via `WorkoutCreatorScreenContainer` →
+`AppNavigator`), título/subtítulo, `Input`, `Card`+`Switch` por
+exercício e cabeçalhos de coluna Séries/Reps/Peso. `AuthScreen` ganhou o
+lockup da marca e trocou `TextInput`/`TouchableOpacity` avulsos por
+`Input`/`Button`/`Banner` — o indicador de loading do `Button` segue a
+convenção `${testID}-loading` já estabelecida em
+`Button.component.test.tsx`, então `AuthScreen.component.test.tsx` foi
+atualizado de `loading-indicator` para `submit-button-loading` (mudança
+deliberada, não regressão). `ProgressScreen` ganhou título maiúsculo em
+`typography.h1` (era o alias `@deprecated` `heading`) e loading via
+`ActivityIndicator`; `OneRmChart` perdeu o único literal de cor fora de
+`tokens.ts` da camada de telas (`#232B35` → `colors.border`) e ficou
+responsivo via `useWindowDimensions()`.
+
+Puramente visual/estrutural — nenhuma lógica de domínio mudou. Suite:
+130 suites / 768 testes (mesma contagem da Wave 4.5, como esperado).
+`tsc`/`lint` sem regressão. Fecha a série `REDESIGN-*` (waves 0–5).
 - [ ] `npx tsc --noEmit` limpo e `npm test` verde

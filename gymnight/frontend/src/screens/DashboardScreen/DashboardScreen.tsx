@@ -77,7 +77,8 @@ export interface DashboardProfile {
 export interface DashboardStatsProps {
   trainingDaysThisWeek: number;
   totalVolume: number;
-  totalSets: number;
+  /** Calorias queimadas (musculação) — restaurado na Wave 6, era `totalSets`. */
+  totalCalories: number;
   weekStreak: number;
 }
 
@@ -103,7 +104,7 @@ const WEEK_LABELS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'] as const;
 const EMPTY_STATS: DashboardStatsProps = {
   trainingDaysThisWeek: 0,
   totalVolume: 0,
-  totalSets: 0,
+  totalCalories: 0,
   weekStreak: 0,
 };
 
@@ -294,11 +295,11 @@ export function DashboardScreen({
           </View>
           <View style={styles.statsCell}>
             <StatCard
-              icon="layer-group"
-              title="Séries"
-              value={String(stats.totalSets)}
-              unit="séries"
-              testID="stat-total-sets"
+              icon="fire"
+              title="Calorias queimadas"
+              value={String(Math.round(stats.totalCalories))}
+              unit="kcal"
+              testID="stat-total-calories"
             />
           </View>
           <View style={styles.statsCell}>

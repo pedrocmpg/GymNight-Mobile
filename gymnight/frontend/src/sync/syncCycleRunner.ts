@@ -15,6 +15,10 @@ import { buildPullUrl } from './pullRequest';
 import { applyPullChanges, type PullResponse, type StorageAdapter } from './pullApply';
 import { loadLastPulledAt, saveLastPulledAt, clearLastPulledAt } from './lastPulledAt';
 
+// `muscle_groups`/`exercise_muscle_map`/`exercise_met_values` (Wave 6) são
+// catálogos pull-only — deliberadamente ausentes daqui, para que o cliente
+// nunca tente empurrar (push) uma escrita para eles. `cardio_logs` (Wave 9,
+// tabela criada aqui) é do usuário, como as demais.
 const SYNCABLE_TABLES: SyncableTable[] = [
   'users',
   'exercises',
@@ -22,6 +26,7 @@ const SYNCABLE_TABLES: SyncableTable[] = [
   'workout_exercises',
   'workout_sessions',
   'logged_sets',
+  'cardio_logs',
 ];
 
 const TOKEN_EXPIRED_MESSAGE = 'Token expirado';

@@ -17,13 +17,21 @@ export interface LoggedSetForCalc {
   weight: number;
   repetitions: number;
   estimatedOneRm: number;
+  /**
+   * 'N' (normal) | 'W' (aquecimento) | 'D' (dropset) | 'F' (falha). Ausente/''
+   * (séries de antes da Wave 6, ou objetos de teste que não passam o campo)
+   * conta como 'N' — mesmo comportamento de quando a coluna não existia.
+   */
+  setType?: string;
 }
 
 /**
  * Calcula o volume total de um conjunto de séries registradas.
  *
- * Volume = soma(weight * repetitions) para todos os LoggedSets.
- * Para um array vazio, retorna 0.
+ * Volume = soma(weight * repetitions), EXCLUINDO séries de aquecimento
+ * (setType === 'W') — no desktop "volume" já significa isso, não há um
+ * segundo conceito (PARIDADE-02-CATALOGO-MUSCULAR.md §4). Para um array
+ * vazio, retorna 0.
  *
  * @param loggedSets - Array de séries (pode ser vazio)
  * @returns Volume total (número >= 0)
@@ -31,7 +39,51 @@ export interface LoggedSetForCalc {
  * Validates: Requirements 17.6, 19.6, 21.4
  */
 export function computeVolume(loggedSets: LoggedSetForCalc[]): number {
-  return loggedSets.reduce((sum, s) => sum + s.weight * s.repetitions, 0);
+  return loggedSets
+    .filter((s) => s.setType !== 'W')
+    .reduce((sum, s) => sum + s.weight * s.repetitions, 0);
+}
+
+/** Uma linha de `exercise_muscle_map`: quanto um exercício ativa um grupo muscular. */
+export interface ExerciseMuscleContribution {
+  exerciseId: string;
+  muscleGroupId: string;
+  /** 0–1 (percentual de ativação convertido: 70% → 0.7). */
+  contribution: number;
+}
+
+/**
+ * Calcula o volume por grupo muscular: Σ(weight × repetitions × contribution)
+ * para cada `muscleGroupId`, EXCLUINDO séries de aquecimento (mesmo critério
+ * de `computeVolume`). Exercícios sem entrada em `muscleMap` simplesmente não
+ * contribuem para nenhum grupo.
+ *
+ * Validates: PARIDADE-02-CATALOGO-MUSCULAR.md — property 63
+ */
+export function computeMuscleVolume(
+  loggedSets: LoggedSetForCalc[],
+  muscleMap: ExerciseMuscleContribution[],
+): Map<string, number> {
+  const contributionsByExercise = new Map<string, ExerciseMuscleContribution[]>();
+  for (const entry of muscleMap) {
+    const bucket = contributionsByExercise.get(entry.exerciseId);
+    if (bucket) {
+      bucket.push(entry);
+    } else {
+      contributionsByExercise.set(entry.exerciseId, [entry]);
+    }
+  }
+
+  const result = new Map<string, number>();
+  for (const set of loggedSets) {
+    if (set.setType === 'W') continue;
+    const setVolume = set.weight * set.repetitions;
+    const contributions = contributionsByExercise.get(set.exerciseId) ?? [];
+    for (const { muscleGroupId, contribution } of contributions) {
+      result.set(muscleGroupId, (result.get(muscleGroupId) ?? 0) + setVolume * contribution);
+    }
+  }
+  return result;
 }
 
 /**

@@ -4,3 +4,7 @@ export { default as Workout } from './Workout';
 export { default as WorkoutExercise } from './WorkoutExercise';
 export { default as WorkoutSession } from './WorkoutSession';
 export { default as LoggedSet } from './LoggedSet';
+export { default as MuscleGroup } from './MuscleGroup';
+export { default as ExerciseMuscleMap } from './ExerciseMuscleMap';
+export { default as ExerciseMetValue } from './ExerciseMetValue';
+export { default as CardioLog } from './CardioLog';

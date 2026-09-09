@@ -42,6 +42,7 @@ interface LoggedSetRecord {
     weight: number;
     repetitions: number;
     estimated_one_rm: number;
+    set_type: string;
     completed_at: number;
     created_at: number;
     updated_at: number;
@@ -214,6 +215,7 @@ export function createDashboardDatabaseProvider(db: Database): DashboardDatabase
           weight: r._raw.weight,
           repetitions: r._raw.repetitions,
           estimatedOneRm: r._raw.estimated_one_rm,
+          setType: r._raw.set_type,
         })),
       );
     },
@@ -230,6 +232,15 @@ export function createDashboardDatabaseProvider(db: Database): DashboardDatabase
           weight: r._raw.weight ?? null,
           height: r._raw.height ?? null,
         };
+      });
+    },
+    observeExerciseMetValues(): ReactiveObservable<Map<string, number>> {
+      // Catálogo compartilhado (Wave 6), sem filtro de usuário — como `exercises`.
+      const query = db.get('exercise_met_values').query();
+      return mapObservable(query.observe(), (records: any[]) => {
+        const map = new Map<string, number>();
+        for (const r of records) map.set(r._raw.exercise_id, r._raw.met_value);
+        return map;
       });
     },
   };
@@ -261,6 +272,7 @@ export function createHistoryDatabaseProvider(db: Database): HistoryDatabaseProv
           weight: r._raw.weight,
           repetitions: r._raw.repetitions,
           estimatedOneRm: r._raw.estimated_one_rm,
+          setType: r._raw.set_type,
           completedAt: r._raw.completed_at,
           createdAt: r._raw.created_at,
           updatedAt: r._raw.updated_at,
@@ -351,6 +363,7 @@ export function createActiveSessionDatabaseProvider(db: Database): ActiveSession
           weight: r._raw.weight,
           repetitions: r._raw.repetitions,
           estimatedOneRm: r._raw.estimated_one_rm,
+          setType: r._raw.set_type,
           completedAt: r._raw.completed_at,
           createdAt: r._raw.created_at,
           updatedAt: r._raw.updated_at,
@@ -445,6 +458,7 @@ export function createActiveSessionDatabaseProvider(db: Database): ActiveSession
                         weight: r._raw.weight,
                         repetitions: r._raw.repetitions,
                         estimatedOneRm: r._raw.estimated_one_rm,
+                        setType: r._raw.set_type,
                         completedAt: r._raw.completed_at,
                         createdAt: r._raw.created_at,
                         updatedAt: r._raw.updated_at,

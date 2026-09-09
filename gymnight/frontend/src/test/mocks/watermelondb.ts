@@ -125,6 +125,24 @@ export function tableSchema(table: any) {
   return table;
 }
 
+// --- Migration mocks (@nozbe/watermelondb/Schema/migrations) ---
+// Passthrough/tagging only — nada aqui aplica migrations contra SQLite real
+// (a suíte roda sobre este mock, não sobre o adapter real). O valor destes
+// mocks é permitir testes ESTRUTURAIS do array de migrations (consistência
+// com schema.ts), não a aplicação de fato — essa fica para o teste em
+// device (ver PARIDADE-02-CATALOGO-MUSCULAR.md §7.1).
+export function schemaMigrations(config: any) {
+  return config;
+}
+
+export function createTable(table: any) {
+  return { type: 'create_table', ...table };
+}
+
+export function addColumns(config: any) {
+  return { type: 'add_columns', ...config };
+}
+
 // --- Adapter mock (used as default import from @nozbe/watermelondb/adapters/sqlite) ---
 export class MockSQLiteAdapter {
   schema: any;

@@ -42,6 +42,8 @@ export interface ActiveSessionLoggedSet {
   weight: number;
   repetitions: number;
   estimatedOneRm: number;
+  /** 'N'|'W'|'D'|'F' — '' (linhas pré-Wave-6) equivale a 'N'. */
+  setType: string;
   completedAt: number;
   createdAt: number;
   updatedAt: number;

@@ -352,3 +352,40 @@ export function formatRelativeDay(timestampMs: number, now: () => number = Date.
   if (diffDays === 1) return 'Ontem';
   return `há ${diffDays} dias`;
 }
+
+/**
+ * Calorias queimadas em musculação, fórmula verbatim do desktop
+ * (`GymNight-Desktop/src/core/routine.py`, `calculate_session_calories`):
+ *
+ *   tempo_min = reps × 4 / 60      (4 segundos por repetição)
+ *   calorias  = (MET × peso_kg × tempo_min) / 60
+ *
+ * Duas regras que a implementação não pode esquecer: MET = 5.0 quando o
+ * exercício não tem valor no catálogo (fallback conservador), e séries de
+ * aquecimento (`setType === 'W'`) são excluídas — mesmo critério de
+ * `computeVolume`/`computeMuscleVolume`.
+ *
+ * @param loggedSets - Séries a considerar (pode ser vazio → retorna 0)
+ * @param metByExerciseId - Map exerciseId → valor MET (de `exercise_met_values`)
+ * @param weightKg - Peso do usuário; default 70 (mesmo default de `users.weight`
+ *   antes do onboarding da Wave 8 preencher o valor real)
+ *
+ * Validates: PARIDADE-02-CATALOGO-MUSCULAR.md — properties 65, 66
+ */
+export function computeCaloriesBurned(
+  loggedSets: LoggedSetForCalc[],
+  metByExerciseId: Map<string, number>,
+  weightKg = 70,
+): number {
+  const DEFAULT_MET = 5.0;
+  const SECONDS_PER_REP = 4;
+
+  let totalCalories = 0;
+  for (const set of loggedSets) {
+    if (set.setType === 'W') continue;
+    const met = metByExerciseId.get(set.exerciseId) ?? DEFAULT_MET;
+    const timeMin = (set.repetitions * SECONDS_PER_REP) / 60;
+    totalCalories += (met * weightKg * timeMin) / 60;
+  }
+  return totalCalories;
+}

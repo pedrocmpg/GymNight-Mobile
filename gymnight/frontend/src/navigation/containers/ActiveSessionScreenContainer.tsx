@@ -32,6 +32,7 @@ async function persistLoggedSet(data: {
       r._raw.weight = loggedSet.weight;
       r._raw.repetitions = loggedSet.repetitions;
       r._raw.estimated_one_rm = loggedSet.estimated_one_rm;
+      r._raw.set_type = loggedSet.set_type;
       r._raw.completed_at = loggedSet.completed_at;
       r._raw.created_at = Date.now();
       r._raw.updated_at = Date.now();

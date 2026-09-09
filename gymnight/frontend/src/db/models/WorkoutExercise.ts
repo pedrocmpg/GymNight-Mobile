@@ -13,6 +13,7 @@ export default class WorkoutExercise extends Model {
   @field('series_target') seriesTarget!: number;
   @field('reps_target') repsTarget!: number;
   @field('weight_target') weightTarget!: number;
+  @field('order_index') orderIndex!: number;
   @date('created_at') createdAt!: Date;
   @date('updated_at') updatedAt!: Date;
 

@@ -13,6 +13,8 @@ export default class LoggedSet extends Model {
   @field('weight') weight!: number;
   @field('repetitions') repetitions!: number;
   @field('estimated_one_rm') estimatedOneRm!: number;
+  /** 'N' (normal) | 'W' (aquecimento) | 'D' (dropset) | 'F' (falha). '' (linhas pré-Wave-6) equivale a 'N'. */
+  @field('set_type') setType!: string;
   @date('completed_at') completedAt!: Date;
   @date('created_at') createdAt!: Date;
   @date('updated_at') updatedAt!: Date;

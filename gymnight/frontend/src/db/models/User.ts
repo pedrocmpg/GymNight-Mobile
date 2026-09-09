@@ -10,6 +10,8 @@ export default class User extends Model {
   @field('height') height!: number | null;
   @date('birth_date') birthDate!: Date | null;
   @field('gender') gender!: string | null;
+  /** Até 2 objetivos, serializados "Hipertrofia,Saúde" (Wave 8). */
+  @field('goal') goal!: string | null;
   @date('created_at') createdAt!: Date;
   @date('updated_at') updatedAt!: Date;
 }

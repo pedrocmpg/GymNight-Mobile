@@ -11,6 +11,7 @@ export default class Workout extends Model {
 
   @field('user_id') userId!: string;
   @field('name') name!: string;
+  @field('description') description!: string;
   @date('created_at') createdAt!: Date;
   @date('updated_at') updatedAt!: Date;
 

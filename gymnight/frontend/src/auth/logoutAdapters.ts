@@ -12,6 +12,10 @@ const SYNCABLE_TABLES = [
   'workout_exercises',
   'workout_sessions',
   'logged_sets',
+  'muscle_groups',
+  'exercise_muscle_map',
+  'exercise_met_values',
+  'cardio_logs',
 ] as const;
 
 /** Implements SupabaseLogoutPort (LogoutManager.ts) — Requirement 7.1. */

@@ -126,6 +126,8 @@ export interface LoggedSetResult {
   weight: number;
   repetitions: number;
   estimated_one_rm: number;
+  /** 'N' (normal) | 'W' (aquecimento) | 'D' (dropset) | 'F' (falha) — Wave 6. */
+  set_type: string;
   completed_at: number; // Unix timestamp ms
 }
 
@@ -153,6 +155,7 @@ export function createLoggedSet(
   repetitions: number,
   explicitOneRm?: number,
   now: () => number = Date.now,
+  setType = 'N',
 ): LoggedSetResult {
   return {
     session_id: sessionId,
@@ -160,6 +163,7 @@ export function createLoggedSet(
     weight,
     repetitions,
     estimated_one_rm: computeEstimatedOneRm(weight, repetitions, explicitOneRm),
+    set_type: setType,
     completed_at: now(),
   };
 }

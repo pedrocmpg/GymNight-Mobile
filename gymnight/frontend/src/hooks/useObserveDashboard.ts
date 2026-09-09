@@ -29,6 +29,10 @@ import {
   type SessionSummary,
 } from './historyDomainUtils';
 import { computeVolume, type LoggedSetForCalc } from './domainUtils';
+import { computeCaloriesBurned } from './historyDomainUtils';
+
+/** Peso default quando o perfil ainda não tem `weight` preenchido (antes do onboarding da Wave 8). */
+const DEFAULT_WEIGHT_KG = 70;
 
 /**
  * Interface mínima para dados de Workout retornados pelo hook.
@@ -79,22 +83,24 @@ export interface DashboardLoggedSet {
   weight: number;
   repetitions: number;
   estimatedOneRm: number;
+  /** 'N'|'W'|'D'|'F' — '' (linhas pré-Wave-6) equivale a 'N'. */
+  setType: string;
 }
 
 /**
  * Métricas agregadas dos quatro StatCards do Dashboard.
  *
- * O desktop tem um quarto card de "Calorias queimadas" (dashboard.py:434), que
- * depende da tabela `exercise_met_values` — inexistente no backend do mobile.
- * Substituído por `totalSets`.
+ * `totalCalories` restaura o card "Calorias queimadas" do desktop
+ * (dashboard.py:434) — na Wave 3 tinha virado `totalSets` por falta de
+ * `exercise_met_values`, que a Wave 6 trouxe.
  */
 export interface DashboardStats {
   /** Dias distintos treinados nos últimos 7. */
   trainingDaysThisWeek: number;
-  /** Σ(peso × reps) de todas as séries do usuário. */
+  /** Σ(peso × reps) de todas as séries do usuário, excluindo aquecimento. */
   totalVolume: number;
-  /** Total de séries registradas. */
-  totalSets: number;
+  /** Calorias queimadas (musculação), fórmula MET × peso × tempo — Wave 6. */
+  totalCalories: number;
   /** Semanas consecutivas com ao menos um treino encerrado. */
   weekStreak: number;
 }
@@ -150,6 +156,8 @@ export interface DashboardDatabaseProvider {
   observeLoggedSets(userId: string): ReactiveObservable<DashboardLoggedSet[]>;
   /** Perfil do usuário; emite null se o registro ainda não existe localmente. */
   observeProfile(userId: string): ReactiveObservable<DashboardUserProfile | null>;
+  /** Catálogo compartilhado (Wave 6): exerciseId → valor MET, para o card de calorias. */
+  observeExerciseMetValues(): ReactiveObservable<Map<string, number>>;
 }
 
 /**
@@ -220,7 +228,7 @@ export function useObserveDashboard(
   provider: DashboardDatabaseProvider,
   recentLimit = 5,
 ): UseObserveDashboardResult {
-  // combineObservables é binário, então as cinco fontes entram como pares
+  // combineObservables é binário, então as seis fontes entram como pares
   // aninhados. A desestruturação logo abaixo devolve a leitura ao plano.
   const result: ReactiveQueryResult<
     [
@@ -228,7 +236,7 @@ export function useObserveDashboard(
         [RawDashboardWorkout[], DashboardWorkoutSession[]],
         Array<{ workoutId: string; exerciseId: string }>,
       ],
-      [DashboardLoggedSet[], DashboardUserProfile | null],
+      [[DashboardLoggedSet[], DashboardUserProfile | null], Map<string, number>],
     ]
   > = useReactiveQuery(
     () =>
@@ -237,7 +245,10 @@ export function useObserveDashboard(
           combineObservables(provider.observeWorkouts(userId), provider.observeSessions(userId)),
           provider.observeWorkoutExercises(userId),
         ),
-        combineObservables(provider.observeLoggedSets(userId), provider.observeProfile(userId)),
+        combineObservables(
+          combineObservables(provider.observeLoggedSets(userId), provider.observeProfile(userId)),
+          provider.observeExerciseMetValues(),
+        ),
       ),
     [userId, provider],
   );
@@ -248,9 +259,14 @@ export function useObserveDashboard(
 
   const workoutExercises = useMemo(() => (result.data ? result.data[0][1] : []), [result.data]);
 
-  const loggedSets = useMemo(() => (result.data ? result.data[1][0] : []), [result.data]);
+  const loggedSets = useMemo(() => (result.data ? result.data[1][0][0] : []), [result.data]);
 
-  const profile = useMemo(() => (result.data ? result.data[1][1] : null), [result.data]);
+  const profile = useMemo(() => (result.data ? result.data[1][0][1] : null), [result.data]);
+
+  const metByExerciseId = useMemo(
+    () => (result.data ? result.data[1][1] : new Map<string, number>()),
+    [result.data],
+  );
 
   // Forma canônica das sessões para as agregações puras — computada uma vez e
   // reaproveitada por todos os useMemo abaixo.
@@ -283,10 +299,10 @@ export function useObserveDashboard(
     () => ({
       trainingDaysThisWeek: countTrainingDaysThisWeek(sessionsForAgg),
       totalVolume: computeVolume(loggedSets),
-      totalSets: loggedSets.length,
+      totalCalories: computeCaloriesBurned(loggedSets, metByExerciseId, profile?.weight ?? DEFAULT_WEIGHT_KG),
       weekStreak: computeWeekStreak(sessionsForAgg),
     }),
-    [sessionsForAgg, loggedSets],
+    [sessionsForAgg, loggedSets, metByExerciseId, profile],
   );
 
   const recentSummaries = useMemo<SessionSummary[]>(() => {

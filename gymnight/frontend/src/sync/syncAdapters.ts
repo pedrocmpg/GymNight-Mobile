@@ -9,14 +9,23 @@
  * um push bem-sucedido (HTTP 200 { status: "ok" }).
  */
 
-/** Tabelas sincronizáveis do GymNight */
+/**
+ * Tabelas sincronizáveis do GymNight. `muscle_groups`/`exercise_muscle_map`/
+ * `exercise_met_values` são catálogos pull-only (Wave 6) — aparecem aqui por
+ * completude de tipo, mas nunca entram em `SYNCABLE_TABLES` (syncCycleRunner.ts),
+ * a lista que de fato controla o que é lido/empurrado no push.
+ */
 export type SyncableTable =
   | 'users'
   | 'exercises'
   | 'workouts'
   | 'workout_exercises'
   | 'workout_sessions'
-  | 'logged_sets';
+  | 'logged_sets'
+  | 'muscle_groups'
+  | 'exercise_muscle_map'
+  | 'exercise_met_values'
+  | 'cardio_logs';
 
 /** Status de um registro pendente de sincronização */
 export type SyncStatus = 'created' | 'updated' | 'deleted' | 'synced' | 'quarantined';

@@ -96,7 +96,7 @@ describe('DashboardScreen — Grade de métricas', () => {
     for (const id of [
       'stat-training-days',
       'stat-total-volume',
-      'stat-total-sets',
+      'stat-total-calories',
       'stat-week-streak',
     ]) {
       expect(getByTestId(id)).toBeTruthy();
@@ -110,7 +110,7 @@ describe('DashboardScreen — Grade de métricas', () => {
 
   it('formata o volume acima de 1000 no padrão do desktop', () => {
     const { getByText } = renderScreen({
-      stats: { trainingDaysThisWeek: 4, totalVolume: 12400, totalSets: 86, weekStreak: 3 },
+      stats: { trainingDaysThisWeek: 4, totalVolume: 12400, totalCalories: 86, weekStreak: 3 },
     });
     expect(getByText('12.4k')).toBeTruthy();
     expect(getByText('4')).toBeTruthy();

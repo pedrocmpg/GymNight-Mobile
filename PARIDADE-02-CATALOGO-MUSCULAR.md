@@ -268,3 +268,53 @@ O usuário optou por testar em device só no fim de tudo — mas **o Docker cobr
 O que continua sem cobertura é o SQLite real do Android. Esse fica para o teste em device do fim.
 
 Não seguir para a Wave 7 sem essa confirmação: as waves seguintes empilham em cima deste schema, e descobrir o erro depois significa desfazer tudo.
+
+---
+
+## Resultado da execução — PARCIAL (2026-09-09, pausada a pedido do usuário)
+
+**Feito e commitado** (`6a65757` frontend, `bfe2d41` backend — ambos com
+`git log` normal, sem stash pendente):
+
+- Infra de migration do WatermelonDB (`src/db/migrations.ts`) + schema v2
+  completo (as 4 tabelas novas + as 4 colunas dormentes de uma vez).
+- Migration alembic `009` espelhando o mesmo v1→v2 do lado do backend,
+  incluindo o seed de `muscle_groups` (7), `exercise_muscle_map` (452) e
+  `exercise_met_values` (210) — validado rodando de verdade contra o
+  Postgres do `docker-compose.test.yml` (não é teste de Jest, é a suíte
+  `backend-test` completa passando com a migration aplicada).
+- `computeVolume` exclui aquecimento; `computeMuscleVolume` e
+  `computeCaloriesBurned` implementadas; card "Calorias queimadas" do
+  Dashboard restaurado.
+- Sync (pull/push) dos 4 catálogos novos, nas duas pontas.
+- `frontend-test` 130/775, `backend-test` 122 passam (mesma 1 falha
+  pré-existente) — suítes completas rodadas depois de cada mudança.
+
+**Ainda faltando desta wave** (parar por aqui, retomar depois):
+
+1. **O gate crítico §7.1 não foi feito**: não existe hoje um teste que
+   popule um banco WatermelonDB em v1, rode a migration para v2, e confirme
+   que os dados sobreviveram. O mock de `@nozbe/watermelondb` usado pela
+   suíte não aplica migrations de verdade (só existe um teste estrutural,
+   em `schema.test.ts`/`schema.ts` vs `migrations.ts`, provando que a
+   migration *declara* as colunas certas — não que ela *funciona* contra
+   SQLite real). Isso só se resolve no teste em device do fim da série, ou
+   escrevendo um teste de integração dedicado que rode contra o adapter
+   real.
+2. Testes numerados **63–67** (frontend: muscle volume, computeVolume
+   exclui 'W', fórmula/monotonicidade de calorias) não foram escritos como
+   arquivos `property*.test.ts` dedicados — a lógica está implementada e
+   coberta indiretamente, mas não há prova formal de propriedade por
+   `git stash` para essa parte específica ainda.
+3. Validação `git stash` (padrão do repo — provar que os testes novos
+   falham sem a implementação) não foi rodada para a Wave 6 como um todo,
+   diferente das waves 4.5/5.
+4. Seletor de tipo de série (N/W/D/F) na UI do `ActiveSessionScreen` —
+   deliberadamente **não implementado**. A coluna, o default ('N' explícito
+   em toda escrita nova) e a exclusão de aquecimento no cálculo já
+   funcionam; só falta a interação de trocar o tipo numa série já na tela.
+
+**Próximo passo ao retomar:** fechar os 4 itens acima (nessa ordem de
+prioridade — o item 1 é o que a spec chama de "insubstituível"), rodar a
+validação `git stash` da wave inteira, e só então seguir para a Wave 7
+(Estatísticas) conforme `PARIDADE-00-INDICE.md`.

@@ -23,8 +23,17 @@ async function persistLoggedSet(data: {
   weight: number;
   reps: number;
   sessionId: string;
+  setType?: string;
 }): Promise<string> {
-  const loggedSet = createLoggedSet(data.sessionId, data.exerciseId, data.weight, data.reps);
+  const loggedSet = createLoggedSet(
+    data.sessionId,
+    data.exerciseId,
+    data.weight,
+    data.reps,
+    undefined,
+    undefined,
+    data.setType ?? 'N',
+  );
   const record = await database.write(async () => {
     return database.get('logged_sets').create((r: any) => {
       r._raw.session_id = loggedSet.session_id;
@@ -60,8 +69,11 @@ export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainer
   } = useObserveActiveSession(sessionId, provider);
   const { exercises: catalogExercises } = useObserveExerciseCatalog(catalogProvider);
 
-  const handleLogSet = (exerciseId: string, weight: number, reps: number) => {
-    void persistLoggedSetWithIsolation({ exerciseId, weight, reps, sessionId }, persistLoggedSet);
+  const handleLogSet = (exerciseId: string, weight: number, reps: number, setType?: string) => {
+    void persistLoggedSetWithIsolation(
+      { exerciseId, weight, reps, sessionId, setType },
+      persistLoggedSet,
+    );
   };
 
   const handleEndSession = async () => {
@@ -104,6 +116,7 @@ export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainer
         weight: s.weight,
         reps: s.repetitions,
         completedAt: s.completedAt,
+        setType: s.setType,
       }))}
       totalVolume={totalVolume}
       exerciseOptions={exerciseOptions}

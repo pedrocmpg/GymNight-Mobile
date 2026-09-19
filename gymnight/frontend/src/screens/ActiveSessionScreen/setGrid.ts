@@ -19,6 +19,8 @@ export interface GridLoggedSet {
   weight: number;
   repetitions: number;
   completedAt: number;
+  /** 'N' | 'W' | 'D' | 'F' (Wave 6). Ausente (séries de antes da Wave 6) equivale a 'N'. */
+  setType?: string;
 }
 
 /** Um exercício do treino, com os alvos definidos no WorkoutCreator. */
@@ -50,6 +52,12 @@ export interface GridSetRow {
   isLogged: boolean;
   /** ID do logged_set correspondente, quando já gravado. */
   loggedSetId: string | null;
+  /**
+   * 'N' | 'W' | 'D' | 'F' (Wave 6). Para linhas já gravadas, é o tipo real da
+   * série; para fantasma/vazia, é sempre 'N' — a escolha de tipo antes de
+   * gravar vive como estado efêmero na tela, não na grade pura.
+   */
+  setType: string;
 }
 
 export interface GridExercise {
@@ -160,6 +168,7 @@ export function buildSetGrid(
           source: 'logged',
           isLogged: true,
           loggedSetId: loggedSet.id,
+          setType: loggedSet.setType ?? 'N',
         });
         continue;
       }
@@ -171,6 +180,7 @@ export function buildSetGrid(
         source: ghost.source,
         isLogged: false,
         loggedSetId: null,
+        setType: 'N',
       });
     }
 

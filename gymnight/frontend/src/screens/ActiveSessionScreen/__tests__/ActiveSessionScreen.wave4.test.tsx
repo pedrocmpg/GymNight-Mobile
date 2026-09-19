@@ -44,6 +44,11 @@ function textOf(element: { props: { children?: unknown } }): string {
   return (Array.isArray(children) ? children : [children]).join('');
 }
 
+/** Letra exibida pelo SetTypeBadge: seu <Text> é o único filho do TouchableOpacity. */
+function setTypeLabel(element: { props: { children: { props: { children?: unknown } } } }): string {
+  return textOf(element.props.children);
+}
+
 function makeOption(
   overrides: Partial<ActiveSessionExerciseOption> & { id: string; name: string },
 ): ActiveSessionExerciseOption {
@@ -200,7 +205,7 @@ describe('ActiveSessionScreen — Marcar o check grava', () => {
       ],
     });
     fireEvent.press(getByTestId('set-check-ex1-0'));
-    expect(onLogSet).toHaveBeenCalledWith('ex1', 5, 10);
+    expect(onLogSet).toHaveBeenCalledWith('ex1', 5, 10, 'N');
   });
 
   it('grava o valor digitado quando o usuário progride', () => {
@@ -213,7 +218,7 @@ describe('ActiveSessionScreen — Marcar o check grava', () => {
     });
     fireEvent.changeText(getByTestId('set-weight-ex1-0'), '7');
     fireEvent.press(getByTestId('set-check-ex1-0'));
-    expect(onLogSet).toHaveBeenCalledWith('ex1', 7, 10);
+    expect(onLogSet).toHaveBeenCalledWith('ex1', 7, 10, 'N');
   });
 
   it('não grava e sinaliza erro quando o campo está vazio', () => {
@@ -245,7 +250,7 @@ describe('ActiveSessionScreen — Marcar o check grava', () => {
     fireEvent.changeText(getByTestId('set-reps-ex1-0'), '10');
     fireEvent.press(getByTestId('set-check-ex1-0'));
 
-    expect(onLogSet).toHaveBeenCalledWith('ex1', 80, 10);
+    expect(onLogSet).toHaveBeenCalledWith('ex1', 80, 10, 'N');
     expect(flatStyle(getByTestId('set-weight-ex1-0')).borderBottomColor).not.toBe(colors.error);
   });
 
@@ -373,5 +378,58 @@ describe('ActiveSessionScreen — Cronômetro no header', () => {
   it('mostra o tempo decorrido junto ao contador', () => {
     const { getByTestId } = renderGrid();
     expect(getByTestId('session-timer').props.children).toBe('00:01:00');
+  });
+});
+
+describe('ActiveSessionScreen — Seletor de tipo de série (Wave 6)', () => {
+  it('nasce como "N" em toda linha ainda não gravada', () => {
+    const { getByTestId } = renderGrid();
+    expect(setTypeLabel(getByTestId('set-type-ex1-0'))).toBe('N');
+  });
+
+  it('um toque cicla N → W → D → F → N', () => {
+    const { getByTestId } = renderGrid();
+    const badge = getByTestId('set-type-ex1-0');
+    fireEvent.press(badge);
+    expect(setTypeLabel(getByTestId('set-type-ex1-0'))).toBe('W');
+    fireEvent.press(getByTestId('set-type-ex1-0'));
+    expect(setTypeLabel(getByTestId('set-type-ex1-0'))).toBe('D');
+    fireEvent.press(getByTestId('set-type-ex1-0'));
+    expect(setTypeLabel(getByTestId('set-type-ex1-0'))).toBe('F');
+    fireEvent.press(getByTestId('set-type-ex1-0'));
+    expect(setTypeLabel(getByTestId('set-type-ex1-0'))).toBe('N');
+  });
+
+  it('trocar o tipo de uma linha não afeta as outras', () => {
+    const { getByTestId } = renderGrid();
+    fireEvent.press(getByTestId('set-type-ex1-0'));
+    expect(setTypeLabel(getByTestId('set-type-ex1-0'))).toBe('W');
+    expect(setTypeLabel(getByTestId('set-type-ex1-1'))).toBe('N');
+  });
+
+  it('gravar a série usa o tipo selecionado no momento do toque no check', () => {
+    const onLogSet = jest.fn();
+    const { getByTestId } = renderGrid({
+      onLogSet,
+      previousSessionSets: [
+        makePrevious({ id: 'p1', exerciseId: 'ex1', weight: 5, repetitions: 10 }),
+      ],
+    });
+    fireEvent.press(getByTestId('set-type-ex1-0')); // N -> W
+    fireEvent.press(getByTestId('set-check-ex1-0'));
+    expect(onLogSet).toHaveBeenCalledWith('ex1', 5, 10, 'W');
+  });
+
+  it('linha já gravada mostra o tipo real gravado, e o badge fica desabilitado', () => {
+    const { getByTestId } = renderGrid({
+      loggedSets: [
+        { id: 's1', exerciseId: 'ex1', exerciseName: 'Supino Reto', weight: 80, reps: 6, setType: 'D' },
+      ],
+    });
+    const badge = getByTestId('set-type-ex1-0');
+    expect(setTypeLabel(badge)).toBe('D');
+    fireEvent.press(badge);
+    // Desabilitado: continua 'D', o toque não teve efeito.
+    expect(setTypeLabel(getByTestId('set-type-ex1-0'))).toBe('D');
   });
 });

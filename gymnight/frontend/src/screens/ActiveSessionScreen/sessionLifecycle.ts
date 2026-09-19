@@ -203,8 +203,14 @@ export type LoggedSetPersistResult = LoggedSetPersistSuccess | LoggedSetPersistF
  * @returns Resultado indicando sucesso com ID ou falha com valores retidos
  */
 export async function persistLoggedSetWithIsolation(
-  entry: { exerciseId: string; weight: number; reps: number; sessionId: string },
-  persist: (data: { exerciseId: string; weight: number; reps: number; sessionId: string }) => Promise<string>,
+  entry: { exerciseId: string; weight: number; reps: number; sessionId: string; setType?: string },
+  persist: (data: {
+    exerciseId: string;
+    weight: number;
+    reps: number;
+    sessionId: string;
+    setType?: string;
+  }) => Promise<string>,
 ): Promise<LoggedSetPersistResult> {
   try {
     const id = await persist(entry);

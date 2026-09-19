@@ -32,6 +32,7 @@ import { IconBadge } from '../../designSystem/components/IconBadge';
 import { ProgressBar } from '../../designSystem/components/ProgressBar';
 import { ScreenHeader } from '../../designSystem/components/ScreenHeader';
 import { SetCheckButton } from '../../designSystem/components/SetCheckButton';
+import { SetTypeBadge, nextSetType } from '../../designSystem/components/SetTypeBadge';
 import { UnderlineInput } from '../../designSystem/components/UnderlineInput';
 import { Chip } from '../../designSystem/components/Chip';
 import {
@@ -50,6 +51,8 @@ export interface ActiveSessionLoggedSet {
   reps: number;
   completedAt?: number;
   error?: string;
+  /** 'N' | 'W' | 'D' | 'F' (Wave 6). Ausente equivale a 'N'. */
+  setType?: string;
 }
 
 export interface ActiveSessionExerciseOption {
@@ -74,7 +77,7 @@ export interface ActiveSessionProps {
   loggedSets: ActiveSessionLoggedSet[];
   totalVolume: number;
   exerciseOptions: ActiveSessionExerciseOption[];
-  onLogSet: (exerciseId: string, weight: number, reps: number) => void;
+  onLogSet: (exerciseId: string, weight: number, reps: number, setType?: string) => void;
   onEndSession: () => void;
   /** Nome do treino, exibido em caixa alta. Ausente = treino livre. */
   workoutName?: string | null;
@@ -142,6 +145,9 @@ export function ActiveSessionScreen({
   // presente aqui deixou de ser fantasma — o valor passou a ser dele.
   const [edits, setEdits] = useState<Record<string, { weight?: string; reps?: string }>>({});
   const [rowErrors, setRowErrors] = useState<Record<string, { weight: boolean; reps: boolean }>>({});
+  // Tipo de série escolhido ANTES de gravar (N/W/D/F) — some da linha depois
+  // que ela é logada, quando o tipo real gravado passa a mandar.
+  const [pendingSetTypes, setPendingSetTypes] = useState<Record<string, string>>({});
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
@@ -173,6 +179,7 @@ export function ActiveSessionScreen({
         repetitions: set.reps,
         // Sem completedAt a ordem de chegada é a ordem de execução.
         completedAt: set.completedAt ?? index,
+        setType: set.setType,
       })),
     [loggedSets],
   );
@@ -221,7 +228,11 @@ export function ActiveSessionScreen({
       delete next[key];
       return next;
     });
-    onLogSet(exId, result.weight, result.reps);
+    onLogSet(exId, result.weight, result.reps, pendingSetTypes[key] ?? 'N');
+  };
+
+  const handleCycleSetType = (key: string, currentType: string) => {
+    setPendingSetTypes((prev) => ({ ...prev, [key]: nextSetType(currentType) }));
   };
 
   const handleFinish = () => {
@@ -329,6 +340,7 @@ export function ActiveSessionScreen({
 
                   <View style={styles.columnHeader}>
                     <Text style={[styles.columnLabel, styles.colNumber]}>Série</Text>
+                    <View style={styles.colType} />
                     <Text style={[styles.columnLabel, styles.colField]}>Peso (kg)</Text>
                     <Text style={[styles.columnLabel, styles.colField]}>Reps</Text>
                     <View style={styles.colCheck} />
@@ -343,6 +355,7 @@ export function ActiveSessionScreen({
                     // Fantasma só enquanto o usuário não tocou no campo.
                     const weightIsGhost = row.source === 'ghost' && edit.weight === undefined;
                     const repsIsGhost = row.source === 'ghost' && edit.reps === undefined;
+                    const setType = row.isLogged ? row.setType : pendingSetTypes[key] ?? 'N';
 
                     return (
                       <View
@@ -351,6 +364,15 @@ export function ActiveSessionScreen({
                         testID={`set-row-${exercise.exerciseId}-${index}`}
                       >
                         <Text style={[styles.setNumber, styles.colNumber]}>{row.setNumber}</Text>
+                        <View style={styles.colType}>
+                          <SetTypeBadge
+                            testID={`set-type-${exercise.exerciseId}-${index}`}
+                            setType={setType}
+                            disabled={row.isLogged}
+                            accessibilityLabel={`Tipo da série ${row.setNumber}: ${setType}. Toque para trocar.`}
+                            onPress={() => handleCycleSetType(key, setType)}
+                          />
+                        </View>
                         <View style={styles.colField}>
                           <UnderlineInput
                             testID={`set-weight-${exercise.exerciseId}-${index}`}
@@ -613,6 +635,10 @@ const styles = StyleSheet.create({
   colNumber: {
     width: 40,
     textAlign: 'center',
+  },
+  colType: {
+    width: 28,
+    alignItems: 'center',
   },
   colField: {
     flex: 5,

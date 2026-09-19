@@ -99,7 +99,14 @@ services:
       - ./gymnight/frontend:/app
       - frontend_node_modules:/app/node_modules
       - ./.gitignore:/.gitignore:ro
-    command: npx jest
+    # --forceExit: o projeto 'integration-realdb' (jest.config.js) usa o
+    # @nozbe/watermelondb REAL via LokiJSAdapter para provar a migration v1→v2
+    # de verdade (PARIDADE-02-CATALOGO-MUSCULAR.md §7.1) — ele deixa handles
+    # assíncronos internos (dispatcher síncrono do Loki) abertos, que o mock
+    # usado no resto da suíte nunca cria. Os resultados (PASS/FAIL) já foram
+    # todos impressos antes do forceExit agir; ele só encerra o processo, não
+    # mascara teste que falhou.
+    command: npx jest --forceExit
 
   frontend-tsc:
     build:

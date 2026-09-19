@@ -271,50 +271,52 @@ Não seguir para a Wave 7 sem essa confirmação: as waves seguintes empilham em
 
 ---
 
-## Resultado da execução — PARCIAL (2026-09-09, pausada a pedido do usuário)
+## Resultado da execução — CONCLUÍDA (2026-09-19)
 
-**Feito e commitado** (`6a65757` frontend, `bfe2d41` backend — ambos com
-`git log` normal, sem stash pendente):
+**Fase 1** (`6a65757` frontend, `bfe2d41` backend):
 
 - Infra de migration do WatermelonDB (`src/db/migrations.ts`) + schema v2
   completo (as 4 tabelas novas + as 4 colunas dormentes de uma vez).
 - Migration alembic `009` espelhando o mesmo v1→v2 do lado do backend,
   incluindo o seed de `muscle_groups` (7), `exercise_muscle_map` (452) e
   `exercise_met_values` (210) — validado rodando de verdade contra o
-  Postgres do `docker-compose.test.yml` (não é teste de Jest, é a suíte
-  `backend-test` completa passando com a migration aplicada).
+  Postgres do `docker-compose.test.yml`.
 - `computeVolume` exclui aquecimento; `computeMuscleVolume` e
   `computeCaloriesBurned` implementadas; card "Calorias queimadas" do
   Dashboard restaurado.
 - Sync (pull/push) dos 4 catálogos novos, nas duas pontas.
-- `frontend-test` 130/775, `backend-test` 122 passam (mesma 1 falha
-  pré-existente) — suítes completas rodadas depois de cada mudança.
 
-**Ainda faltando desta wave** (parar por aqui, retomar depois):
+**Fase 2 — os 4 gaps fechados** (`517340f`, `9dd2d2d`):
 
-1. **O gate crítico §7.1 não foi feito**: não existe hoje um teste que
-   popule um banco WatermelonDB em v1, rode a migration para v2, e confirme
-   que os dados sobreviveram. O mock de `@nozbe/watermelondb` usado pela
-   suíte não aplica migrations de verdade (só existe um teste estrutural,
-   em `schema.test.ts`/`schema.ts` vs `migrations.ts`, provando que a
-   migration *declara* as colunas certas — não que ela *funciona* contra
-   SQLite real). Isso só se resolve no teste em device do fim da série, ou
-   escrevendo um teste de integração dedicado que rode contra o adapter
-   real.
-2. Testes numerados **63–67** (frontend: muscle volume, computeVolume
-   exclui 'W', fórmula/monotonicidade de calorias) não foram escritos como
-   arquivos `property*.test.ts` dedicados — a lógica está implementada e
-   coberta indiretamente, mas não há prova formal de propriedade por
-   `git stash` para essa parte específica ainda.
-3. Validação `git stash` (padrão do repo — provar que os testes novos
-   falham sem a implementação) não foi rodada para a Wave 6 como um todo,
-   diferente das waves 4.5/5.
-4. Seletor de tipo de série (N/W/D/F) na UI do `ActiveSessionScreen` —
-   deliberadamente **não implementado**. A coluna, o default ('N' explícito
-   em toda escrita nova) e a exclusão de aquecimento no cálculo já
-   funcionam; só falta a interação de trocar o tipo numa série já na tela.
+1. **Gate crítico §7.1, feito**: `src/db/__integration__/schemaMigration.realdb.test.ts`
+   roda um projeto Jest dedicado (`integration-realdb`, ver `jest.config.js`)
+   que usa o `@nozbe/watermelondb` REAL via `LokiJSAdapter` (mesmo motor de
+   migration do `SQLiteAdapter` de produção) — popula um banco em v1, migra
+   para v2 via `adapter.testClone()`, confirma que os dados sobreviveram e
+   que as colunas novas chegam com o zero-value certo, inclusive em nível de
+   raw record (não só via Model). Inclui um teste de controle (sem caminho
+   de migration → reset) e foi validado sabotando `migrations.ts` de
+   propósito para confirmar que o teste realmente detecta regressão. Único
+   resíduo: o SQLite real do Android continua sem cobertura própria — isso
+   fica para a validação em device do fim da série (§7.1 já previa isso).
+2. Testes **63–67** escritos como arquivos `property*.test.ts` dedicados
+   (`domainUtils.property63/64`, `historyDomainUtils.property65/66`,
+   `schemaMigration.property67`) — validados revertendo temporariamente
+   `domainUtils.ts`/`historyDomainUtils.ts` para a versão pré-Wave-6: só
+   esses 4 arquivos (14 testes) falharam, nada mais quebrou.
+3. Validação `git stash`/revert da wave inteira feita (item 1 via sabotagem
+   de `migrations.ts`, item 2 via revert dos dois arquivos de domínio).
+4. Seletor de tipo de série (N/W/D/F) implementado:
+   `designSystem/components/SetTypeBadge.tsx`, um toque cicla
+   N→W→D→F→N na grade do `ActiveSessionScreen`, discreto (invisível em 'N'),
+   travado numa linha já gravada. Encanado até `_raw.set_type` no container.
+   Validado com `git stash` real (implementação stashada, só os testes
+   ficaram): 8 testes falharam sem ela, confirmando que não é vácua.
 
-**Próximo passo ao retomar:** fechar os 4 itens acima (nessa ordem de
-prioridade — o item 1 é o que a spec chama de "insubstituível"), rodar a
-validação `git stash` da wave inteira, e só então seguir para a Wave 7
-(Estatísticas) conforme `PARIDADE-00-INDICE.md`.
+**Estado final:** `frontend-test` 136 suítes / 797 testes, `frontend-tsc`
+10 erros pré-existentes (mesmo baseline), `frontend-lint` 278 problemas
+(mesmo baseline), `backend-test` 122/123 passam (1 falha pré-existente e
+flaky, confirmada isolando — passa sozinha).
+
+**Próximo passo:** Wave 7 (Estatísticas, `PARIDADE-03-ESTATISTICAS.md`),
+conforme `PARIDADE-00-INDICE.md`.

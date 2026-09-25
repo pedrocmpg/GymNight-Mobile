@@ -175,9 +175,9 @@ Depois disso: suítes novas validadas contra a árvore anterior via `git stash`
 
 ---
 
-## Resultado da execução — PARCIAL (2026-09-24, pausada para o próximo turno)
+## Resultado da execução — CONCLUÍDA (2026-09-25)
 
-**Feito e commitado** (`03bd94f`, `git log` normal, sem stash pendente):
+**Fase 1** (`03bd94f`):
 
 - **§1 (editar treino) e §3 (busca) — completos.** `saveWorkoutWithExercises`
   virou upsert (`workoutId` opcional: sem ele cria, com ele atualiza nome +
@@ -199,22 +199,33 @@ Depois disso: suítes novas validadas contra a árvore anterior via `git stash`
 - 151 suítes / 886 testes passam; `tsc` no mesmo baseline (10 erros
   pré-existentes); `lint` melhorou de 278 para 277.
 
-**Ainda faltando desta wave:**
+**Fase 2 — onboarding (`700afa7`), fecha a wave:**
 
-1. **§2 — Onboarding inteiro**: os 4 passos (nome / peso+altura / gênero /
-   objetivo), a regra FIFO de até 2 objetivos (properties 79, 80), validação
-   de peso 30–300 / altura 100–250 (property 81), serialização de `goal`
-   como CSV (`"Hipertrofia,Saúde"`), e a nova fase `onboarding` em
-   `bootstrapRouting.ts`/`AppNavigator.tsx` (hoje só `loading|auth|
-   authenticated` — vira quarta fase, decidida checando se `users.name` do
-   usuário autenticado está vazio). `bootstrapWiring.test.ts` também precisa
-   de atualização quando isso entrar.
-2. Nada do backend foi tocado nesta wave (não era esperado até o onboarding
-   escrever em `users.goal` de verdade) — `backend-test` não foi rodado de
-   propósito; deve continuar passando sem mudança nenhuma, mas vale rodar de
-   novo quando §2 estiver pronto, já que aí sim `users.goal` passa a ser
-   exercitada por um fluxo real.
+- `onboardingDomain.ts`: wizard de 4 passos com validação pura (nome
+  obrigatório; peso 30–300; altura 100–250), `toggleGoalFifo` (até 2
+  objetivos — o terceiro evicta o MAIS ANTIGO, nunca bloqueia; tocar num já
+  selecionado desmarca sem acionar a evicção), `serializeGoals`/`parseGoals`
+  (CSV — única coluna multi-valor do schema).
+- `saveOnboardingProfile.ts`: upsert em `users`. O caminho de CRIAÇÃO é o que
+  de fato inaugura essa linha, local e no backend (via sync push — nenhum
+  outro fluxo do mobile cria `users` hoje; o endpoint REST `POST /users` do
+  backend nunca é chamado pelo cliente). `id` forçado para `userId`
+  (sobrescrevendo o UUID que `collection.create()` geraria); `email` extraído
+  do claim do JWT (reaproveita `decodeJwtPayload` de `jwtTokenValidator.ts`),
+  só necessário no caminho de criação.
+- `bootstrapRouting.ts`: `BootstrapPhase` ganha `'onboarding'`.
+  `resolveAuthenticatedPhase` compartilhada pelos DOIS pontos de entrada da
+  área autenticada — restaurar sessão E sign-in bem-sucedido — sem isso um
+  usuário novo pularia o onboarding no primeiro login. `AppNavigator` ganha a
+  rota `Onboarding`, entre `Auth` e `Main`.
+- Properties 79, 80, 81 escritas e passando. Validado com `git stash` real:
+  exatamente os 7 arquivos de teste esperados falharam sem a implementação.
+- 157 suítes / 934 testes passam; `tsc`/`lint` no mesmo baseline.
+  `backend-test` rodado por completude (nenhuma mudança no backend nesta
+  fase): 122/123, mesma falha pré-existente e flaky de sempre
+  (`correlation_id`).
 
-**Próximo passo ao retomar:** implementar §2 (onboarding) — é o único item
-que falta para fechar a Wave 8 — e só então seguir para a Wave 9 (Cardio,
-`PARIDADE-05-CARDIO.md`) conforme `PARIDADE-00-INDICE.md`.
+**Próximo passo:** Wave 9 (Cardio, `PARIDADE-05-CARDIO.md`) conforme
+`PARIDADE-00-INDICE.md` — depende de `GymNight-Desktop/docs/tipo_cardios.md`,
+já presente em `C:\Projetos\GymNight-Desktop` nesta máquina (copiada pelo
+usuário durante a Wave 4.5), sem bloqueio.

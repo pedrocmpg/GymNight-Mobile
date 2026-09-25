@@ -172,3 +172,49 @@ docker compose -f docker-compose.test.yml run --rm backend-test    # `users.goal
 ```
 Depois disso: suítes novas validadas contra a árvore anterior via `git stash`
 5. Fluxo manual: criar treino → editar nome → adicionar exercício → remover outro → salvar → reabrir e conferir que bateu, **e que o histórico do exercício removido continua no Progresso**
+
+---
+
+## Resultado da execução — PARCIAL (2026-09-24, pausada para o próximo turno)
+
+**Feito e commitado** (`03bd94f`, `git log` normal, sem stash pendente):
+
+- **§1 (editar treino) e §3 (busca) — completos.** `saveWorkoutWithExercises`
+  virou upsert (`workoutId` opcional: sem ele cria, com ele atualiza nome +
+  substitui `workout_exercises` via DELETE+INSERT atômico, sempre
+  `markAsDeleted`); `order_index` gravado e `loadWorkoutForEditing` devolve
+  já ordenado; `deleteWorkout` apaga treino + suas `workout_exercises`.
+  `WorkoutCreatorScreen` ganhou `mode: create|edit` (nunca uma tela separada)
+  com botão "Apagar Treino" + confirmação. Ícone de lápis no Dashboard.
+  `filterExercises` (NFD, insensível a acento/caixa) ligado a um campo de
+  busca na tela.
+- **Bug pré-existente corrigido de passagem**: `WorkoutCreatorScreenContainer`
+  nunca recebia `userId` (nem `AppNavigator` passava), então todo treino
+  criado tinha `user_id` vazio e nunca aparecia nas queries do usuário —
+  corrigido threading `userId` por toda a cadeia (AppNavigator →
+  MainTabNavigator → DashboardScreenContainer/WorkoutCreatorScreenContainer).
+- Properties **77, 78, 82, 83, 84** escritas e passando. Validado com
+  `git stash` real (implementação inteira stashada, só os testes ficaram):
+  exatamente os 9 arquivos de teste esperados falharam, nada mais quebrou.
+- 151 suítes / 886 testes passam; `tsc` no mesmo baseline (10 erros
+  pré-existentes); `lint` melhorou de 278 para 277.
+
+**Ainda faltando desta wave:**
+
+1. **§2 — Onboarding inteiro**: os 4 passos (nome / peso+altura / gênero /
+   objetivo), a regra FIFO de até 2 objetivos (properties 79, 80), validação
+   de peso 30–300 / altura 100–250 (property 81), serialização de `goal`
+   como CSV (`"Hipertrofia,Saúde"`), e a nova fase `onboarding` em
+   `bootstrapRouting.ts`/`AppNavigator.tsx` (hoje só `loading|auth|
+   authenticated` — vira quarta fase, decidida checando se `users.name` do
+   usuário autenticado está vazio). `bootstrapWiring.test.ts` também precisa
+   de atualização quando isso entrar.
+2. Nada do backend foi tocado nesta wave (não era esperado até o onboarding
+   escrever em `users.goal` de verdade) — `backend-test` não foi rodado de
+   propósito; deve continuar passando sem mudança nenhuma, mas vale rodar de
+   novo quando §2 estiver pronto, já que aí sim `users.goal` passa a ser
+   exercitada por um fluxo real.
+
+**Próximo passo ao retomar:** implementar §2 (onboarding) — é o único item
+que falta para fechar a Wave 8 — e só então seguir para a Wave 9 (Cardio,
+`PARIDADE-05-CARDIO.md`) conforme `PARIDADE-00-INDICE.md`.

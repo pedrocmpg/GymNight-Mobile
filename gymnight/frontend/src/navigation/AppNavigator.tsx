@@ -6,15 +6,17 @@ import type { AuthManager } from '../auth/AuthManager';
 import type { LogoutManager } from '../auth/LogoutManager';
 import type { SyncEngine } from '../sync/SyncEngine';
 import type { SessionStore } from '../auth/sessionStore';
-import { runBootstrapRouting } from './bootstrapRouting';
+import { runBootstrapRouting, resolveAuthenticatedPhase } from './bootstrapRouting';
 import { colors } from '../designSystem/tokens';
 import { AuthScreenContainer } from './containers/AuthScreenContainer';
 import { MainTabNavigator } from './MainTabNavigator';
 import { WorkoutCreatorScreenContainer } from './containers/WorkoutCreatorScreenContainer';
 import { ActiveSessionScreenContainer } from './containers/ActiveSessionScreenContainer';
+import { OnboardingScreenContainer } from './containers/OnboardingScreenContainer';
 
 export type RootStackParamList = {
   Auth: undefined;
+  Onboarding: undefined;
   Main: undefined;
   /** `workoutId` presente = editar um treino existente (Wave 8); ausente = criar um novo. */
   WorkoutCreator: { workoutId?: string } | undefined;
@@ -46,7 +48,7 @@ export interface AppNavigatorProps {
  * the tab bar (see MainTabNavigator.tsx).
  */
 export function AppNavigator(props: AppNavigatorProps) {
-  const [phase, setPhase] = useState<'loading' | 'auth' | 'authenticated'>('loading');
+  const [phase, setPhase] = useState<'loading' | 'auth' | 'onboarding' | 'authenticated'>('loading');
 
   useEffect(() => {
     let cancelled = false;
@@ -69,6 +71,15 @@ export function AppNavigator(props: AppNavigatorProps) {
     );
   }
 
+  const handleAuthenticated = async () => {
+    const userId = props.sessionStore.getCurrentSession()?.user_id;
+    if (!userId) {
+      setPhase('authenticated');
+      return;
+    }
+    setPhase(await resolveAuthenticatedPhase(userId));
+  };
+
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -79,7 +90,16 @@ export function AppNavigator(props: AppNavigatorProps) {
                 {...navProps}
                 authManager={props.authManager}
                 sessionStore={props.sessionStore}
-                onAuthenticated={() => setPhase('authenticated')}
+                onAuthenticated={handleAuthenticated}
+              />
+            )}
+          </Stack.Screen>
+        ) : phase === 'onboarding' ? (
+          <Stack.Screen name="Onboarding">
+            {() => (
+              <OnboardingScreenContainer
+                sessionStore={props.sessionStore}
+                onCompleted={() => setPhase('authenticated')}
               />
             )}
           </Stack.Screen>

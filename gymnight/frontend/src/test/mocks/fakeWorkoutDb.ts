@@ -43,6 +43,7 @@ export function makeFakeWorkoutDb(
     workouts: new Map(),
     workout_exercises: new Map(),
     logged_sets: new Map(),
+    users: new Map(),
   };
   for (const [table, records] of Object.entries(seed)) {
     const map = tables[table] ?? new Map();

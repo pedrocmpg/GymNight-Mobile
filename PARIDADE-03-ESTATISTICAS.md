@@ -194,3 +194,31 @@ docker compose -f docker-compose.test.yml run --rm frontend-lint   # nenhum prob
 ```
 Depois disso: suítes novas validadas contra a árvore anterior via `git stash`
 5. Conferir que o radar renderiza com: catálogo cheio e zero sessões; uma sessão só; e um usuário que só treina um grupo muscular
+
+---
+
+## Resultado da execução — CONCLUÍDA (2026-09-24)
+
+Tudo desta wave feito num commit (`07f1cec`):
+
+- `computeRadarGeometry.ts` + `RadarChart.tsx`, `groupMuscleVolumeIntoCategories`
+  (domainUtils.ts), grid 2×2 com delta (`computePeriodDelta`,
+  `partitionSessionsByWindow`, `computeWindowMetrics` em
+  historyDomainUtils.ts), `computeSmaDelta` (sobrecarga progressiva — função
+  pura implementada e testada; sem widget dedicado na tela, já que o mockup
+  de §1 não reserva um — fica disponível para uma futura visão por
+  exercício).
+- `combineMany` genérico (useReactiveQuery.ts), usado por
+  `useObserveStatistics.ts` para as 5 fontes.
+- `StatCard` ganhou o slot de delta; `MainTabNavigator` ganhou a 3ª aba.
+- Properties 69–76, todas escritas e passando.
+- Validado com `git stash` real (implementação inteira stashada, só os
+  testes ficaram): exatamente os 12 arquivos de teste novos falharam, nada
+  mais quebrou. Dois bugs pegos nessa validação (não pela suíte antes disso)
+  e corrigidos: `computeSmaDelta` não tinha guarda para `currentSessionId`
+  não encontrado; e a property 75 tinha uma arbitrary própria com
+  `sessionId` duplicado e denominador perto de zero (defeito do teste, não
+  da implementação).
+- 146 suítes / 855 testes passam; `tsc`/`lint` no mesmo baseline de antes.
+
+**Próximo passo:** Wave 8 (Rotinas e Perfil, `PARIDADE-04-ROTINAS-PERFIL.md`).

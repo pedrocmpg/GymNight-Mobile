@@ -96,6 +96,9 @@ describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', (
     );
     // Wave 4 acrescentou workoutName/previousSessionSets/hasWorkout/onBack, todos
     // OPCIONAIS — a tela continua renderizável só com os props originais.
+    // Wave 9 acrescentou cardioEntries/onAddCardio/onRemoveCardio/weightKg
+    // (também OPCIONAIS) — a seção de cardio só aparece quando o container
+    // passa onAddCardio + onRemoveCardio.
     expect(new Set(extractInterfaceMembers(activeSessionContent, 'ActiveSessionProps'))).toEqual(
       new Set([
         'session',
@@ -108,6 +111,10 @@ describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', (
         'previousSessionSets',
         'hasWorkout',
         'onBack',
+        'cardioEntries',
+        'onAddCardio',
+        'onRemoveCardio',
+        'weightKg',
       ])
     );
   });

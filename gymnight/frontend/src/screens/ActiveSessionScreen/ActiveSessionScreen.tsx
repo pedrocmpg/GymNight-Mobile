@@ -42,6 +42,10 @@ import {
   type GridLoggedSet,
   type GridWorkoutExercise,
 } from './setGrid';
+import { CardioSection, type CardioSectionEntry } from './CardioSection';
+import type { CardioFormValue } from '../CardioScreen/CardioForm';
+
+export type ActiveSessionCardioEntry = CardioSectionEntry;
 
 export interface ActiveSessionLoggedSet {
   id: string;
@@ -87,6 +91,12 @@ export interface ActiveSessionProps {
   hasWorkout?: boolean;
   /** Volta ao Dashboard. Sem isto, o header não mostra "Voltar". */
   onBack?: () => void;
+  /** Entradas de cardio da sessão (Wave 9) — nunca contam no contador de séries. */
+  cardioEntries?: ActiveSessionCardioEntry[];
+  onAddCardio?: (value: CardioFormValue) => void;
+  onRemoveCardio?: (cardioLogId: string) => void;
+  /** Peso do usuário para a estimativa de calorias de cardio; default 70. */
+  weightKg?: number;
 }
 
 function formatElapsedTime(ms: number): string {
@@ -131,6 +141,10 @@ export function ActiveSessionScreen({
   previousSessionSets = [],
   hasWorkout = false,
   onBack,
+  cardioEntries = [],
+  onAddCardio,
+  onRemoveCardio,
+  weightKg = 70,
 }: ActiveSessionProps) {
   const [elapsed, setElapsed] = useState(() => Date.now() - session.started_at);
   const [exerciseId, setExerciseId] = useState('');
@@ -273,6 +287,24 @@ export function ActiveSessionScreen({
               label="Séries"
               testID="summary-sets"
             />
+            {cardioEntries.length > 0 && (
+              <>
+                <SummaryCard
+                  icon="running"
+                  value={`${cardioEntries.reduce((sum, e) => sum + e.durationMin, 0)}min`}
+                  label="Cardio"
+                  testID="summary-cardio-duration"
+                />
+                <SummaryCard
+                  icon="heartbeat"
+                  value={(
+                    cardioEntries.reduce((sum, e) => sum + e.pse, 0) / cardioEntries.length
+                  ).toFixed(1)}
+                  label="PSE médio"
+                  testID="summary-cardio-pse"
+                />
+              </>
+            )}
           </View>
           <Button
             label="Voltar para Treinos"
@@ -491,6 +523,15 @@ export function ActiveSessionScreen({
                 />
               </View>
             </>
+          )}
+
+          {onAddCardio && onRemoveCardio && (
+            <CardioSection
+              entries={cardioEntries}
+              onAdd={onAddCardio}
+              onRemove={onRemoveCardio}
+              weightKg={weightKg}
+            />
           )}
         </ScrollView>
       </View>

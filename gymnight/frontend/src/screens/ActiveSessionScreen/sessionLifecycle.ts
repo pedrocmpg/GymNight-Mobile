@@ -168,6 +168,44 @@ export function createLoggedSet(
   };
 }
 
+// --- CardioLog creation (Wave 9) ---
+
+export interface CardioLogResult {
+  session_id: string;
+  cardio_type: string;
+  duration_min: number;
+  distance_km: number | null;
+  pse: number;
+  created_at: number;
+}
+
+/**
+ * Cria os dados para um CardioLog vinculado à sessão corrente — avulsa
+ * (`workout_id` nulo) ou dentro de um treino, tanto faz: `cardio_logs` só
+ * referencia `session_id`, nunca `workout_id` diretamente
+ * (PARIDADE-05-CARDIO.md §4).
+ *
+ * @param sessionId - ID da WorkoutSession em andamento
+ * @param entry - Tipo, duração, distância (opcional) e PSE informados pelo usuário
+ * @param now - função que retorna timestamp atual (injeção para testabilidade)
+ *
+ * Validates: PARIDADE-05-CARDIO.md — property 90
+ */
+export function createCardioLog(
+  sessionId: string,
+  entry: { cardioType: string; durationMin: number; distanceKm: number | null; pse: number },
+  now: () => number = Date.now,
+): CardioLogResult {
+  return {
+    session_id: sessionId,
+    cardio_type: entry.cardioType,
+    duration_min: entry.durationMin,
+    distance_km: entry.distanceKm,
+    pse: entry.pse,
+    created_at: now(),
+  };
+}
+
 // --- LoggedSet persistence with error isolation ---
 
 export interface LoggedSetPersistSuccess {

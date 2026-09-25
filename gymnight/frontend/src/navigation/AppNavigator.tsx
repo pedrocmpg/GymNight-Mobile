@@ -16,7 +16,8 @@ import { ActiveSessionScreenContainer } from './containers/ActiveSessionScreenCo
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
-  WorkoutCreator: undefined;
+  /** `workoutId` presente = editar um treino existente (Wave 8); ausente = criar um novo. */
+  WorkoutCreator: { workoutId?: string } | undefined;
   ActiveSession: { sessionId: string };
 };
 
@@ -91,6 +92,9 @@ export function AppNavigator(props: AppNavigatorProps) {
                   logoutManager={props.logoutManager}
                   userId={props.sessionStore.getCurrentSession()?.user_id ?? ''}
                   onCreateWorkout={() => navProps.navigation.navigate('WorkoutCreator')}
+                  onEditWorkout={(workoutId) =>
+                    navProps.navigation.navigate('WorkoutCreator', { workoutId })
+                  }
                   onSessionStarted={(sessionId) =>
                     navProps.navigation.navigate('ActiveSession', { sessionId })
                   }
@@ -101,6 +105,8 @@ export function AppNavigator(props: AppNavigatorProps) {
             <Stack.Screen name="WorkoutCreator">
               {(navProps) => (
                 <WorkoutCreatorScreenContainer
+                  userId={props.sessionStore.getCurrentSession()?.user_id ?? ''}
+                  workoutId={navProps.route.params?.workoutId}
                   onSaved={() => navProps.navigation.navigate('Main')}
                   onBack={() => navProps.navigation.navigate('Main')}
                 />

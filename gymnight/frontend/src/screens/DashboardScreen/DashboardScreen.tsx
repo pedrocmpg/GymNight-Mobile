@@ -34,6 +34,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { colors, typography, spacing } from '../../designSystem/tokens';
 import { Banner } from '../../designSystem/components/Banner';
 import { Button } from '../../designSystem/components/Button';
@@ -95,6 +96,8 @@ export interface DashboardScreenProps {
   onRefresh?: () => void;
   onCreateWorkout: () => void;
   onStartSession: (workoutId: string) => void;
+  /** Ícone de lápis na linha do treino (Wave 8). Sem isto, a linha não mostra o lápis. */
+  onEditWorkout?: (workoutId: string) => void;
   onLogout: () => void;
 }
 
@@ -153,6 +156,7 @@ function ListRow({
   value,
   isLast,
   onPress,
+  onEdit,
   testID,
   accessibilityLabel,
 }: {
@@ -161,6 +165,8 @@ function ListRow({
   value: string;
   isLast: boolean;
   onPress?: () => void;
+  /** Ícone de lápis, ao lado do corpo da linha (Wave 8 — editar treino). */
+  onEdit?: () => void;
   testID?: string;
   accessibilityLabel?: string;
 }) {
@@ -174,19 +180,13 @@ function ListRow({
     </React.Fragment>
   );
 
-  const rowStyle = [styles.row, !isLast && styles.rowDivider];
-
-  if (!onPress) {
-    return (
-      <View style={rowStyle} testID={testID}>
-        {body}
-      </View>
-    );
-  }
-
-  return (
+  const rowContent = !onPress ? (
+    <View style={styles.rowTouchable} testID={testID}>
+      {body}
+    </View>
+  ) : (
     <TouchableOpacity
-      style={rowStyle}
+      style={styles.rowTouchable}
       testID={testID}
       onPress={onPress}
       accessibilityLabel={accessibilityLabel}
@@ -194,6 +194,23 @@ function ListRow({
     >
       {body}
     </TouchableOpacity>
+  );
+
+  return (
+    <View style={[styles.row, !isLast && styles.rowDivider]}>
+      {rowContent}
+      {onEdit && (
+        <TouchableOpacity
+          style={styles.rowEditButton}
+          testID={`${testID}-edit`}
+          onPress={onEdit}
+          accessibilityLabel={`Editar ${title}`}
+          accessibilityRole="button"
+        >
+          <FontAwesome5 name="pencil-alt" size={16} color={colors.secondaryText} solid />
+        </TouchableOpacity>
+      )}
+    </View>
   );
 }
 
@@ -209,6 +226,7 @@ export function DashboardScreen({
   onRefresh,
   onCreateWorkout,
   onStartSession,
+  onEditWorkout,
   onLogout,
 }: DashboardScreenProps) {
   const hasData = workouts.length > 0;
@@ -358,6 +376,7 @@ export function DashboardScreen({
                   value={formatLastTrained(item.lastTrainedDaysAgo)}
                   isLast={index === workouts.length - 1}
                   onPress={() => onStartSession(item.id)}
+                  onEdit={onEditWorkout ? () => onEditWorkout(item.id) : undefined}
                   accessibilityLabel={`Iniciar sessão de ${item.name}`}
                 />
               ))}
@@ -474,6 +493,15 @@ const styles = StyleSheet.create({
   rowDivider: {
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  rowTouchable: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  rowEditButton: {
+    padding: spacing.xxs,
   },
   rowMain: {
     flex: 1,

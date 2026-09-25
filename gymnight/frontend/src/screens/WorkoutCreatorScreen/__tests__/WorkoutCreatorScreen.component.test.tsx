@@ -192,3 +192,118 @@ describe('WorkoutCreatorScreen — Interaction (save workout)', () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 });
+
+describe('WorkoutCreatorScreen — Busca de exercício (Wave 8)', () => {
+  it('filtra a lista exibida ao digitar, sem acento nem caixa', () => {
+    const exercises = [
+      { id: 'ex1', name: 'Supino Reto (Barra)' },
+      { id: 'ex2', name: 'Agachamento Livre' },
+      { id: 'ex3', name: 'Bíceps Rosca Direta' },
+    ];
+    const { getByTestId, queryByTestId } = renderWorkoutCreatorScreen({ exercises });
+
+    fireEvent.changeText(getByTestId('exercise-search-input'), 'biceps');
+
+    expect(queryByTestId('exercise-row-ex1')).toBeNull();
+    expect(queryByTestId('exercise-row-ex2')).toBeNull();
+    expect(getByTestId('exercise-row-ex3')).toBeTruthy();
+  });
+
+  it('mostra a mensagem de "nenhum exercício encontrado" quando a busca não bate com nada', () => {
+    const exercises = [{ id: 'ex1', name: 'Supino Reto (Barra)' }];
+    const { getByTestId, queryByTestId } = renderWorkoutCreatorScreen({ exercises });
+
+    fireEvent.changeText(getByTestId('exercise-search-input'), 'xyz-nao-existe');
+
+    expect(getByTestId('exercise-search-no-results')).toBeTruthy();
+    expect(queryByTestId('exercise-row-ex1')).toBeNull();
+  });
+
+  it('limpar a busca depois de selecionar um exercício preserva a seleção (busca só afeta o que é exibido)', () => {
+    const onSave = jest.fn();
+    const exercises = [
+      { id: 'ex1', name: 'Supino Reto (Barra)' },
+      { id: 'ex2', name: 'Agachamento Livre' },
+    ];
+    const { getByTestId } = renderWorkoutCreatorScreen({ exercises, onSave });
+
+    fireEvent.changeText(getByTestId('exercise-search-input'), 'supino');
+    fireEvent(getByTestId('exercise-toggle-ex1'), 'valueChange', true);
+    fireEvent.changeText(getByTestId('series-input-ex1'), '3');
+    fireEvent.changeText(getByTestId('reps-input-ex1'), '10');
+    fireEvent.changeText(getByTestId('weight-input-ex1'), '80');
+
+    fireEvent.changeText(getByTestId('exercise-search-input'), '');
+    fireEvent.changeText(getByTestId('workout-name-input'), 'Treino A');
+    fireEvent.press(getByTestId('save-workout-button'));
+
+    expect(onSave).toHaveBeenCalledWith('Treino A', [
+      { exerciseId: 'ex1', seriesTarget: 3, repsTarget: 10, weightTarget: 80 },
+    ]);
+  });
+});
+
+describe('WorkoutCreatorScreen — Modo edição (Wave 8)', () => {
+  it('mostra "EDITAR TREINO" e pré-preenche nome e seleção a partir de initialWorkout', () => {
+    const exercises = [
+      { id: 'ex1', name: 'Supino Reto (Barra)' },
+      { id: 'ex2', name: 'Agachamento Livre' },
+    ];
+    const { getByText, getByTestId } = renderWorkoutCreatorScreen({
+      exercises,
+      mode: 'edit',
+      initialWorkout: {
+        name: 'Treino A',
+        exercises: [{ exerciseId: 'ex1', seriesTarget: 4, repsTarget: 8, weightTarget: 60 }],
+      },
+      onDelete: jest.fn(),
+    });
+
+    expect(getByText('EDITAR TREINO')).toBeTruthy();
+    expect(getByTestId('workout-name-input').props.value).toBe('Treino A');
+    expect(getByTestId('exercise-toggle-ex1').props.value).toBe(true);
+    expect(getByTestId('series-input-ex1').props.value).toBe('4');
+    expect(getByTestId('reps-input-ex1').props.value).toBe('8');
+    expect(getByTestId('weight-input-ex1').props.value).toBe('60');
+  });
+
+  it('sem onDelete (ou fora do modo edit) não mostra o botão de apagar', () => {
+    const { queryByTestId } = renderWorkoutCreatorScreen({ mode: 'create' });
+    expect(queryByTestId('delete-workout-button')).toBeNull();
+  });
+
+  it('mostra "CRIAR TREINO" por default (mode ausente)', () => {
+    const { getByText } = renderWorkoutCreatorScreen();
+    expect(getByText('CRIAR TREINO')).toBeTruthy();
+  });
+
+  it('apagar exige confirmação: só chama onDelete depois de "Sim, apagar"', () => {
+    const onDelete = jest.fn();
+    const { getByTestId } = renderWorkoutCreatorScreen({
+      mode: 'edit',
+      onDelete,
+      initialWorkout: { name: 'Treino A', exercises: [] },
+    });
+
+    fireEvent.press(getByTestId('delete-workout-button'));
+    expect(getByTestId('delete-confirm-card')).toBeTruthy();
+    expect(onDelete).not.toHaveBeenCalled();
+
+    fireEvent.press(getByTestId('delete-confirm-yes'));
+    expect(onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it('"Não" no confirm de apagar fecha o modal sem chamar onDelete', () => {
+    const onDelete = jest.fn();
+    const { getByTestId } = renderWorkoutCreatorScreen({
+      mode: 'edit',
+      onDelete,
+      initialWorkout: { name: 'Treino A', exercises: [] },
+    });
+
+    fireEvent.press(getByTestId('delete-workout-button'));
+    fireEvent.press(getByTestId('delete-confirm-no'));
+
+    expect(onDelete).not.toHaveBeenCalled();
+  });
+});

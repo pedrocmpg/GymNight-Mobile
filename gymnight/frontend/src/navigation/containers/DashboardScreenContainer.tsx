@@ -19,6 +19,7 @@ export interface DashboardScreenContainerProps {
   logoutManager: LogoutManager;
   userId: string;
   onCreateWorkout: () => void;
+  onEditWorkout: (workoutId: string) => void;
   onSessionStarted: (sessionId: string) => void;
   onLoggedOut: () => void;
 }
@@ -113,6 +114,7 @@ export function DashboardScreenContainer(props: DashboardScreenContainerProps) {
         syncStatus={syncStatus}
         onRefresh={requestSync}
         onCreateWorkout={props.onCreateWorkout}
+        onEditWorkout={props.onEditWorkout}
         onStartSession={handleStartSession}
         onLogout={handleLogout}
       />

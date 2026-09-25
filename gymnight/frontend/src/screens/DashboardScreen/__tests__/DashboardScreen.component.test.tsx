@@ -295,3 +295,46 @@ describe('DashboardScreen — Interaction (start session by tapping a workout)',
     expect(onStartSession).toHaveBeenCalledWith('w2');
   });
 });
+
+describe('DashboardScreen — Editar treino (Wave 8)', () => {
+  it('não mostra o lápis quando onEditWorkout não é passado', () => {
+    const workouts = [makeWorkout({ id: 'w1', name: 'Push Day' })];
+    const { queryByTestId } = renderDashboardScreen({ workouts, isLoading: false });
+    expect(queryByTestId('workout-item-w1-edit')).toBeNull();
+  });
+
+  it('mostra o lápis e chama onEditWorkout com o id do treino, sem disparar onStartSession', () => {
+    const onEditWorkout = jest.fn();
+    const onStartSession = jest.fn();
+    const workouts = [makeWorkout({ id: 'w1', name: 'Push Day' })];
+    const { getByTestId } = renderDashboardScreen({
+      workouts,
+      isLoading: false,
+      onEditWorkout,
+      onStartSession,
+    });
+
+    fireEvent.press(getByTestId('workout-item-w1-edit'));
+
+    expect(onEditWorkout).toHaveBeenCalledTimes(1);
+    expect(onEditWorkout).toHaveBeenCalledWith('w1');
+    expect(onStartSession).not.toHaveBeenCalled();
+  });
+
+  it('tocar no corpo da linha ainda chama onStartSession quando onEditWorkout também está presente', () => {
+    const onEditWorkout = jest.fn();
+    const onStartSession = jest.fn();
+    const workouts = [makeWorkout({ id: 'w1', name: 'Push Day' })];
+    const { getByTestId } = renderDashboardScreen({
+      workouts,
+      isLoading: false,
+      onEditWorkout,
+      onStartSession,
+    });
+
+    fireEvent.press(getByTestId('workout-item-w1'));
+
+    expect(onStartSession).toHaveBeenCalledWith('w1');
+    expect(onEditWorkout).not.toHaveBeenCalled();
+  });
+});

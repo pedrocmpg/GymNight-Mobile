@@ -20,6 +20,12 @@
  *
  * Updated (PARIDADE wave 4.5): `onRefresh` (OPCIONAL) liga o pull-to-refresh
  * ao gatilho manual de `useSyncTrigger`.
+ *
+ * Updated (PARIDADE wave 8): `onEditWorkout` (OPCIONAL) liga o ícone de lápis
+ * da linha do treino — sem ele, a linha não mostra o lápis. WorkoutCreatorScreen
+ * ganhou `mode`/`initialWorkout`/`onDelete` (todos OPCIONAIS) para a mesma
+ * tela servir de editor (create|edit), no lugar de uma WorkoutEditorScreen
+ * separada (PARIDADE-04-ROTINAS-PERFIL.md §1.2).
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -48,6 +54,7 @@ describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', (
         'weeklyStreak',
         'syncStatus',
         'onCreateWorkout',
+        'onEditWorkout',
         'onStartSession',
         'onLogout',
         'profile',
@@ -71,7 +78,16 @@ describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', (
     // Wave 5 (visual restante) acrescentou `onBack`, OPCIONAL — o ScreenHeader
     // só aparece quando o container passa o callback.
     expect(new Set(extractInterfaceMembers(workoutContent, 'WorkoutCreatorScreenProps'))).toEqual(
-      new Set(['isLoading', 'exercises', 'error', 'onSave', 'onBack'])
+      new Set([
+        'isLoading',
+        'exercises',
+        'error',
+        'onSave',
+        'onBack',
+        'mode',
+        'initialWorkout',
+        'onDelete',
+      ])
     );
 
     const activeSessionContent = fs.readFileSync(

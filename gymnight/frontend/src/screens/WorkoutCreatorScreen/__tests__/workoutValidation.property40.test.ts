@@ -135,7 +135,7 @@ describe('Property 40: Saving a Workout with its exercises is atomic — no part
       fc.asyncProperty(workoutNameArb, exercisesArb, async (name, exercises) => {
         const { db, getCommittedRecords, wasWriteCompleted } = buildTrackingMockDb();
 
-        const result = await saveWorkoutWithExercises(name, exercises, db);
+        const result = await saveWorkoutWithExercises('user-1', name, exercises, db);
 
         expect(result.success).toBe(true);
         if (result.success) {
@@ -168,7 +168,7 @@ describe('Property 40: Saving a Workout with its exercises is atomic — no part
 
           const { db, getCommittedRecords } = buildFailingMockDb(failAtCreateIndex);
 
-          const result = await saveWorkoutWithExercises(name, exercises, db);
+          const result = await saveWorkoutWithExercises('user-1', name, exercises, db);
 
           // The operation must fail
           expect(result.success).toBe(false);
@@ -233,7 +233,7 @@ describe('Property 40: Saving a Workout with its exercises is atomic — no part
               },
             } as any;
 
-            const result = await saveWorkoutWithExercises(name, exercises, mockDb);
+            const result = await saveWorkoutWithExercises('user-1', name, exercises, mockDb);
 
             // After the operation: either EVERYTHING committed or NOTHING
             if (result.success) {
@@ -280,7 +280,7 @@ describe('Property 40: Saving a Workout with its exercises is atomic — no part
 
           // Test success case
           const { db: successDb, getCommittedRecords: getSuccessRecords } = buildTrackingMockDb();
-          const successResult = await saveWorkoutWithExercises(name, exercises, successDb);
+          const successResult = await saveWorkoutWithExercises('user-1', name, exercises, successDb);
 
           expect(successResult.success).toBe(true);
           const successWorkouts = getSuccessRecords().get('workouts') ?? [];
@@ -290,7 +290,7 @@ describe('Property 40: Saving a Workout with its exercises is atomic — no part
 
           // Test failure case (fail at workout creation itself)
           const { db: failDb, getCommittedRecords: getFailRecords } = buildFailingMockDb(0);
-          const failResult = await saveWorkoutWithExercises(name, exercises, failDb);
+          const failResult = await saveWorkoutWithExercises('user-1', name, exercises, failDb);
 
           expect(failResult.success).toBe(false);
           const failWorkouts = getFailRecords().get('workouts') ?? [];

@@ -34,6 +34,8 @@ export interface MainTabNavigatorProps {
   logoutManager: LogoutManager;
   userId: string;
   onCreateWorkout: () => void;
+  /** Ícone de lápis na linha do treino (Wave 8). */
+  onEditWorkout: (workoutId: string) => void;
   onSessionStarted: (sessionId: string) => void;
   onLoggedOut: () => void;
 }
@@ -70,6 +72,7 @@ export function MainTabNavigator(props: MainTabNavigatorProps) {
             logoutManager={props.logoutManager}
             userId={props.userId}
             onCreateWorkout={props.onCreateWorkout}
+            onEditWorkout={props.onEditWorkout}
             onSessionStarted={props.onSessionStarted}
             onLoggedOut={props.onLoggedOut}
           />

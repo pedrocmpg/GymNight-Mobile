@@ -389,3 +389,149 @@ export function computeCaloriesBurned(
   }
   return totalCalories;
 }
+
+// ---------------------------------------------------------------------------
+// Wave 7 — Estatísticas: janela de 30 dias, delta período-contra-período,
+// sobrecarga progressiva (statistics.py / performance.py)
+// ---------------------------------------------------------------------------
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * `delta_pct = (atual − anterior) / anterior × 100`, 0 quando `anterior` é 0
+ * (senão divide por zero no primeiro período de uso) — verbatim de
+ * `statistics.py`.
+ *
+ * Validates: PARIDADE-03-ESTATISTICAS.md — property 73
+ */
+export function computePeriodDelta(current: number, previous: number): number {
+  if (previous === 0) return 0;
+  return ((current - previous) / previous) * 100;
+}
+
+/**
+ * Separa sessões em janela ATUAL (últimos `windowDays` dias, inclusive hoje)
+ * e janela ANTERIOR (os `windowDays` dias imediatamente antes dessa) — janela
+ * MÓVEL, não "mês civil contra mês civil". Limites inclusivos do lado de
+ * dentro: uma sessão de exatamente `windowDays` dias atrás cai na janela
+ * atual; uma de `windowDays + 1` já cai fora de ambas.
+ *
+ * Validates: PARIDADE-03-ESTATISTICAS.md — property 74
+ */
+export function partitionSessionsByWindow(
+  sessions: SessionForAggregation[],
+  windowDays: number,
+  now: () => number = Date.now,
+): { current: SessionForAggregation[]; previous: SessionForAggregation[] } {
+  const nowMs = now();
+  const currentStartMs = nowMs - windowDays * MS_PER_DAY;
+  const previousStartMs = nowMs - 2 * windowDays * MS_PER_DAY;
+
+  const current: SessionForAggregation[] = [];
+  const previous: SessionForAggregation[] = [];
+  for (const s of sessions) {
+    if (s.startedAt >= currentStartMs && s.startedAt <= nowMs) {
+      current.push(s);
+    } else if (s.startedAt >= previousStartMs && s.startedAt < currentStartMs) {
+      previous.push(s);
+    }
+  }
+  return { current, previous };
+}
+
+/** As quatro métricas do grid 2×2 de Estatísticas, para uma janela de sessões. */
+export interface StatisticsWindowMetrics {
+  /** Sessões ENCERRADAS na janela. */
+  sessionCount: number;
+  /** Soma de (ended_at - started_at) das sessões encerradas, em ms. */
+  totalDurationMs: number;
+  /** Σ(peso × reps), excluindo aquecimento — mesmo critério de computeVolume. */
+  totalVolume: number;
+  /** Total de séries, excluindo aquecimento. */
+  totalSets: number;
+}
+
+/**
+ * Agrega as quatro métricas do grid de Estatísticas (Treinamentos, Duração,
+ * Volume, Séries) para uma janela de sessões já filtrada (ver
+ * `partitionSessionsByWindow`). Sessões em andamento (`endedAt === null`)
+ * não contam para nenhuma métrica — mesmo critério de "sessões recentes" do
+ * Dashboard/Progress.
+ */
+export function computeWindowMetrics(
+  sessions: SessionForAggregation[],
+  loggedSetsBySessionId: Map<string, LoggedSetForCalc[]>,
+): StatisticsWindowMetrics {
+  const finished = sessions.filter((s) => s.endedAt !== null);
+
+  let totalDurationMs = 0;
+  let allSets: LoggedSetForCalc[] = [];
+  for (const s of finished) {
+    totalDurationMs += (s.endedAt as number) - s.startedAt;
+    allSets = allSets.concat(loggedSetsBySessionId.get(s.id) ?? []);
+  }
+
+  return {
+    sessionCount: finished.length,
+    totalDurationMs,
+    totalVolume: computeVolume(allSets),
+    totalSets: allSets.filter((s) => s.setType !== 'W').length,
+  };
+}
+
+/** Um ponto de volume por sessão, para o cálculo de sobrecarga progressiva. */
+export interface SessionVolumePoint {
+  sessionId: string;
+  startedAt: number;
+  volume: number;
+}
+
+/**
+ * Delta de sobrecarga progressiva: compara o volume da sessão ATUAL com a
+ * média móvel (SMA) das últimas `n` sessões ANTERIORES do mesmo exercício.
+ * Verbatim de `performance.py`, `_compute_performance_delta`:
+ *
+ *   historical_avg = média dos volumes anteriores (sessão atual NUNCA entra)
+ *   delta_pct = (atual − historical_avg) / historical_avg × 100
+ *
+ * ⚠️ A exclusão da sessão atual é estrutural aqui (filtro por `sessionId`),
+ * não uma convenção que o chamador precisa lembrar — o comentário do
+ * desktop marca essa inclusão acidental como bug já corrigido lá, e incluí-la
+ * diluiria o sinal de sobrecarga.
+ *
+ * Dois guardas, ambos retornando 0: histórico vazio (sem sessões anteriores
+ * suficientes), e média histórica 0 (nunca fez esse exercício com carga).
+ *
+ * @param sessions - histórico de volumes por sessão do exercício (qualquer ordem)
+ * @param currentSessionId - id da sessão "atual" (referência da comparação)
+ * @param n - janela do SMA; default 5, como no desktop
+ *
+ * Validates: PARIDADE-03-ESTATISTICAS.md — properties 75, 76
+ */
+export function computeSmaDelta(
+  sessions: SessionVolumePoint[],
+  currentSessionId: string,
+  n = 5,
+): number {
+  const current = sessions.find((s) => s.sessionId === currentSessionId);
+  // Sem a sessão atual não há referência nenhuma para comparar — sem isto,
+  // toda sessão ANTERIOR viraria "histórico" por padrão (nenhum startedAt de
+  // corte), produzindo um delta espúrio em vez de simplesmente não opinar.
+  if (!current) return 0;
+  const currentVolume = current.volume;
+  const currentStartedAt = current.startedAt;
+
+  const historicalVolumes = sessions
+    .filter((s) => s.sessionId !== currentSessionId && s.startedAt < currentStartedAt)
+    .sort((a, b) => b.startedAt - a.startedAt)
+    .slice(0, n)
+    .map((s) => s.volume);
+
+  if (historicalVolumes.length === 0) return 0;
+
+  const historicalAvg =
+    historicalVolumes.reduce((sum, v) => sum + v, 0) / historicalVolumes.length;
+  if (historicalAvg <= 0) return 0;
+
+  return ((currentVolume - historicalAvg) / historicalAvg) * 100;
+}

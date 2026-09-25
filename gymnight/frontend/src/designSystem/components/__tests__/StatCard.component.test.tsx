@@ -56,4 +56,40 @@ describe('StatCard', () => {
     );
     expect(flatten(getByTestId('s').props.style).boxShadow).toContain('rgba(162, 255, 0,');
   });
+
+  describe('delta (Wave 7 — Estatísticas)', () => {
+    it('omits the delta badge when deltaPct is not given', () => {
+      const { queryByTestId } = render(
+        <StatCard icon="dumbbell" title="Treinos" value="4" testID="s" />,
+      );
+      expect(queryByTestId('s-delta')).toBeNull();
+    });
+
+    it('shows the delta badge even when deltaPct is exactly 0', () => {
+      const { getByTestId } = render(
+        <StatCard icon="dumbbell" title="Treinos" value="4" deltaPct={0} testID="s" />,
+      );
+      expect(getByTestId('s-delta')).toBeTruthy();
+    });
+
+    it('renders a positive delta in green with an up arrow', () => {
+      const { getByTestId, getByText } = render(
+        <StatCard icon="dumbbell" title="Treinos" value="4" deltaPct={20} testID="s" />,
+      );
+      expect(getByText('20%')).toBeTruthy();
+      const icon = getByTestId('s-delta').findByType('FontAwesome5' as never);
+      expect((icon.props as { name: string }).name).toBe('arrow-up');
+      expect(flatten(getByText('20%').props.style).color).toBe(colors.success);
+    });
+
+    it('renders a negative delta in red with a down arrow, magnitude without the sign', () => {
+      const { getByTestId, getByText } = render(
+        <StatCard icon="dumbbell" title="Treinos" value="4" deltaPct={-5} testID="s" />,
+      );
+      expect(getByText('5%')).toBeTruthy();
+      const icon = getByTestId('s-delta').findByType('FontAwesome5' as never);
+      expect((icon.props as { name: string }).name).toBe('arrow-down');
+      expect(flatten(getByText('5%').props.style).color).toBe(colors.error);
+    });
+  });
 });

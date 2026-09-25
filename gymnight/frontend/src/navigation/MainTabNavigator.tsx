@@ -7,10 +7,12 @@ import type { LogoutManager } from '../auth/LogoutManager';
 import { colors, typography, spacing, glow } from '../designSystem/tokens';
 import { DashboardScreenContainer } from './containers/DashboardScreenContainer';
 import { ProgressScreenContainer } from './containers/ProgressScreenContainer';
+import { StatisticsScreenContainer } from './containers/StatisticsScreenContainer';
 
 export type MainTabParamList = {
   Treinos: undefined;
   Progresso: undefined;
+  Estatísticas: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -82,6 +84,18 @@ export function MainTabNavigator(props: MainTabNavigatorProps) {
         }}
       >
         {() => <ProgressScreenContainer userId={props.userId} />}
+      </Tab.Screen>
+      <Tab.Screen
+        name="Estatísticas"
+        options={{
+          // O desktop usa `chart-line` na aba de progresso — evitar repetir
+          // (PARIDADE-03-ESTATISTICAS.md §5).
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="chart-pie" color={color} focused={focused} />
+          ),
+        }}
+      >
+        {() => <StatisticsScreenContainer userId={props.userId} />}
       </Tab.Screen>
     </Tab.Navigator>
   );

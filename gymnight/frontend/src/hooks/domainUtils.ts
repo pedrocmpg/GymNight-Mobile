@@ -87,6 +87,50 @@ export function computeMuscleVolume(
 }
 
 /**
+ * As 6 categorias do radar de Estatísticas (Wave 7), agrupamento exato de
+ * `statistics.py:120-131` sobre os 7 `muscle_groups` do banco — NÃO são os
+ * mesmos 7: Bíceps + Tríceps somam em "Braços", Abdômen vira "Core".
+ * Implementar direto sobre os 7 grupos do banco gera um radar diferente do
+ * desktop.
+ *
+ * Validates: PARIDADE-03-ESTATISTICAS.md — property 72
+ */
+export const RADAR_CATEGORIES = ['Peito', 'Costas', 'Ombros', 'Braços', 'Pernas', 'Core'] as const;
+
+const RADAR_CATEGORY_BY_MUSCLE_GROUP_NAME: Record<string, (typeof RADAR_CATEGORIES)[number]> = {
+  Peito: 'Peito',
+  Costas: 'Costas',
+  Ombros: 'Ombros',
+  Bíceps: 'Braços',
+  Tríceps: 'Braços',
+  Pernas: 'Pernas',
+  Abdômen: 'Core',
+};
+
+/**
+ * Agrupa volume por `muscleGroupId` (saída de `computeMuscleVolume`) nas 6
+ * categorias do radar, via o nome de cada grupo (`muscleGroupNameById`, de
+ * `muscle_groups`). Sempre devolve as 6 chaves de `RADAR_CATEGORIES`, mesmo
+ * com volume 0 — o radar precisa dos 6 eixos mesmo sem sessão nenhuma.
+ * Nomes desconhecidos (fora do catálogo esperado) são ignorados, não somam
+ * em categoria nenhuma.
+ */
+export function groupMuscleVolumeIntoCategories(
+  volumeByMuscleGroupId: Map<string, number>,
+  muscleGroupNameById: Map<string, string>,
+): Map<string, number> {
+  const result = new Map<string, number>(RADAR_CATEGORIES.map((c) => [c, 0]));
+  for (const [muscleGroupId, volume] of volumeByMuscleGroupId) {
+    const name = muscleGroupNameById.get(muscleGroupId);
+    const category = name ? RADAR_CATEGORY_BY_MUSCLE_GROUP_NAME[name] : undefined;
+    if (category) {
+      result.set(category, (result.get(category) ?? 0) + volume);
+    }
+  }
+  return result;
+}
+
+/**
  * Calcula a estimativa de 1RM usando a Epley Formula.
  *
  * Fórmula: estimated_one_rm = weight * (1 + repetitions / 30)

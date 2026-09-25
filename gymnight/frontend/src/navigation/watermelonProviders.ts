@@ -15,6 +15,11 @@ import type {
   WorkoutExerciseOption,
 } from '../hooks/useObserveActiveSession';
 import type { HistoryDatabaseProvider } from '../hooks/useObserveHistory';
+import type {
+  StatisticsDatabaseProvider,
+  MuscleGroupRow,
+} from '../hooks/useObserveStatistics';
+import type { ExerciseMuscleContribution } from '../hooks/domainUtils';
 
 function mapObservable<TRecord, TMapped>(
   source: { subscribe: (observer: { next?: (v: TRecord) => void; error?: (e: unknown) => void }) => { unsubscribe(): void } },
@@ -47,6 +52,37 @@ interface LoggedSetRecord {
     created_at: number;
     updated_at: number;
   };
+}
+
+/** Registro cru de `workout_sessions` (Wave 7 — Estatísticas). */
+interface WorkoutSessionRecord {
+  id: string;
+  _raw: {
+    user_id: string;
+    workout_id: string | null;
+    started_at: number;
+    ended_at: number | null;
+    created_at: number;
+    updated_at: number;
+  };
+}
+
+/** Registro cru de `exercises` (Wave 7 — Estatísticas). */
+interface ExerciseRecord {
+  id: string;
+  _raw: { name: string; created_at: number; updated_at: number };
+}
+
+/** Registro cru de `exercise_muscle_map` (Wave 6, catálogo pull-only). */
+interface ExerciseMuscleMapRecord {
+  id: string;
+  _raw: { exercise_id: string; muscle_group_id: string; contribution: number };
+}
+
+/** Registro cru de `muscle_groups` (Wave 6, catálogo pull-only). */
+interface MuscleGroupRecord {
+  id: string;
+  _raw: { name: string };
 }
 
 /**
@@ -294,6 +330,78 @@ export function createHistoryDatabaseProvider(db: Database): HistoryDatabaseProv
       const query = db.get('workouts').query(Q.where('user_id', userId));
       return mapObservable(query.observe(), (records: any[]) =>
         records.map((r) => ({ id: r.id, name: r._raw.name }))
+      );
+    },
+  };
+}
+
+/** Concrete StatisticsDatabaseProvider backed by WatermelonDB (Wave 7 — Estatísticas). */
+export function createStatisticsDatabaseProvider(db: Database): StatisticsDatabaseProvider {
+  return {
+    observeAllSessions(userId: string): ReactiveObservable<DashboardWorkoutSession[]> {
+      const query = db.get('workout_sessions').query(Q.where('user_id', userId));
+      return mapObservable(
+        query.observe() as unknown as ReactiveObservable<WorkoutSessionRecord[]>,
+        (records) =>
+          records.map((r) => ({
+            id: r.id,
+            userId: r._raw.user_id,
+            workoutId: r._raw.workout_id ?? null,
+            startedAt: r._raw.started_at,
+            endedAt: r._raw.ended_at ?? null,
+            createdAt: r._raw.created_at,
+            updatedAt: r._raw.updated_at,
+          })),
+      );
+    },
+    observeAllLoggedSets(userId: string): ReactiveObservable<ActiveSessionLoggedSet[]> {
+      return mapObservable(observeLoggedSetsForUser(db, userId), (records) =>
+        records.map((r) => ({
+          id: r.id,
+          sessionId: r._raw.session_id,
+          exerciseId: r._raw.exercise_id,
+          weight: r._raw.weight,
+          repetitions: r._raw.repetitions,
+          estimatedOneRm: r._raw.estimated_one_rm,
+          setType: r._raw.set_type,
+          completedAt: r._raw.completed_at,
+          createdAt: r._raw.created_at,
+          updatedAt: r._raw.updated_at,
+        })),
+      );
+    },
+    observeExercises(): ReactiveObservable<CatalogExercise[]> {
+      const query = db.get('exercises').query();
+      return mapObservable(
+        query.observe() as unknown as ReactiveObservable<ExerciseRecord[]>,
+        (records) =>
+          records.map((r) => ({
+            id: r.id,
+            name: r._raw.name,
+            createdAt: r._raw.created_at,
+            updatedAt: r._raw.updated_at,
+          })),
+      );
+    },
+    observeExerciseMuscleMap(): ReactiveObservable<ExerciseMuscleContribution[]> {
+      // Catálogo compartilhado (Wave 6), sem filtro de usuário.
+      const query = db.get('exercise_muscle_map').query();
+      return mapObservable(
+        query.observe() as unknown as ReactiveObservable<ExerciseMuscleMapRecord[]>,
+        (records) =>
+          records.map((r) => ({
+            exerciseId: r._raw.exercise_id,
+            muscleGroupId: r._raw.muscle_group_id,
+            contribution: r._raw.contribution,
+          })),
+      );
+    },
+    observeMuscleGroups(): ReactiveObservable<MuscleGroupRow[]> {
+      // Catálogo compartilhado (Wave 6), sem filtro de usuário.
+      const query = db.get('muscle_groups').query();
+      return mapObservable(
+        query.observe() as unknown as ReactiveObservable<MuscleGroupRecord[]>,
+        (records) => records.map((r) => ({ id: r.id, name: r._raw.name })),
       );
     },
   };

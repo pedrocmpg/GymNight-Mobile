@@ -42,6 +42,58 @@ export interface ReactiveQueryResult<T> {
 export type ObservableFactory<T> = () => ReactiveObservable<T>;
 
 /**
+ * Combina N observables num único que emite (como tupla, na mesma ordem dos
+ * argumentos) quando TODOS já emitiram pelo menos uma vez, e re-emite quando
+ * qualquer um muda. Generaliza os combinadores binários/quaternários
+ * ad-hoc de useObserveDashboard.ts/useObserveHistory.ts — introduzido na
+ * Wave 7 (PARIDADE-03-ESTATISTICAS.md §6) para o hook de Estatísticas, que
+ * precisa de 5 fontes sem empilhar mais um nível de aninhamento.
+ *
+ * Erro em qualquer fonte propaga imediatamente e trava emissões futuras
+ * (mesmo invariante dos combinadores existentes).
+ */
+export function combineMany<T extends readonly unknown[]>(
+  observables: { [K in keyof T]: ReactiveObservable<T[K]> },
+): ReactiveObservable<T> {
+  return {
+    subscribe(observer) {
+      const n = observables.length;
+      const latest: unknown[] = new Array(n);
+      const has: boolean[] = new Array(n).fill(false);
+      let errored = false;
+
+      const tryEmit = () => {
+        if (errored) return;
+        for (let i = 0; i < n; i++) {
+          if (!has[i]) return;
+        }
+        observer.next?.(latest.slice() as unknown as T);
+      };
+
+      const subs = observables.map((obs, i) =>
+        obs.subscribe({
+          next: (value) => {
+            latest[i] = value;
+            has[i] = true;
+            tryEmit();
+          },
+          error: (err) => {
+            errored = true;
+            observer.error?.(err);
+          },
+        }),
+      );
+
+      return {
+        unsubscribe: () => {
+          subs.forEach((s) => s.unsubscribe());
+        },
+      };
+    },
+  };
+}
+
+/**
  * Hook genérico de observação reativa.
  *
  * @param factory - Função que retorna a Observable a ser observada.

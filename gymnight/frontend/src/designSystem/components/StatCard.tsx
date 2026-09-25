@@ -16,7 +16,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Card } from './Card';
-import { colors, typography, spacing } from '../tokens';
+import { colors, typography, spacing, radii } from '../tokens';
 
 export interface StatCardProps {
   /** Nome do ícone FontAwesome5 (estilo solid). */
@@ -24,10 +24,38 @@ export interface StatCardProps {
   title: string;
   value: string;
   unit?: string;
+  /**
+   * Variação percentual contra o período anterior (Wave 7 — Estatísticas).
+   * Ausente = sem slot de delta (comportamento original, Dashboard). `0` é um
+   * delta válido (ex: primeiro período de uso) e ainda mostra o badge.
+   */
+  deltaPct?: number;
   testID?: string;
 }
 
-export function StatCard({ icon, title, value, unit, testID }: StatCardProps) {
+/** Seta + percentual, verde quando ≥0 e vermelho quando <0 — mesmo par de
+ * cores/tint do badge de delta do 1RM na Progress_Screen. */
+function DeltaBadge({ deltaPct, testID }: { deltaPct: number; testID?: string }) {
+  const isPositive = deltaPct >= 0;
+  return (
+    <View
+      style={[styles.deltaBadge, isPositive ? styles.deltaPositive : styles.deltaNegative]}
+      testID={testID}
+    >
+      <FontAwesome5
+        name={isPositive ? 'arrow-up' : 'arrow-down'}
+        size={10}
+        color={isPositive ? colors.success : colors.error}
+        solid
+      />
+      <Text style={[styles.deltaText, { color: isPositive ? colors.success : colors.error }]}>
+        {Math.abs(deltaPct).toFixed(0)}%
+      </Text>
+    </View>
+  );
+}
+
+export function StatCard({ icon, title, value, unit, deltaPct, testID }: StatCardProps) {
   return (
     <Card glow style={styles.card} testID={testID}>
       <View style={styles.header}>
@@ -40,6 +68,9 @@ export function StatCard({ icon, title, value, unit, testID }: StatCardProps) {
         <Text style={styles.value}>{value}</Text>
         {unit ? <Text style={styles.unit}>{unit}</Text> : null}
       </View>
+      {deltaPct !== undefined && (
+        <DeltaBadge deltaPct={deltaPct} testID={testID ? `${testID}-delta` : undefined} />
+      )}
     </Card>
   );
 }
@@ -73,5 +104,23 @@ const styles = StyleSheet.create({
   unit: {
     ...typography.statUnit,
     color: colors.tertiaryText,
+  },
+  deltaBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: spacing.xxs,
+    borderRadius: radii.lg,
+    paddingVertical: spacing.xxs / 2,
+    paddingHorizontal: spacing.xs,
+  },
+  deltaPositive: {
+    backgroundColor: colors.successTint,
+  },
+  deltaNegative: {
+    backgroundColor: colors.errorTint,
+  },
+  deltaText: {
+    ...typography.captionBold,
   },
 });

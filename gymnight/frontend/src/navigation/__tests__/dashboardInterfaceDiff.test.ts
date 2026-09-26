@@ -26,6 +26,9 @@
  * ganhou `mode`/`initialWorkout`/`onDelete` (todos OPCIONAIS) para a mesma
  * tela servir de editor (create|edit), no lugar de uma WorkoutEditorScreen
  * separada (PARIDADE-04-ROTINAS-PERFIL.md §1.2).
+ *
+ * Updated (PARIDADE wave 9): `onStartCardioSession` (OPCIONAL) liga o botão
+ * "Cardio" ao lado de "+ Novo" — cardio avulso (PARIDADE-05-CARDIO.md §4.3).
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -56,6 +59,7 @@ describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', (
         'onCreateWorkout',
         'onEditWorkout',
         'onStartSession',
+        'onStartCardioSession',
         'onLogout',
         'profile',
         'stats',

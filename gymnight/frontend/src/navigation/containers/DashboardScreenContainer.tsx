@@ -88,6 +88,19 @@ export function DashboardScreenContainer(props: DashboardScreenContainerProps) {
     }
   };
 
+  // Cardio avulso (Wave 9, PARIDADE-05-CARDIO.md §4.3): mesma persistência de
+  // sessão livre já usada pelo treino sem workout — workoutId undefined.
+  const handleStartCardioSession = async () => {
+    setStartSessionError(null);
+    const result = await startSessionWithPersistence(props.userId, undefined);
+    const outcome = resolveStartSessionOutcome(result);
+    if (outcome.navigateToActiveSession) {
+      props.onSessionStarted(outcome.sessionId);
+    } else {
+      setStartSessionError(outcome.errorMessage);
+    }
+  };
+
   return (
     <>
       {/* Transient logout error indication (Requirement 7.7), independent of onLogout */}
@@ -116,6 +129,7 @@ export function DashboardScreenContainer(props: DashboardScreenContainerProps) {
         onCreateWorkout={props.onCreateWorkout}
         onEditWorkout={props.onEditWorkout}
         onStartSession={handleStartSession}
+        onStartCardioSession={handleStartCardioSession}
         onLogout={handleLogout}
       />
     </>

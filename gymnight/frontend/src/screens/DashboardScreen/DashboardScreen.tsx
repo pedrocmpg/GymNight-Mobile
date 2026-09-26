@@ -16,6 +16,7 @@
  * - syncStatus: current sync engine state
  * - onCreateWorkout: callback invoked when the user taps the CTA to create a workout
  * - onStartSession: callback invoked with a workout's id when the user taps it to start a session
+ * - onStartCardioSession: callback for the "Cardio" button beside "+ Novo" (cardio avulso, Wave 9)
  * - onLogout: callback invoked when the user logs out
  *
  * O `weeklyStreak` continua chegando com domingo no índice 0 (é o que
@@ -98,6 +99,8 @@ export interface DashboardScreenProps {
   onStartSession: (workoutId: string) => void;
   /** Ícone de lápis na linha do treino (Wave 8). Sem isto, a linha não mostra o lápis. */
   onEditWorkout?: (workoutId: string) => void;
+  /** Botão "Cardio" ao lado de "+ Novo" (Wave 9). Sem isto, o botão não aparece. */
+  onStartCardioSession?: () => void;
   onLogout: () => void;
 }
 
@@ -227,6 +230,7 @@ export function DashboardScreen({
   onCreateWorkout,
   onStartSession,
   onEditWorkout,
+  onStartCardioSession,
   onLogout,
 }: DashboardScreenProps) {
   const hasData = workouts.length > 0;
@@ -351,15 +355,28 @@ export function DashboardScreen({
         <Card testID="workouts-card">
           <SectionTitle
             right={
-              <Button
-                label="Novo"
-                icon="plus"
-                variant="outlineAccent"
-                fullWidth={false}
-                onPress={onCreateWorkout}
-                testID="create-workout-button"
-                accessibilityLabel="Criar novo treino"
-              />
+              <View style={styles.workoutsSectionActions}>
+                {onStartCardioSession && (
+                  <Button
+                    label="Cardio"
+                    icon="heartbeat"
+                    variant="outlineAccent"
+                    fullWidth={false}
+                    onPress={onStartCardioSession}
+                    testID="start-cardio-session-button"
+                    accessibilityLabel="Iniciar cardio avulso"
+                  />
+                )}
+                <Button
+                  label="Novo"
+                  icon="plus"
+                  variant="outlineAccent"
+                  fullWidth={false}
+                  onPress={onCreateWorkout}
+                  testID="create-workout-button"
+                  accessibilityLabel="Criar novo treino"
+                />
+              </View>
             }
           >
             Seus treinos
@@ -444,6 +461,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  workoutsSectionActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
   heroHeaderRow: {
     flexDirection: 'row',

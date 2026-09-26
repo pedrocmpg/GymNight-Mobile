@@ -5,9 +5,16 @@ import { ActiveSessionScreen } from '../../screens/ActiveSessionScreen/ActiveSes
 import { EmptyState } from '../../designSystem/components/EmptyState';
 import { useObserveActiveSession } from '../../hooks/useObserveActiveSession';
 import { useObserveExerciseCatalog } from '../../hooks/useObserveExerciseCatalog';
-import { createLoggedSet, persistLoggedSetWithIsolation } from '../../screens/ActiveSessionScreen/sessionLifecycle';
+import {
+  createLoggedSet,
+  createCardioLog,
+  persistLoggedSetWithIsolation,
+} from '../../screens/ActiveSessionScreen/sessionLifecycle';
 import { endSessionWithPersistence } from '../../screens/ActiveSessionScreen/endSessionWithPersistence';
+import type { CardioFormValue } from '../../screens/CardioScreen/CardioForm';
 import database from '../../db/database';
+import CardioLog from '../../db/models/CardioLog';
+import { deleteRecord } from '../../db/writeHelpers';
 import { createActiveSessionDatabaseProvider, createExerciseCatalogDatabaseProvider } from '../watermelonProviders';
 import { colors } from '../../designSystem/tokens';
 
@@ -50,6 +57,22 @@ async function persistLoggedSet(data: {
   return record.id;
 }
 
+async function persistCardioLog(sessionId: string, entry: CardioFormValue): Promise<string> {
+  const cardioLog = createCardioLog(sessionId, entry);
+  const record = await database.write(async () => {
+    return database.get<CardioLog>('cardio_logs').create((r) => {
+      r.sessionId = cardioLog.session_id;
+      r.cardioType = cardioLog.cardio_type;
+      r.durationMin = cardioLog.duration_min;
+      r.distanceKm = cardioLog.distance_km;
+      r.pse = cardioLog.pse;
+      r.createdAt = new Date(cardioLog.created_at);
+      r.updatedAt = new Date(cardioLog.created_at);
+    });
+  });
+  return record.id;
+}
+
 /**
  * Supplies ActiveSessionScreen's props from live sources (Requirement 5.3):
  * session/loggedSets/totalVolume via useObserveActiveSession keyed by
@@ -66,6 +89,8 @@ export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainer
     workoutExercises,
     previousSessionSets,
     workoutName,
+    cardioLogs,
+    weightKg,
   } = useObserveActiveSession(sessionId, provider);
   const { exercises: catalogExercises } = useObserveExerciseCatalog(catalogProvider);
 
@@ -74,6 +99,17 @@ export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainer
       { exerciseId, weight, reps, sessionId, setType },
       persistLoggedSet,
     );
+  };
+
+  const handleAddCardio = (value: CardioFormValue) => {
+    void persistCardioLog(sessionId, value);
+  };
+
+  const handleRemoveCardio = (cardioLogId: string) => {
+    void database
+      .get<CardioLog>('cardio_logs')
+      .find(cardioLogId)
+      .then((record) => deleteRecord(record));
   };
 
   const handleEndSession = async () => {
@@ -132,6 +168,16 @@ export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainer
         completedAt: s.completedAt,
       }))}
       onBack={props.onBack}
+      cardioEntries={cardioLogs.map((c) => ({
+        id: c.id,
+        cardioType: c.cardioType,
+        durationMin: c.durationMin,
+        distanceKm: c.distanceKm,
+        pse: c.pse,
+      }))}
+      onAddCardio={handleAddCardio}
+      onRemoveCardio={handleRemoveCardio}
+      weightKg={weightKg}
     />
   );
 }

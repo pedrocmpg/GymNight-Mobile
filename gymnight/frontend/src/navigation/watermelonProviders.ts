@@ -12,6 +12,7 @@ import type {
   ActiveSessionDatabaseProvider,
   ActiveSession,
   ActiveSessionLoggedSet,
+  ActiveSessionCardioLog,
   WorkoutExerciseOption,
 } from '../hooks/useObserveActiveSession';
 import type { HistoryDatabaseProvider } from '../hooks/useObserveHistory';
@@ -83,6 +84,26 @@ interface ExerciseMuscleMapRecord {
 interface MuscleGroupRecord {
   id: string;
   _raw: { name: string };
+}
+
+/** Registro cru de `cardio_logs` (Wave 9). */
+interface CardioLogRecord {
+  id: string;
+  _raw: {
+    session_id: string;
+    cardio_type: string;
+    duration_min: number;
+    distance_km: number | null;
+    pse: number;
+    created_at: number;
+    updated_at: number;
+  };
+}
+
+/** Registro cru de `users`, só o campo usado por observeUserWeight (Wave 9). */
+interface UserWeightRecord {
+  id: string;
+  _raw: { weight: number | null };
 }
 
 /**
@@ -586,6 +607,32 @@ export function createActiveSessionDatabaseProvider(db: Database): ActiveSession
           };
         },
       };
+    },
+    observeCardioLogs(sessionId: string): ReactiveObservable<ActiveSessionCardioLog[]> {
+      const query = db.get('cardio_logs').query(Q.where('session_id', sessionId));
+      return mapObservable(
+        query.observe() as unknown as ReactiveObservable<CardioLogRecord[]>,
+        (records) =>
+          records.map((r) => ({
+            id: r.id,
+            sessionId: r._raw.session_id,
+            cardioType: r._raw.cardio_type,
+            durationMin: r._raw.duration_min,
+            distanceKm: r._raw.distance_km ?? null,
+            pse: r._raw.pse,
+            createdAt: r._raw.created_at,
+            updatedAt: r._raw.updated_at,
+          })),
+      );
+    },
+    observeUserWeight(userId: string): ReactiveObservable<number | null> {
+      // Mesmo padrão de observeProfile (Dashboard): query por id em vez de .find(),
+      // para degradar a null quando o registro ainda não chegou pelo sync.
+      const query = db.get('users').query(Q.where('id', userId));
+      return mapObservable(
+        query.observe() as unknown as ReactiveObservable<UserWeightRecord[]>,
+        (records) => records[0]?._raw.weight ?? null,
+      );
     },
   };
 }

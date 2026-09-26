@@ -57,6 +57,18 @@ export interface ActiveSessionData {
   loggedSets: ActiveSessionLoggedSet[];
 }
 
+/** CardioLog da sessão ativa (Wave 9). */
+export interface ActiveSessionCardioLog {
+  id: string;
+  sessionId: string;
+  cardioType: string;
+  durationMin: number;
+  distanceKm: number | null;
+  pse: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
 /**
  * Resultado retornado pelo hook useObserveActiveSession.
  */
@@ -70,6 +82,10 @@ export interface UseObserveActiveSessionResult {
   previousSessionSets: ActiveSessionLoggedSet[];
   /** Nome do treino da sessão; null em treino livre ou enquanto não carregou. */
   workoutName: string | null;
+  /** CardioLogs da sessão (Wave 9) — avulsos ou dentro do treino, tanto faz. */
+  cardioLogs: ActiveSessionCardioLog[];
+  /** Peso do usuário (kg) para a estimativa de calorias de cardio; 70 até o perfil carregar. */
+  weightKg: number;
   isLoading: boolean;
   error: Error | null;
 }
@@ -97,6 +113,25 @@ const EMPTY_PREVIOUS_SETS: ReactiveObservable<ActiveSessionLoggedSet[]> = {
     return { unsubscribe: () => {} };
   },
 };
+
+/** Fallback para os cardioLogs quando o provider não implementa observeCardioLogs. */
+const EMPTY_CARDIO_LOGS: ReactiveObservable<ActiveSessionCardioLog[]> = {
+  subscribe(observer) {
+    observer.next?.([]);
+    return { unsubscribe: () => {} };
+  },
+};
+
+/** Fallback para o peso do usuário quando o provider não implementa observeUserWeight. */
+const EMPTY_USER_WEIGHT: ReactiveObservable<number | null> = {
+  subscribe(observer) {
+    observer.next?.(null);
+    return { unsubscribe: () => {} };
+  },
+};
+
+/** Mesmo default de `historyDomainUtils.computeCaloriesBurned` (musculação) — unificado na Wave 9. */
+const DEFAULT_WEIGHT_KG = 70;
 
 /**
  * Exercício associado a um Workout (via WorkoutExercise), usado para restringir
@@ -132,6 +167,10 @@ export interface ActiveSessionDatabaseProvider {
     workoutId: string,
     currentSessionId: string,
   ): ReactiveObservable<ActiveSessionLoggedSet[]>;
+  /** CardioLogs da sessão (Wave 9). Opcional: sem isto, a seção de cardio fica vazia. */
+  observeCardioLogs?(sessionId: string): ReactiveObservable<ActiveSessionCardioLog[]>;
+  /** Peso (kg) do usuário dono da sessão. Opcional: sem isto, cai no default de 70kg. */
+  observeUserWeight?(userId: string): ReactiveObservable<number | null>;
 }
 
 /**
@@ -272,6 +311,25 @@ export function useObserveActiveSession(
   );
   const workoutName = workoutNameResult.data ?? null;
 
+  // CardioLogs da sessão (Wave 9) — avulsos ou dentro do treino, mesmo path.
+  const cardioLogsResult = useReactiveQuery(
+    () =>
+      provider.observeCardioLogs ? provider.observeCardioLogs(sessionId) : EMPTY_CARDIO_LOGS,
+    [sessionId, provider],
+  );
+  const cardioLogs = useMemo(() => cardioLogsResult.data ?? [], [cardioLogsResult.data]);
+
+  // Peso do usuário para a estimativa de calorias de cardio; 70kg até o perfil carregar.
+  const userId = session?.userId ?? null;
+  const userWeightResult = useReactiveQuery(
+    () =>
+      userId && provider.observeUserWeight
+        ? provider.observeUserWeight(userId)
+        : EMPTY_USER_WEIGHT,
+    [userId, provider],
+  );
+  const weightKg = userWeightResult.data ?? DEFAULT_WEIGHT_KG;
+
   return {
     session,
     loggedSets,
@@ -280,6 +338,8 @@ export function useObserveActiveSession(
     workoutExercises,
     previousSessionSets,
     workoutName,
+    cardioLogs,
+    weightKg,
     isLoading: result.isLoading,
     error: result.error,
   };

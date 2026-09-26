@@ -338,3 +338,19 @@ describe('DashboardScreen — Editar treino (Wave 8)', () => {
     expect(onEditWorkout).not.toHaveBeenCalled();
   });
 });
+
+describe('DashboardScreen — Cardio avulso (Wave 9)', () => {
+  it('não mostra o botão "Cardio" quando onStartCardioSession não é passado', () => {
+    const { queryByTestId } = renderDashboardScreen();
+    expect(queryByTestId('start-cardio-session-button')).toBeNull();
+  });
+
+  it('mostra o botão "Cardio" e chama onStartCardioSession ao tocar', () => {
+    const onStartCardioSession = jest.fn();
+    const { getByTestId } = renderDashboardScreen({ onStartCardioSession });
+
+    fireEvent.press(getByTestId('start-cardio-session-button'));
+
+    expect(onStartCardioSession).toHaveBeenCalledTimes(1);
+  });
+});

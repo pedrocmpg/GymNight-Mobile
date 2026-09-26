@@ -141,3 +141,71 @@ docker compose -f docker-compose.test.yml run --rm backend-test    # sync de `ca
 ```
 Depois disso: suítes novas validadas contra a árvore anterior via `git stash`
 5. Fluxo manual: cardio avulso → aparece no histórico; cardio dentro do treino → aparece no resumo e **não** altera o contador de séries
+
+---
+
+## Resultado da execução — CONCLUÍDA (2026-09-25)
+
+**Parte 1 — domínio + UI (`264cf4b`):**
+
+- `cardioTypes.ts`: as 20 entradas de `GymNight-Desktop/docs/tipo_cardios.md`
+  transcritas verbatim (nome, intensidade, faixa de PSE, descrição).
+- `cardioDomain.ts`: validação de duração/PSE/distância, buckets de PSE→MET
+  (`≤3→3.0`, `≤6→6.0`, `≤8→9.0`, senão `12.0`) e `estimateCardioCalories`
+  (`trunc(MET × peso × min/60)`, peso default **70kg**, unificado com a
+  musculação da Wave 6 — não os 75kg do desktop).
+- `CardioForm.tsx` (compartilhado avulso/dentro do treino) e `CardioSection.tsx`
+  (seção "+ Cardio" da `ActiveSessionScreen`, extraída como componente próprio
+  por indicação explícita da spec) — reaproveitam `filterExercises` (Wave 8)
+  para a busca de tipo.
+- `sessionLifecycle.ts` ganhou `createCardioLog` (pura; referencia só
+  `session_id`, nunca `workout_id` — avulso e dentro do treino usam o mesmo
+  caminho). `ActiveSessionScreen` ganhou `cardioEntries`/`onAddCardio`/
+  `onRemoveCardio`/`weightKg` (opcionais) e dois `SummaryCard`s condicionais no
+  resumo (minutos totais, PSE médio).
+- Guard de contador: `X/Y séries` e a `ProgressBar` continuam contando só
+  musculação — cardio nunca entra (property 89).
+- Properties 85–90 escritas e passando. Validado com `git stash` real:
+  exatamente os 8 arquivos de teste esperados falharam sem a implementação
+  (o teste da property 89 corretamente não falha — o invariante vale mesmo
+  sem os props existirem, React ignora prop desconhecida).
+- 165 suítes / 979 testes passam; `tsc` no mesmo baseline (10 erros
+  pré-existentes); `lint` de volta a 277 após remover um import não usado.
+
+**Parte 2 — persistência (`f34e14f`), fecha a wave:**
+
+- `cardio_logs` já existia com sync completo desde a Wave 6 — nenhuma
+  migration nova, nenhuma mudança no backend.
+- `watermelonProviders.ts`: `observeCardioLogs` (por `session_id`) e
+  `observeUserWeight` (mesmo padrão de `observeProfile` do Dashboard) em
+  `createActiveSessionDatabaseProvider`.
+- `useObserveActiveSession.ts` ganhou `cardioLogs`/`weightKg` no retorno,
+  ambos opcionais no provider (fallback lista vazia / 70kg).
+- `ActiveSessionScreenContainer.tsx`: criação via o model `CardioLog` com
+  setters tipados (`r.sessionId = ...`, `r.createdAt = new Date(...)`) — não
+  o padrão `_raw`/`any` do resto do arquivo, para não somar mais um `any` ao
+  lint; remoção via `markAsDeleted` (`deleteRecord`).
+- Cardio avulso: botão "Cardio" ao lado de "+ Novo" no Dashboard
+  (`onStartCardioSession`, opcional — some sem ele), reaproveitando
+  `startSessionWithPersistence(userId, undefined)` — a mesma sessão livre já
+  usada pelo treino sem `workout_id` desde a Wave 4, só muda o ponto de
+  entrada.
+- Sem properties novas (é wiring/persistência, sem teste dedicado no repo —
+  mesmo padrão dos demais containers); 2 testes de componente novos para o
+  botão de cardio avulso no Dashboard.
+- Validado com `git stash` real (só os 5 arquivos de implementação
+  stashados): exatamente `dashboardInterfaceDiff.test.ts` e os 2 testes novos
+  falharam, nada mais quebrou.
+- 165 suítes / 981 testes passam; `tsc` no mesmo baseline; `lint` de volta a
+  277 (evitado com tipagem do model em vez de `_raw: any`).
+- `backend-test`: os testes de `cardio_logs` (existência da tabela, seed,
+  model preservation, pull sync) passam; a única falha
+  (`test_correlation_id_properties.py`, logging/correlation-id) é
+  pré-existente e alheia a esta wave — nenhum arquivo do backend foi tocado,
+  e a mesma falha já está documentada como flaky/pré-existente em
+  `PARIDADE-04-ROTINAS-PERFIL.md`.
+
+**Próximo passo:** só falta a validação final em device físico (Samsung
+Galaxy A34 via USB, `Setup Device USB.md`) — deliberadamente deixada para o
+fim de toda a série PARIDADE 4.5–9. A Wave 10 (heatmap muscular + GymAI,
+`PARIDADE-06-ADIADOS.md`) permanece fora de escopo por decisão já registrada.

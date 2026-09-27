@@ -189,6 +189,14 @@ class User(Base):
         nullable=True,
     )
 
+    # Self-reported training experience/time, one of a fixed set of ranges.
+    # String(20) fits the longest accepted value ("6 meses a 2 anos" = 17 chars).
+    # ORM validation: must be one of the TRAINING_TIME_OPTIONS enumeration.
+    training_time = Column(
+        String(20),
+        nullable=True,        # Optional field
+    )
+
     # ========================================================================
     # ORM VALIDATORS: Secondary safety-net validation before DB writes
     # ========================================================================
@@ -220,6 +228,14 @@ class User(Base):
         """Reject gender values not in the accepted enumeration."""
         if value is not None and value not in {"male", "female", "other"}:
             raise ValueError(f"gender must be 'male', 'female', or 'other', got {value!r}")
+        return value
+
+    @validates("training_time")
+    def validate_training_time(self, key, value):
+        """Reject training_time values not in the accepted enumeration."""
+        allowed = {"Nunca treinei", "Até 6 meses", "6 meses a 2 anos", "Mais de 2 anos"}
+        if value is not None and value not in allowed:
+            raise ValueError(f"training_time must be one of {allowed}, got {value!r}")
         return value
 
     # ========================================================================

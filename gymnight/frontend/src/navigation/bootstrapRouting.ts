@@ -1,5 +1,5 @@
 import { Q, type Database } from '@nozbe/watermelondb';
-import type { AuthManager, RestoreSessionResult, SignInResult } from '../auth/AuthManager';
+import type { AuthManager, RestoreSessionResult, SignInResult, SignUpResult } from '../auth/AuthManager';
 import type { SessionStore } from '../auth/sessionStore';
 import { restoreSessionAndPropagate } from '../auth/sessionProducers';
 import database from '../db/database';
@@ -102,4 +102,38 @@ export function resolveSignInOutcome(
     return { navigateToDashboard: false, errorMessage: outcome.error.message || 'Falha ao entrar.' };
   }
   return { navigateToDashboard: false, errorMessage: 'Falha ao entrar. Tente novamente.' };
+}
+
+/**
+ * Pure decision function for signUp's settled outcome, mirroring
+ * resolveSignInOutcome. A third case exists here (absent from sign-in):
+ * `confirmationRequired`, when Supabase created the account but returned no
+ * session because email confirmation is pending — there is nothing to
+ * navigate to yet.
+ */
+export function resolveSignUpOutcome(
+  outcome: SignUpResult | { __rejected: true }
+): {
+  navigateToDashboard: boolean;
+  confirmationRequired: boolean;
+  errorMessage: string | null;
+} {
+  if ('success' in outcome && outcome.success && 'navigateTo' in outcome) {
+    return { navigateToDashboard: true, confirmationRequired: false, errorMessage: null };
+  }
+  if ('success' in outcome && outcome.success) {
+    return { navigateToDashboard: false, confirmationRequired: true, errorMessage: null };
+  }
+  if ('success' in outcome && !outcome.success) {
+    return {
+      navigateToDashboard: false,
+      confirmationRequired: false,
+      errorMessage: outcome.error.message || 'Falha ao cadastrar.',
+    };
+  }
+  return {
+    navigateToDashboard: false,
+    confirmationRequired: false,
+    errorMessage: 'Falha ao cadastrar. Tente novamente.',
+  };
 }

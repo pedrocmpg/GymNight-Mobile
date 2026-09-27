@@ -1,5 +1,5 @@
 /**
- * Component tests for OnboardingScreen — os 4 passos, validação inline,
+ * Component tests for OnboardingScreen — os 5 passos, validação inline,
  * FIFO de objetivos, e o callback final.
  */
 import React from 'react';
@@ -24,8 +24,13 @@ function goToStep4(getByTestId: ReturnType<typeof render>['getByTestId'], gender
   fireEvent.press(getByTestId('onboarding-next-button'));
 }
 
+function goToStep5(getByTestId: ReturnType<typeof render>['getByTestId'], gender = 'Masculino') {
+  goToStep4(getByTestId, gender);
+  fireEvent.press(getByTestId('onboarding-next-button'));
+}
+
 describe('OnboardingScreen — Passo 1 (nome)', () => {
-  it('começa no passo 1 com "Passo 1 de 4"', () => {
+  it('começa no passo 1 com "Passo 1 de 5"', () => {
     const { getByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
     expect(getByTestId('onboarding-step-label').props.children.join('')).toContain('1');
   });
@@ -99,7 +104,7 @@ describe('OnboardingScreen — Passo 3 (gênero)', () => {
   });
 });
 
-describe('OnboardingScreen — Passo 4 (objetivo, FIFO) e conclusão', () => {
+describe('OnboardingScreen — Passo 4 (objetivo, FIFO)', () => {
   it('selecionar um terceiro objetivo evicta o mais antigo', () => {
     const { getByTestId, queryByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
     goToStep4(getByTestId);
@@ -121,12 +126,30 @@ describe('OnboardingScreen — Passo 4 (objetivo, FIFO) e conclusão', () => {
     expect(getByTestId('onboarding-goal-Hipertrofia').props.accessibilityState.selected).toBe(false);
   });
 
+  it('avança para o passo 5 independentemente de ter selecionado algum objetivo', () => {
+    const { getByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    goToStep5(getByTestId);
+    expect(getByTestId('onboarding-step-training-time')).toBeTruthy();
+  });
+});
+
+describe('OnboardingScreen — Passo 5 (tempo de treino) e conclusão', () => {
+  it('não conclui sem selecionar um tempo de treino', () => {
+    const onComplete = jest.fn();
+    const { getByTestId } = render(<OnboardingScreen onComplete={onComplete} />);
+    goToStep5(getByTestId);
+    fireEvent.press(getByTestId('onboarding-finish-button'));
+    expect(onComplete).not.toHaveBeenCalled();
+  });
+
   it('chama onComplete com todos os dados coletados ao concluir', () => {
     const onComplete = jest.fn();
     const { getByTestId } = render(<OnboardingScreen onComplete={onComplete} />);
     goToStep4(getByTestId, 'Feminino');
     fireEvent.press(getByTestId('onboarding-goal-Hipertrofia'));
     fireEvent.press(getByTestId('onboarding-goal-Saúde'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-training-time-Até 6 meses'));
     fireEvent.press(getByTestId('onboarding-finish-button'));
 
     expect(onComplete).toHaveBeenCalledWith({
@@ -135,13 +158,15 @@ describe('OnboardingScreen — Passo 4 (objetivo, FIFO) e conclusão', () => {
       height: 178,
       gender: 'Feminino',
       goals: ['Hipertrofia', 'Saúde'],
+      trainingTime: 'Até 6 meses',
     });
   });
 
   it('concluir sem selecionar nenhum objetivo é permitido (goals vazio)', () => {
     const onComplete = jest.fn();
     const { getByTestId } = render(<OnboardingScreen onComplete={onComplete} />);
-    goToStep4(getByTestId);
+    goToStep5(getByTestId);
+    fireEvent.press(getByTestId('onboarding-training-time-Nunca treinei'));
     fireEvent.press(getByTestId('onboarding-finish-button'));
     expect(onComplete).toHaveBeenCalledWith(expect.objectContaining({ goals: [] }));
   });
@@ -149,7 +174,8 @@ describe('OnboardingScreen — Passo 4 (objetivo, FIFO) e conclusão', () => {
   it('o botão final fica desabilitado enquanto isSaving é true (não chama onComplete de novo)', () => {
     const onComplete = jest.fn();
     const { getByTestId } = render(<OnboardingScreen onComplete={onComplete} isSaving />);
-    goToStep4(getByTestId);
+    goToStep5(getByTestId);
+    fireEvent.press(getByTestId('onboarding-training-time-Nunca treinei'));
     fireEvent.press(getByTestId('onboarding-finish-button'));
     expect(onComplete).not.toHaveBeenCalled();
   });
@@ -158,7 +184,7 @@ describe('OnboardingScreen — Passo 4 (objetivo, FIFO) e conclusão', () => {
     const { getByTestId, getByText } = render(
       <OnboardingScreen onComplete={jest.fn()} error="Falha ao salvar." />,
     );
-    goToStep4(getByTestId);
+    goToStep5(getByTestId);
     expect(getByText('Falha ao salvar.')).toBeTruthy();
   });
 });

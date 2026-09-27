@@ -87,5 +87,16 @@ export const migrations = schemaMigrations({
         }),
       ],
     },
+    // v2 → v3 (onboarding — tempo de treino): passo novo no wizard, coluna
+    // opcional; linhas existentes ganham null (nunca preenchido).
+    {
+      toVersion: 3,
+      steps: [
+        addColumns({
+          table: 'users',
+          columns: [{ name: 'training_time', type: 'string', isOptional: true }],
+        }),
+      ],
+    },
   ],
 });

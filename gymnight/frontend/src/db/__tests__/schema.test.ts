@@ -31,8 +31,8 @@ function findColumn(table: TestTable, name: string): TestColumn {
 }
 
 describe('WatermelonDB Schema', () => {
-  it('should have version 2 (Wave 6 — a única migration da série PARIDADE)', () => {
-    expect(schema.version).toBe(2);
+  it('should have version 3 (v3: onboarding — tempo de treino)', () => {
+    expect(schema.version).toBe(3);
   });
 
   it('should define exactly 10 tables', () => {
@@ -62,6 +62,7 @@ describe('WatermelonDB Schema', () => {
     expect(columnNames).toContain('birth_date');
     expect(columnNames).toContain('gender');
     expect(columnNames).toContain('goal');
+    expect(columnNames).toContain('training_time');
     expect(columnNames).toContain('created_at');
     expect(columnNames).toContain('updated_at');
   });

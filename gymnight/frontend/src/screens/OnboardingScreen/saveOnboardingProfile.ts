@@ -8,6 +8,7 @@ export interface OnboardingProfileData {
   height: number;
   gender: string;
   goals: string[];
+  trainingTime: string;
 }
 
 export type SaveOnboardingProfileResult = { success: true } | { success: false; error: Error };
@@ -57,6 +58,7 @@ export async function saveOnboardingProfile(
           record._raw.height = data.height;
           record._raw.gender = data.gender;
           record._raw.goal = goalCsv;
+          record._raw.training_time = data.trainingTime;
           record._raw.updated_at = Date.now();
         });
       } else {
@@ -68,6 +70,7 @@ export async function saveOnboardingProfile(
           record._raw.height = data.height;
           record._raw.gender = data.gender;
           record._raw.goal = goalCsv;
+          record._raw.training_time = data.trainingTime;
           record._raw.created_at = Date.now();
           record._raw.updated_at = Date.now();
         });

@@ -1,4 +1,4 @@
-import type { AuthManager, SignInResult, RestoreSessionResult } from './AuthManager';
+import type { AuthManager, SignInResult, SignUpResult, RestoreSessionResult } from './AuthManager';
 import type { SessionRefresher } from './AuthManager';
 import type { SessionStore } from './sessionStore';
 import { loadSession } from './SecureStorage';
@@ -15,6 +15,26 @@ export async function signInAndPropagate(
 ): Promise<SignInResult> {
   const result = await authManager.signIn(email, password);
   if (result.success) {
+    const session = await loadSession();
+    if (session) sessionStore.set(session);
+  }
+  return result;
+}
+
+/**
+ * Wraps AuthManager.signUp() to propagate a successful session to the
+ * SessionStore, without modifying AuthManager itself (Requirement 14.3).
+ * Only the immediate-session branch (email confirmation disabled) has a
+ * session to propagate — the confirmationRequired branch has none.
+ */
+export async function signUpAndPropagate(
+  authManager: AuthManager,
+  sessionStore: SessionStore,
+  email: string,
+  password: string
+): Promise<SignUpResult> {
+  const result = await authManager.signUp(email, password);
+  if (result.success && 'navigateTo' in result) {
     const session = await loadSession();
     if (session) sessionStore.set(session);
   }

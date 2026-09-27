@@ -222,6 +222,7 @@ describe('WatermelonDB schema migration v1 -> v2 (Wave 6, real adapter)', () => 
     expect(migratedUser.weight).toBe(80);
     expect(migratedUser.height).toBe(178);
     expect(migratedUser.goal).toBeNull();
+    expect(migratedUser.trainingTime).toBeNull();
 
     const migratedExercise = await dbV2.get<Exercise>('exercises').find(ids.exerciseId);
     expect(migratedExercise.name).toBe('Supino Reto (Barra)');
@@ -257,6 +258,7 @@ describe('WatermelonDB schema migration v1 -> v2 (Wave 6, real adapter)', () => 
     expect(migratedSet.setType).toBe('');
     expect(getRawDocument(adapterV2, 'logged_sets', ids.loggedSetId).set_type).toBe('');
     expect(getRawDocument(adapterV2, 'users', ids.userId).goal).toBeNull();
+    expect(getRawDocument(adapterV2, 'users', ids.userId).training_time).toBeNull();
     expect(getRawDocument(adapterV2, 'workouts', ids.workoutId).description).toBe('');
 
     // Tabelas novas existem e são consultáveis (vazias — sem consumidor de

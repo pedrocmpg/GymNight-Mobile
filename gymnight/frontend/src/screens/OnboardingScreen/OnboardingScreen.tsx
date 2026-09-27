@@ -1,7 +1,8 @@
 /**
- * OnboardingScreen — wizard de 4 passos (nome, peso+altura, gênero,
- * objetivo), com barra de progresso. Porta `GymNight-Desktop/src/ui/screens/
- * setup.py` (Wave 8, PARIDADE-04-ROTINAS-PERFIL.md §2).
+ * OnboardingScreen — wizard de 5 passos (nome, peso+altura, gênero,
+ * objetivo, tempo de treino), com barra de progresso. Porta
+ * `GymNight-Desktop/src/ui/screens/setup.py` (Wave 8, PARIDADE-04-ROTINAS-
+ * PERFIL.md §2); o passo de tempo de treino é adicional, fora do desktop.
  *
  * Diferença deliberada do desktop: lá os dados vão para um arquivo solto
  * `user_data.json`; aqui o container grava na tabela `users` — esta tela só
@@ -24,6 +25,7 @@ import {
   toggleGoalFifo,
   GOAL_OPTIONS,
   GENDER_OPTIONS,
+  TRAINING_TIME_OPTIONS,
 } from './onboardingDomain';
 import type { OnboardingProfileData } from './saveOnboardingProfile';
 
@@ -35,7 +37,7 @@ export interface OnboardingScreenProps {
   error?: string | null;
 }
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 export function OnboardingScreen({ onComplete, isSaving = false, error = null }: OnboardingScreenProps) {
   const [step, setStep] = useState(1);
@@ -47,6 +49,7 @@ export function OnboardingScreen({ onComplete, isSaving = false, error = null }:
   const [heightError, setHeightError] = useState(false);
   const [gender, setGender] = useState<string | null>(null);
   const [goals, setGoals] = useState<string[]>([]);
+  const [trainingTime, setTrainingTime] = useState<string | null>(null);
 
   const handleNext = () => {
     if (step === 1) {
@@ -72,6 +75,10 @@ export function OnboardingScreen({ onComplete, isSaving = false, error = null }:
     if (step === 3) {
       if (gender === null) return;
       setStep(4);
+      return;
+    }
+    if (step === 4) {
+      setStep(5);
     }
   };
 
@@ -81,10 +88,18 @@ export function OnboardingScreen({ onComplete, isSaving = false, error = null }:
 
   const handleFinish = () => {
     if (isSaving) return;
+    if (trainingTime === null) return;
     const weight = Number(weightText.replace(',', '.'));
     const height = Number(heightText.replace(',', '.'));
     // Já validado nos passos 1-3; gender só chega aqui não-nulo (guard do passo 3).
-    onComplete({ name, weight, height, gender: gender as string, goals });
+    onComplete({
+      name,
+      weight,
+      height,
+      gender: gender as string,
+      goals,
+      trainingTime,
+    });
   };
 
   return (
@@ -201,6 +216,23 @@ export function OnboardingScreen({ onComplete, isSaving = false, error = null }:
                 </TouchableOpacity>
               );
             })}
+          </View>
+        )}
+
+        {step === 5 && (
+          <View testID="onboarding-step-training-time">
+            <Text style={styles.title}>HÁ QUANTO TEMPO VOCÊ TREINA?</Text>
+            <View style={styles.chipRow}>
+              {TRAINING_TIME_OPTIONS.map((option) => (
+                <Chip
+                  key={option}
+                  testID={`onboarding-training-time-${option}`}
+                  label={option}
+                  selected={trainingTime === option}
+                  onPress={() => setTrainingTime(option)}
+                />
+              ))}
+            </View>
           </View>
         )}
 

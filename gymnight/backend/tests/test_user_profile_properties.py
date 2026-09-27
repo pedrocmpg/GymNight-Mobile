@@ -41,6 +41,8 @@ _BIRTH_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 VALID_GENDERS = {"male", "female", "other"}
 
+VALID_TRAINING_TIMES = {"Nunca treinei", "Até 6 meses", "6 meses a 2 anos", "Mais de 2 anos"}
+
 
 # ---------------------------------------------------------------------------
 # Probe helpers: detect whether Pydantic validators are implemented yet
@@ -115,6 +117,23 @@ def _orm_set_birth_date(value: str) -> None:
 def _orm_set_gender(value: str) -> None:
     """Assign `value` to a fresh User instance's gender attribute."""
     User.validate_gender(None, "gender", value)
+
+
+def _pydantic_training_time_validates() -> bool:
+    """
+    Probe whether UserProfileUpdate currently enforces training_time validation.
+    Returns True if the schema rejects a clearly invalid training_time string.
+    """
+    try:
+        UserProfileUpdate(training_time="clearly_invalid_training_time_value")
+        return False  # Schema accepted invalid input → no validator yet
+    except ValidationError:
+        return True
+
+
+def _orm_set_training_time(value: str) -> None:
+    """Assign `value` to a fresh User instance's training_time attribute."""
+    User.validate_training_time(None, "training_time", value)
 
 
 # ---------------------------------------------------------------------------
@@ -373,6 +392,61 @@ def test_property_4_gender_validation(gender: str) -> None:
             UserProfileUpdate(gender=gender)
 
 
+# ---------------------------------------------------------------------------
+# Training time validation accepts only enumerated values
+# Onboarding "tempo de treino" step — mirrors Property 4 (gender) above.
+# ---------------------------------------------------------------------------
+
+# Strategy: arbitrary strings, biased toward the valid set and short strings
+_training_time_strategy = st.one_of(
+    st.text(min_size=0, max_size=30),                     # Mostly non-matching strings
+    st.sampled_from(sorted(VALID_TRAINING_TIMES)),        # Valid values
+    st.sampled_from(["nunca treinei", "ATÉ 6 MESES", "", " ", "iniciante"]),
+)
+
+
+@h_settings(max_examples=200, suppress_health_check=[HealthCheck.too_slow])
+@given(training_time=_training_time_strategy)
+def test_training_time_validation(training_time: str) -> None:
+    """
+    For any string `training_time`:
+    - If training_time is one of VALID_TRAINING_TIMES, both the ORM validator
+      and the Pydantic schema MUST accept it.
+    - If training_time is any other string, the ORM validator MUST raise
+      ValueError and the Pydantic schema MUST raise ValidationError.
+    """
+    in_enum = training_time in VALID_TRAINING_TIMES
+
+    # --- ORM layer ---
+    if in_enum:
+        try:
+            _orm_set_training_time(training_time)
+        except ValueError as exc:
+            pytest.fail(
+                f"ORM validator unexpectedly rejected training_time={training_time!r}: {exc}"
+            )
+    else:
+        with pytest.raises(ValueError, match="training_time must be"):
+            _orm_set_training_time(training_time)
+
+    # --- Pydantic layer ---
+    _pydantic_has_validator = _pydantic_training_time_validates()
+
+    if not _pydantic_has_validator:
+        return
+
+    if in_enum:
+        try:
+            UserProfileUpdate(training_time=training_time)
+        except ValidationError as exc:
+            pytest.fail(
+                f"Pydantic schema unexpectedly rejected training_time={training_time!r}: {exc}"
+            )
+    else:
+        with pytest.raises(ValidationError):
+            UserProfileUpdate(training_time=training_time)
+
+
 # ===========================================================================
 # Properties 5–8: HTTP endpoint round-trip tests (mocked DB sessions)
 # Feature: backend-fixes-and-improvements
@@ -452,6 +526,7 @@ def _make_test_client(mock_user_id: str, mock_db: MagicMock) -> TestClient:
         ),
     ),
     gender=st.one_of(st.none(), st.sampled_from(["male", "female", "other"])),
+    training_time=st.one_of(st.none(), st.sampled_from(sorted(VALID_TRAINING_TIMES))),
 )
 def test_property_5_post_users_field_roundtrip(
     name: str,
@@ -459,6 +534,7 @@ def test_property_5_post_users_field_roundtrip(
     height,
     birth_date,
     gender,
+    training_time,
 ) -> None:
     """
     **Validates: Requirements 1.6, 3.1**
@@ -484,6 +560,7 @@ def test_property_5_post_users_field_roundtrip(
         user_obj.height = height
         user_obj.birth_date = birth_date
         user_obj.gender = gender
+        user_obj.training_time = training_time
 
     mock_db.refresh.side_effect = _refresh_side_effect
 
@@ -503,6 +580,8 @@ def test_property_5_post_users_field_roundtrip(
             payload["birth_date"] = birth_date
         if gender is not None:
             payload["gender"] = gender
+        if training_time is not None:
+            payload["training_time"] = training_time
 
         response = client.post("/users", json=payload)
 
@@ -528,6 +607,10 @@ def test_property_5_post_users_field_roundtrip(
         if gender is not None:
             assert body["gender"] == gender, (
                 f"gender mismatch: {body['gender']!r} != {gender!r}"
+            )
+        if training_time is not None:
+            assert body["training_time"] == training_time, (
+                f"training_time mismatch: {body['training_time']!r} != {training_time!r}"
             )
     finally:
         fastapi_app.dependency_overrides.pop(get_current_user, None)
@@ -563,6 +646,7 @@ def test_property_5_post_users_field_roundtrip(
         ),
     ),
     gender=st.one_of(st.none(), st.sampled_from(["male", "female", "other"])),
+    training_time=st.one_of(st.none(), st.sampled_from(sorted(VALID_TRAINING_TIMES))),
 )
 def test_property_6_get_users_me_returns_correct_profile(
     user_id: str,
@@ -571,6 +655,7 @@ def test_property_6_get_users_me_returns_correct_profile(
     height,
     birth_date,
     gender,
+    training_time,
 ) -> None:
     """
     **Validates: Requirements 3.1**
@@ -591,6 +676,7 @@ def test_property_6_get_users_me_returns_correct_profile(
     mock_user.height = height
     mock_user.birth_date = birth_date
     mock_user.gender = gender
+    mock_user.training_time = training_time
 
     mock_db.query.return_value.filter.return_value.first.return_value = mock_user
 
@@ -628,6 +714,9 @@ def test_property_6_get_users_me_returns_correct_profile(
         assert body.get("gender") == gender, (
             f"gender mismatch: {body.get('gender')!r} != {gender!r}"
         )
+        assert body.get("training_time") == training_time, (
+            f"training_time mismatch: {body.get('training_time')!r} != {training_time!r}"
+        )
     finally:
         fastapi_app.dependency_overrides.pop(get_current_user, None)
         fastapi_app.dependency_overrides.pop(get_db, None)
@@ -662,6 +751,7 @@ _optional_birth_date = st.one_of(
     ),
 )
 _optional_gender = st.one_of(st.none(), st.sampled_from(["male", "female", "other"]))
+_optional_training_time = st.one_of(st.none(), st.sampled_from(sorted(VALID_TRAINING_TIMES)))
 
 
 @h_settings(max_examples=200, suppress_health_check=[HealthCheck.too_slow])
@@ -676,12 +766,14 @@ _optional_gender = st.one_of(st.none(), st.sampled_from(["male", "female", "othe
     initial_height=_optional_height,
     initial_birth_date=_optional_birth_date,
     initial_gender=_optional_gender,
+    initial_training_time=_optional_training_time,
     # Fields to include in PATCH payload (None means "omit this field")
     patch_name=_optional_name,
     patch_weight=_optional_weight,
     patch_height=_optional_height,
     patch_birth_date=_optional_birth_date,
     patch_gender=_optional_gender,
+    patch_training_time=_optional_training_time,
 )
 def test_property_7_patch_users_me_updates_only_sent_fields(
     initial_name,
@@ -689,11 +781,13 @@ def test_property_7_patch_users_me_updates_only_sent_fields(
     initial_height,
     initial_birth_date,
     initial_gender,
+    initial_training_time,
     patch_name,
     patch_weight,
     patch_height,
     patch_birth_date,
     patch_gender,
+    patch_training_time,
 ) -> None:
     """
     **Validates: Requirements 4.1**
@@ -717,6 +811,8 @@ def test_property_7_patch_users_me_updates_only_sent_fields(
         patch_payload["birth_date"] = patch_birth_date
     if patch_gender is not None:
         patch_payload["gender"] = patch_gender
+    if patch_training_time is not None:
+        patch_payload["training_time"] = patch_training_time
 
     # If the payload is completely empty, the PATCH is a no-op but still valid.
     # We still verify HTTP 200 and no field mutation.
@@ -735,6 +831,7 @@ def test_property_7_patch_users_me_updates_only_sent_fields(
     stored_user.height = initial_height    # type: ignore[attr-defined]
     stored_user.birth_date = initial_birth_date  # type: ignore[attr-defined]
     stored_user.gender = initial_gender    # type: ignore[attr-defined]
+    stored_user.training_time = initial_training_time  # type: ignore[attr-defined]
 
     mock_db.query.return_value.filter.return_value.first.return_value = stored_user
     mock_db.refresh.side_effect = lambda u: None  # no-op
@@ -773,6 +870,11 @@ def test_property_7_patch_users_me_updates_only_sent_fields(
             assert body["gender"] == patch_payload["gender"], (
                 f"gender not updated: {body['gender']!r} != {patch_payload['gender']!r}"
             )
+        if "training_time" in patch_payload:
+            assert body["training_time"] == patch_payload["training_time"], (
+                f"training_time not updated: {body['training_time']!r} != "
+                f"{patch_payload['training_time']!r}"
+            )
 
         # --- Fields NOT in payload must retain initial values ---
         if "name" not in patch_payload:
@@ -800,6 +902,11 @@ def test_property_7_patch_users_me_updates_only_sent_fields(
         if "gender" not in patch_payload:
             assert body.get("gender") == initial_gender, (
                 f"gender mutated: {body.get('gender')!r} != {initial_gender!r}"
+            )
+        if "training_time" not in patch_payload:
+            assert body.get("training_time") == initial_training_time, (
+                f"training_time mutated: {body.get('training_time')!r} != "
+                f"{initial_training_time!r}"
             )
     finally:
         fastapi_app.dependency_overrides.pop(get_current_user, None)

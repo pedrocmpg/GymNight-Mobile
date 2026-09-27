@@ -32,6 +32,10 @@ function createSpyAuthManager() {
         error: { message: 'Should never be called offline' },
       };
     }),
+    signUp: jest.fn(async () => ({
+      data: { session: null },
+      error: { message: 'Should never be called offline' },
+    })),
   };
 
   const storage: SecureStoragePort = {

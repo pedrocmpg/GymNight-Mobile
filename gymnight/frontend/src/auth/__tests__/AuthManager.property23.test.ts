@@ -82,6 +82,9 @@ describe('Property 23: Auth failures keep user on Auth_Screen with error message
               async signInWithPassword(_credentials) {
                 return { data: { session: null }, error: { message: errorMessage } };
               },
+              async signUp(_credentials) {
+                return { data: { session: null }, error: null };
+              },
             };
 
             const storage: SecureStoragePort = {
@@ -126,6 +129,9 @@ describe('Property 23: Auth failures keep user on Auth_Screen with error message
             const supabaseAuth: SupabaseAuthClient = {
               async signInWithPassword(_credentials) {
                 throw new Error(networkError);
+              },
+              async signUp(_credentials) {
+                return { data: { session: null }, error: null };
               },
             };
 
@@ -180,6 +186,9 @@ describe('Property 23: Auth failures keep user on Auth_Screen with error message
             const supabaseAuth: SupabaseAuthClient = {
               async signInWithPassword(_credentials) {
                 return { data: { session: null }, error: { message: errorMessage } };
+              },
+              async signUp(_credentials) {
+                return { data: { session: null }, error: null };
               },
             };
 

@@ -49,6 +49,9 @@ function createInstrumentedMocks(
       log.push({ event: 'supabase_signIn_end', timestamp: counter++ });
       return { data: { session }, error: null };
     },
+    async signUp(_credentials) {
+      return { data: { session: null }, error: null };
+    },
   };
 
   const storage: SecureStoragePort = {
@@ -149,6 +152,9 @@ describe('Property 22: Session persistence completes before navigation', () => {
           const supabaseAuth: SupabaseAuthClient = {
             async signInWithPassword(_credentials) {
               return { data: { session }, error: null };
+            },
+            async signUp(_credentials) {
+              return { data: { session: null }, error: null };
             },
           };
 

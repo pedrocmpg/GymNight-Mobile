@@ -3,8 +3,8 @@ import NetInfo from '@react-native-community/netinfo';
 import { AuthScreen } from '../../screens/AuthScreen/AuthScreen';
 import type { AuthManager } from '../../auth/AuthManager';
 import type { SessionStore } from '../../auth/sessionStore';
-import { signInAndPropagate } from '../../auth/sessionProducers';
-import { resolveSignInOutcome } from '../bootstrapRouting';
+import { signInAndPropagate, signUpAndPropagate } from '../../auth/sessionProducers';
+import { resolveSignInOutcome, resolveSignUpOutcome } from '../bootstrapRouting';
 
 export interface AuthScreenContainerProps {
   authManager: AuthManager;
@@ -22,6 +22,7 @@ export function AuthScreenContainer(props: AuthScreenContainerProps) {
   const [isOnline, setIsOnline] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [signUpStatus, setSignUpStatus] = useState<'idle' | 'confirmationRequired'>('idle');
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -49,7 +50,36 @@ export function AuthScreenContainer(props: AuthScreenContainerProps) {
     }
   };
 
+  const handleSignUp = async (email: string, password: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await signUpAndPropagate(props.authManager, props.sessionStore, email, password);
+      const outcome = resolveSignUpOutcome(result);
+      if (outcome.navigateToDashboard) {
+        props.onAuthenticated();
+      } else if (outcome.confirmationRequired) {
+        setSignUpStatus('confirmationRequired');
+      } else {
+        setError(outcome.errorMessage);
+      }
+    } catch {
+      const outcome = resolveSignUpOutcome({ __rejected: true });
+      setError(outcome.errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <AuthScreen isOnline={isOnline} isLoading={isLoading} error={error} onSubmit={handleSubmit} />
+    <AuthScreen
+      isOnline={isOnline}
+      isLoading={isLoading}
+      error={error}
+      onSubmit={handleSubmit}
+      onSignUp={handleSignUp}
+      signUpStatus={signUpStatus}
+      onDismissCheckEmail={() => setSignUpStatus('idle')}
+    />
   );
 }

@@ -12,6 +12,8 @@ export default class User extends Model {
   @field('gender') gender!: string | null;
   /** Até 2 objetivos, serializados "Hipertrofia,Saúde" (Wave 8). */
   @field('goal') goal!: string | null;
+  /** Faixa fixa de tempo de treino, ex: "Nunca treinei". */
+  @field('training_time') trainingTime!: string | null;
   @date('created_at') createdAt!: Date;
   @date('updated_at') updatedAt!: Date;
 }

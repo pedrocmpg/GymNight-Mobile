@@ -37,5 +37,33 @@ export function createSupabaseAuthClientAdapter(client: SupabaseClient): Supabas
         return { data: { session: null }, error: { message } };
       }
     },
+
+    async signUp(credentials) {
+      try {
+        const { data, error } = await client.auth.signUp(credentials);
+
+        if (error) {
+          return { data: { session: null }, error: { message: error.message } };
+        }
+
+        if (!data.session) {
+          return { data: { session: null }, error: null };
+        }
+
+        return {
+          data: {
+            session: {
+              access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token,
+              user_id: data.session.user.id,
+            },
+          },
+          error: null,
+        };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return { data: { session: null }, error: { message } };
+      }
+    },
   };
 }

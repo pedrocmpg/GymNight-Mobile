@@ -70,6 +70,9 @@ describe('Property 24: Secure_Storage write failure after successful auth discar
               async signInWithPassword(_credentials) {
                 return { data: { session }, error: null };
               },
+              async signUp(_credentials) {
+                return { data: { session: null }, error: null };
+              },
             };
 
             // Mock: SecureStorage fails with the arbitrary error
@@ -118,6 +121,9 @@ describe('Property 24: Secure_Storage write failure after successful auth discar
               async signInWithPassword(_credentials) {
                 return { data: { session }, error: null };
               },
+              async signUp(_credentials) {
+                return { data: { session: null }, error: null };
+              },
             };
 
             // Mock: SecureStorage captures what was passed then fails
@@ -164,6 +170,9 @@ describe('Property 24: Secure_Storage write failure after successful auth discar
             const supabaseAuth: SupabaseAuthClient = {
               async signInWithPassword(_credentials) {
                 return { data: { session }, error: null };
+              },
+              async signUp(_credentials) {
+                return { data: { session: null }, error: null };
               },
             };
 

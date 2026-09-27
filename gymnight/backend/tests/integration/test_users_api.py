@@ -95,6 +95,7 @@ def test_post_users_creates_profile(db_transaction):
         "height": 170.0,
         "birth_date": "1990-06-15",
         "gender": "female",
+        "training_time": "6 meses a 2 anos",
     }
 
     try:
@@ -112,6 +113,7 @@ def test_post_users_creates_profile(db_transaction):
         assert abs(body["height"] - payload["height"]) < 1e-6
         assert body["birth_date"] == payload["birth_date"]
         assert body["gender"] == payload["gender"]
+        assert body["training_time"] == payload["training_time"]
 
         # Flush so the row is visible within this transaction
         db_transaction.flush()
@@ -129,6 +131,7 @@ def test_post_users_creates_profile(db_transaction):
         assert abs(db_user.height - payload["height"]) < 1e-6
         assert db_user.birth_date == payload["birth_date"]
         assert db_user.gender == payload["gender"]
+        assert db_user.training_time == payload["training_time"]
 
     finally:
         _cleanup_overrides()
@@ -159,6 +162,7 @@ def test_get_users_me_returns_profile(db_transaction):
         height=180.0,
         birth_date="1985-03-22",
         gender="male",
+        training_time="Mais de 2 anos",
     )
     db_transaction.add(user)
     db_transaction.flush()  # write within the open transaction
@@ -178,6 +182,7 @@ def test_get_users_me_returns_profile(db_transaction):
         assert abs(body["height"] - 180.0) < 1e-6
         assert body["birth_date"] == "1985-03-22"
         assert body["gender"] == "male"
+        assert body["training_time"] == "Mais de 2 anos"
 
     finally:
         _cleanup_overrides()
@@ -210,13 +215,14 @@ def test_patch_users_me_partial_update(db_transaction):
         height=175.0,
         birth_date="1992-11-10",
         gender="other",
+        training_time="Nunca treinei",
     )
     db_transaction.add(user)
     db_transaction.flush()
 
     client = _make_client(db_transaction, user_id)
 
-    # Only update `name` and `weight`; leave height, birth_date, gender untouched
+    # Only update `name` and `weight`; leave height, birth_date, gender, training_time untouched
     patch_payload = {
         "name": "Charlie Updated",
         "weight": 78.5,
@@ -239,6 +245,7 @@ def test_patch_users_me_partial_update(db_transaction):
         assert abs(body["height"] - 175.0) < 1e-6
         assert body["birth_date"] == "1992-11-10"
         assert body["gender"] == "other"
+        assert body["training_time"] == "Nunca treinei"
 
         # Confirm the DB row matches (expunge + re-query to bypass session cache)
         db_transaction.expire(user)
@@ -253,6 +260,7 @@ def test_patch_users_me_partial_update(db_transaction):
         assert abs(db_user.height - 175.0) < 1e-6
         assert db_user.birth_date == "1992-11-10"
         assert db_user.gender == "other"
+        assert db_user.training_time == "Nunca treinei"
 
     finally:
         _cleanup_overrides()

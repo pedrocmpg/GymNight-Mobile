@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
 
 export const schema = appSchema({
-  version: 2,
+  version: 3,
   tables: [
     tableSchema({
       name: 'users',
@@ -14,6 +14,8 @@ export const schema = appSchema({
         { name: 'gender', type: 'string', isOptional: true },
         // v2 (Wave 8 — onboarding): até 2 objetivos, serializados "Hipertrofia,Saúde".
         { name: 'goal', type: 'string', isOptional: true },
+        // v3 (tempo de treino): faixa fixa, string do id da opção.
+        { name: 'training_time', type: 'string', isOptional: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
       ],

@@ -67,6 +67,7 @@ class _FakeUser:
         self.height = kwargs.get("height")
         self.birth_date = kwargs.get("birth_date")
         self.gender = kwargs.get("gender")
+        self.training_time = kwargs.get("training_time")
 
 
 def _build_test_client() -> tuple[TestClient, MagicMock, MagicMock]:
@@ -126,6 +127,9 @@ _optional_profile_fields = st.fixed_dictionaries(
         "height": st.floats(min_value=50.0, max_value=300.0, allow_nan=False, allow_infinity=False),
         "birth_date": st.dates(max_value=date.today()).map(lambda d: d.isoformat()),
         "gender": st.sampled_from(["male", "female", "other"]),
+        "training_time": st.sampled_from(
+            ["Nunca treinei", "Até 6 meses", "6 meses a 2 anos", "Mais de 2 anos"]
+        ),
     },
 )
 
@@ -189,6 +193,9 @@ _valid_profile_subset = st.fixed_dictionaries(
         ),
         "birth_date": st.dates(max_value=date.today()).map(lambda d: d.isoformat()),
         "gender": st.sampled_from(["male", "female", "other"]),
+        "training_time": st.sampled_from(
+            ["Nunca treinei", "Até 6 meses", "6 meses a 2 anos", "Mais de 2 anos"]
+        ),
     },
 )
 

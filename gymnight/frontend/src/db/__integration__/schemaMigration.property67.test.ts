@@ -193,6 +193,7 @@ describe('Property 67: schema v2 migration - novas colunas sempre no zero-value 
           // Colunas novas: zero-value fixo, nunca influenciado pelo conteúdo
           // antigo da linha (migrations.ts §comentário).
           expect(migratedUser.goal).toBeNull();
+          expect(migratedUser.trainingTime).toBeNull();
           expect(migratedWorkout.description).toBe('');
           expect(migratedWorkoutExercise.orderIndex).toBe(0);
           expect(migratedSet.setType).toBe('');

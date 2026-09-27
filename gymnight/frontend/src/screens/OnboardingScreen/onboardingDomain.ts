@@ -26,6 +26,14 @@ export function isValidHeight(height: number): boolean {
 export const GENDER_OPTIONS = ['Masculino', 'Feminino', 'Outro'] as const;
 export type GenderOption = (typeof GENDER_OPTIONS)[number];
 
+export const TRAINING_TIME_OPTIONS = [
+  'Nunca treinei',
+  'Até 6 meses',
+  '6 meses a 2 anos',
+  'Mais de 2 anos',
+] as const;
+export type TrainingTimeOption = (typeof TRAINING_TIME_OPTIONS)[number];
+
 export interface GoalOption {
   id: string;
   label: string;

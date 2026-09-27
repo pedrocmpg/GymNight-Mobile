@@ -25,6 +25,7 @@ class UserProfileCreate(BaseModel):
     height: Optional[float] = None     # 50.0–300.0 cm
     birth_date: Optional[str] = None   # ISO 8601 YYYY-MM-DD
     gender: Optional[str] = None       # "male" | "female" | "other"
+    training_time: Optional[str] = None  # "Nunca treinei" | "Até 6 meses" | "6 meses a 2 anos" | "Mais de 2 anos"
 
     @field_validator("weight")
     @classmethod
@@ -60,6 +61,14 @@ class UserProfileCreate(BaseModel):
     def validate_gender(cls, v: Optional[str]) -> Optional[str]:
         if v is not None and v not in {"male", "female", "other"}:
             raise ValueError("gender must be one of: male, female, other")
+        return v
+
+    @field_validator("training_time")
+    @classmethod
+    def validate_training_time(cls, v: Optional[str]) -> Optional[str]:
+        allowed = {"Nunca treinei", "Até 6 meses", "6 meses a 2 anos", "Mais de 2 anos"}
+        if v is not None and v not in allowed:
+            raise ValueError(f"training_time must be one of: {', '.join(sorted(allowed))}")
         return v
 
 
@@ -72,6 +81,7 @@ class UserProfileUpdate(BaseModel):
     height: Optional[float] = None
     birth_date: Optional[str] = None
     gender: Optional[str] = None
+    training_time: Optional[str] = None
 
     @field_validator("weight")
     @classmethod
@@ -109,6 +119,14 @@ class UserProfileUpdate(BaseModel):
             raise ValueError("gender must be one of: male, female, other")
         return v
 
+    @field_validator("training_time")
+    @classmethod
+    def validate_training_time(cls, v: Optional[str]) -> Optional[str]:
+        allowed = {"Nunca treinei", "Até 6 meses", "6 meses a 2 anos", "Mais de 2 anos"}
+        if v is not None and v not in allowed:
+            raise ValueError(f"training_time must be one of: {', '.join(sorted(allowed))}")
+        return v
+
 
 class UserProfileResponse(BaseModel):
     id: str
@@ -118,5 +136,6 @@ class UserProfileResponse(BaseModel):
     height: Optional[float] = None
     birth_date: Optional[str] = None
     gender: Optional[str] = None
+    training_time: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

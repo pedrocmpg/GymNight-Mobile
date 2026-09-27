@@ -14,6 +14,7 @@ function profile(overrides: Partial<OnboardingProfileData> = {}): OnboardingProf
     height: 178,
     gender: 'Masculino',
     goals: ['Hipertrofia', 'Saúde'],
+    trainingTime: 'Até 6 meses',
     ...overrides,
   };
 }
@@ -40,6 +41,7 @@ describe('saveOnboardingProfile — criação (linha ainda não existe localment
     expect(row._raw.height).toBe(178);
     expect(row._raw.gender).toBe('Masculino');
     expect(row._raw.goal).toBe('Hipertrofia,Saúde');
+    expect(row._raw.training_time).toBe('Até 6 meses');
   });
 
   it('objetivo vazio serializa como string vazia, não null/undefined', async () => {

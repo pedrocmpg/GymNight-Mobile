@@ -4,6 +4,11 @@ export type SignInResult =
   | { success: true; navigateTo: 'dashboard' }
   | { success: false; error: Error };
 
+export type SignUpResult =
+  | { success: true; navigateTo: 'dashboard' }
+  | { success: true; status: 'confirmationRequired' }
+  | { success: false; error: Error };
+
 export type RestoreSessionResult =
   | { navigateTo: 'dashboard' }
   | { navigateTo: 'auth' };
@@ -13,6 +18,10 @@ export type RestoreSessionResult =
  */
 export interface SupabaseAuthClient {
   signInWithPassword(credentials: {
+    email: string;
+    password: string;
+  }): Promise<{ data: { session: Session | null }; error: { message: string } | null }>;
+  signUp(credentials: {
     email: string;
     password: string;
   }): Promise<{ data: { session: Session | null }; error: { message: string } | null }>;
@@ -89,6 +98,40 @@ export class AuthManager {
 
     // Persist session BEFORE returning success (navigation trigger).
     // If persistence fails, we must NOT return a navigation signal.
+    try {
+      await this.storage.saveSession(data.session);
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err : new Error('Failed to persist session'),
+      };
+    }
+
+    return { success: true, navigateTo: 'dashboard' };
+  }
+
+  /**
+   * Signs up a new user via Supabase. Ordering guarantee mirrors signIn:
+   *   1. Supabase call completes
+   *   2. If a session comes back immediately (email confirmation disabled),
+   *      persist it BEFORE returning success.
+   *   3. If no session comes back (email confirmation required — the case
+   *      verified live against this project), return a distinct status so
+   *      the caller can show a "check your email" state instead of
+   *      navigating anywhere (there is no session to navigate with).
+   */
+  async signUp(email: string, password: string): Promise<SignUpResult> {
+    const { data, error } = await this.supabaseAuth.signUp({ email, password });
+
+    if (error) {
+      return { success: false, error: new Error(error.message) };
+    }
+
+    if (!data.session) {
+      return { success: true, status: 'confirmationRequired' };
+    }
+
+    // Persist session BEFORE returning success (navigation trigger).
     try {
       await this.storage.saveSession(data.session);
     } catch (err) {

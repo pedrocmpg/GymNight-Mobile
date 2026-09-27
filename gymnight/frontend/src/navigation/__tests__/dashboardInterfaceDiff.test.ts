@@ -29,6 +29,11 @@
  *
  * Updated (PARIDADE wave 9): `onStartCardioSession` (OPCIONAL) liga o botão
  * "Cardio" ao lado de "+ Novo" — cardio avulso (PARIDADE-05-CARDIO.md §4.3).
+ *
+ * Updated (cadastro por email/senha): AuthScreenProps ganhou `onSignUp`
+ * (callback do modo cadastro) e `signUpStatus` (OPCIONAL — ativa o modo
+ * "confirme seu email"). Única mudança nesta suíte que de fato altera
+ * AuthScreenProps; as outras duas telas seguem intocadas.
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -69,10 +74,18 @@ describe('Dashboard_Screen interface diff limited to onStartSession/onLogout', (
     );
   });
 
-  it('AuthScreenProps, WorkoutCreatorScreenProps, ActiveSessionProps are untouched', () => {
+  it('AuthScreenProps gained only onSignUp/signUpStatus; WorkoutCreatorScreenProps and ActiveSessionProps are untouched', () => {
     const authContent = fs.readFileSync(path.join(SCREENS_DIR, 'AuthScreen', 'AuthScreen.tsx'), 'utf-8');
     expect(new Set(extractInterfaceMembers(authContent, 'AuthScreenProps'))).toEqual(
-      new Set(['isOnline', 'isLoading', 'error', 'onSubmit'])
+      new Set([
+        'isOnline',
+        'isLoading',
+        'error',
+        'onSubmit',
+        'onSignUp',
+        'signUpStatus',
+        'onDismissCheckEmail',
+      ])
     );
 
     const workoutContent = fs.readFileSync(

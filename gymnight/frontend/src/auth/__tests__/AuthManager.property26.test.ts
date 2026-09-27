@@ -61,6 +61,9 @@ function createInstrumentedMocks(nullReason: NullSessionReason) {
     async signInWithPassword(_credentials) {
       return { data: { session: null }, error: { message: 'Not used in restore' } };
     },
+    async signUp(_credentials) {
+      return { data: { session: null }, error: null };
+    },
   };
 
   const storage: SecureStoragePort = {

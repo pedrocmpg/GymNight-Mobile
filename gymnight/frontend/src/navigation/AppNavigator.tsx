@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { AuthManager } from '../auth/AuthManager';
@@ -8,6 +8,8 @@ import type { SyncEngine } from '../sync/SyncEngine';
 import type { SessionStore } from '../auth/sessionStore';
 import { runBootstrapRouting, resolveAuthenticatedPhase } from './bootstrapRouting';
 import { colors } from '../designSystem/tokens';
+import { LoadingState } from '../designSystem/components/LoadingState';
+import { navigationTheme } from './navigationTheme';
 import { AuthScreenContainer } from './containers/AuthScreenContainer';
 import { MainTabNavigator } from './MainTabNavigator';
 import { WorkoutCreatorScreenContainer } from './containers/WorkoutCreatorScreenContainer';
@@ -24,6 +26,12 @@ export type RootStackParamList = {
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+/** Sessão em andamento é um modo à parte: sobe de baixo e não fecha com gesto. */
+const ACTIVE_SESSION_OPTIONS = {
+  animation: 'slide_from_bottom',
+  gestureEnabled: false,
+} as const;
 
 export interface AppNavigatorProps {
   authManager: AuthManager;
@@ -65,8 +73,8 @@ export function AppNavigator(props: AppNavigatorProps) {
 
   if (phase === 'loading' || !fontsLoaded) {
     return (
-      <View style={styles.loadingContainer} testID="app-loading">
-        <ActivityIndicator size="large" color={colors.primary} testID="app-loading-indicator" />
+      <View style={styles.loadingContainer}>
+        <LoadingState testID="app-loading" indicatorTestID="app-loading-indicator" />
       </View>
     );
   }
@@ -81,8 +89,13 @@ export function AppNavigator(props: AppNavigatorProps) {
   };
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <NavigationContainer theme={navigationTheme}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      >
         {phase === 'auth' ? (
           <Stack.Screen name="Auth">
             {(navProps) => (
@@ -132,7 +145,7 @@ export function AppNavigator(props: AppNavigatorProps) {
                 />
               )}
             </Stack.Screen>
-            <Stack.Screen name="ActiveSession">
+            <Stack.Screen name="ActiveSession" options={ACTIVE_SESSION_OPTIONS}>
               {(navProps) => (
                 <ActiveSessionScreenContainer
                   {...navProps}
@@ -152,8 +165,6 @@ export function AppNavigator(props: AppNavigatorProps) {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: colors.background,
   },
 });

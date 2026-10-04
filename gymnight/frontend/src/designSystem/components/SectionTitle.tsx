@@ -1,10 +1,6 @@
 /**
- * SectionTitle — título de seção em CAIXA ALTA, com slot opcional à direita.
- * Porta o QLabel#h3 e os títulos "ATIVIDADE SEMANAL" / "TREINOS RECENTES"
- * (dashboard.py:329,351).
- *
- * O .toUpperCase() é feito aqui dentro, para que nenhum call site precise
- * lembrar disso.
+ * SectionTitle — título de seção em sentence case, com metadado opcional
+ * ("3 de 7 dias") e uma ação à direita.
  */
 
 import React from 'react';
@@ -13,15 +9,22 @@ import { colors, typography, spacing } from '../tokens';
 
 export interface SectionTitleProps {
   children: string;
-  /** Ação alinhada à direita do título (ex.: botão "+ Novo"). */
+  /** Texto auxiliar discreto logo após o título. */
+  meta?: string;
+  /** Ação alinhada à direita do título (ex.: botão "Novo"). */
   right?: React.ReactNode;
   testID?: string;
 }
 
-export function SectionTitle({ children, right, testID }: SectionTitleProps) {
+export function SectionTitle({ children, meta, right, testID }: SectionTitleProps) {
   return (
     <View style={styles.row} testID={testID}>
-      <Text style={styles.title}>{children.toUpperCase()}</Text>
+      <View style={styles.text}>
+        <Text style={styles.title} accessibilityRole="header" numberOfLines={1}>
+          {children}
+        </Text>
+        {meta ? <Text style={styles.meta}>{meta}</Text> : null}
+      </View>
       {right ?? null}
     </View>
   );
@@ -34,9 +37,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
   },
+  text: {
+    flexShrink: 1,
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing.xs,
+  },
   title: {
     ...typography.h3,
     color: colors.primaryText,
     flexShrink: 1,
+  },
+  meta: {
+    ...typography.footnote,
+    color: colors.tertiaryText,
   },
 });

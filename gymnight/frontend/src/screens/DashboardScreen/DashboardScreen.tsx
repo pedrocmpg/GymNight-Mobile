@@ -360,7 +360,8 @@ export function DashboardScreen({
                   <Button
                     label="Cardio"
                     icon="heartbeat"
-                    variant="outlineAccent"
+                    variant="secondary"
+                    size="sm"
                     fullWidth={false}
                     onPress={onStartCardioSession}
                     testID="start-cardio-session-button"
@@ -370,7 +371,8 @@ export function DashboardScreen({
                 <Button
                   label="Novo"
                   icon="plus"
-                  variant="outlineAccent"
+                  variant="secondary"
+                    size="sm"
                   fullWidth={false}
                   onPress={onCreateWorkout}
                   testID="create-workout-button"

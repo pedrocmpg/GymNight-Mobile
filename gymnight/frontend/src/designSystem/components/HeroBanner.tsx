@@ -57,8 +57,8 @@ function Scrim({
     <Svg style={[styles.scrim, style]} pointerEvents="none">
       <Defs>
         <LinearGradient id={id} x1={x1} y1={y1} x2={x2} y2={y2}>
-          <Stop offset="0" stopColor={colors.scrim} stopOpacity={EDGE_OPACITY} />
-          <Stop offset="1" stopColor={colors.scrim} stopOpacity={0} />
+          <Stop offset="0" stopColor={colors.background} stopOpacity={EDGE_OPACITY} />
+          <Stop offset="1" stopColor={colors.background} stopOpacity={0} />
         </LinearGradient>
       </Defs>
       <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />

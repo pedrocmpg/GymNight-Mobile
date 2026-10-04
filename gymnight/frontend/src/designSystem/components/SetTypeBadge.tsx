@@ -9,8 +9,9 @@
  */
 
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { colors, radii, typography } from '../tokens';
+import { Text, StyleSheet } from 'react-native';
+import { colors, radii, spacing, typography } from '../tokens';
+import { Touchable } from './Touchable';
 
 export type SetType = 'N' | 'W' | 'D' | 'F';
 
@@ -38,23 +39,21 @@ export function SetTypeBadge({
   accessibilityLabel,
 }: SetTypeBadgeProps) {
   const isDefault = setType === 'N';
-  const handlePress = () => {
-    if (disabled) return;
-    onPress();
-  };
 
   return (
-    <TouchableOpacity
+    <Touchable
       testID={testID}
-      onPress={handlePress}
+      onPress={onPress}
       disabled={disabled}
-      activeOpacity={0.8}
+      haptic="selection"
+      // 28px visíveis + 8px de folga em cada lado = alvo de 44.
+      hitSlop={spacing.xs}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       style={[styles.badge, isDefault ? styles.badgeDefault : styles.badgeMarked]}
     >
       <Text style={isDefault ? styles.textDefault : styles.textMarked}>{setType}</Text>
-    </TouchableOpacity>
+    </Touchable>
   );
 }
 
@@ -71,15 +70,13 @@ const styles = StyleSheet.create({
   },
   badgeMarked: {
     backgroundColor: colors.cardAlt,
-    borderWidth: 1,
-    borderColor: colors.border,
   },
   textDefault: {
     color: colors.mutedText,
-    ...typography.caption,
+    ...typography.captionStrong,
   },
   textMarked: {
     color: colors.primaryText,
-    ...typography.caption,
+    ...typography.captionStrong,
   },
 });

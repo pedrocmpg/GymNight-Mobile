@@ -4,8 +4,10 @@ import { Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import {
+  Inter_300Light,
   Inter_400Regular,
   Inter_500Medium,
+  Inter_600SemiBold,
   Inter_700Bold,
   Inter_800ExtraBold,
   Inter_900Black,
@@ -82,8 +84,10 @@ export default function App() {
   // Cada peso da Inter e uma familia propria: no Android o `fontWeight` e
   // ignorado quando ha `fontFamily` customizada (ver designSystem/tokens.ts).
   const [fontsLoaded] = useFonts({
+    Inter_300Light,
     Inter_400Regular,
     Inter_500Medium,
+    Inter_600SemiBold,
     Inter_700Bold,
     Inter_800ExtraBold,
     Inter_900Black,

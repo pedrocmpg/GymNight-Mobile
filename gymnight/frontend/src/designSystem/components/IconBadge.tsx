@@ -1,7 +1,6 @@
 /**
- * IconBadge — quadrado verde-escuro com um ícone ou glifo centralizado.
- * Porta o `ex_icon` do card de exercício (active_workout.py:555-558):
- * 44×44, background #1a2e0a, border-radius 10px, glifo ◈ em 20px.
+ * IconBadge — quadrado neutro com um ícone, à esquerda de linhas de lista.
+ * Decorativo: o significado vem sempre do texto ao lado.
  */
 
 import React from 'react';
@@ -18,18 +17,17 @@ export interface IconBadgeProps {
   testID?: string;
 }
 
-export function IconBadge({ icon, glyph = '◈', size = 44, testID }: IconBadgeProps) {
+export function IconBadge({ icon, glyph = '◈', size = 36, testID }: IconBadgeProps) {
   return (
     <View
       style={[styles.badge, { width: size, height: size }]}
       testID={testID}
-      // Decorativo: o significado vem sempre do texto ao lado do badge.
       accessibilityRole="none"
     >
       {icon ? (
-        <FontAwesome5 name={icon} size={size * 0.45} color={colors.primary} solid />
+        <FontAwesome5 name={icon} size={size * 0.4} color={colors.secondaryText} solid />
       ) : (
-        <Text style={[styles.glyph, { fontSize: size * 0.45 }]}>{glyph}</Text>
+        <Text style={[styles.glyph, { fontSize: size * 0.4 }]}>{glyph}</Text>
       )}
     </View>
   );
@@ -37,12 +35,12 @@ export function IconBadge({ icon, glyph = '◈', size = 44, testID }: IconBadgeP
 
 const styles = StyleSheet.create({
   badge: {
-    backgroundColor: colors.primaryBg,
+    backgroundColor: colors.cardAlt,
     borderRadius: radii.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   glyph: {
-    color: colors.primary,
+    color: colors.secondaryText,
   },
 });

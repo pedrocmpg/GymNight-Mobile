@@ -30,12 +30,12 @@ describe('IconBadge', () => {
     expect(queryByText('◈')).toBeNull();
   });
 
-  it('is 44x44 with the dark-green badge background by default', () => {
+  it('is 36x36 on the neutral cardAlt surface by default', () => {
     const { getByTestId } = render(<IconBadge testID="b" />);
     const style = flatten(getByTestId('b').props.style);
-    expect(style.width).toBe(44);
-    expect(style.height).toBe(44);
-    expect(style.backgroundColor).toBe(colors.primaryBg);
+    expect(style.width).toBe(36);
+    expect(style.height).toBe(36);
+    expect(style.backgroundColor).toBe(colors.cardAlt);
     expect(style.borderRadius).toBe(radii.md);
   });
 

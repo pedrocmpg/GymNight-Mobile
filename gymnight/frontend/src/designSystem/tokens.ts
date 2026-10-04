@@ -1,44 +1,46 @@
 /**
  * Design_Token_Module — Single source of truth for all visual tokens.
  *
- * Paleta portada do GymNight-Desktop (src/ui/theme.py). Dark-mode only:
- * nenhum token de light-mode é definido, exportado ou incluído.
+ * Identidade "minimal premium" (REDESIGN-04): preto em camadas, uma hairline,
+ * texto em hierarquia com contraste AA e o lima #a2ff00 como acento RARO.
+ * Dark-mode only: nenhum token de light-mode é definido, exportado ou incluído.
+ *
+ * Regras do lima (`colors.primary`):
+ *   1. No máximo UM CTA primário por tela.
+ *   2. Estado ativo/selecionado (chip, switch, série concluída, dia treinado).
+ *   3. Destaque de dado (linha do gráfico, delta positivo, PR).
+ *   Nunca em ícones decorativos, títulos, timer ou tint da tab bar.
+ *
+ * Profundidade vem dos degraus de superfície (background → surface → card →
+ * cardAlt) + uma hairline — sem sombras nem glow.
  *
  * Todas as telas e componentes DEVEM importar destes tokens em vez de
  * declarar literais de cor / espaçamento / tipografia / raio.
  */
-import { Platform } from 'react-native';
+import type { TextStyle } from 'react-native';
 
 export const colors = {
-  background: '#0a0a0a',      // C_BG      — fundo da tela
-  surface: '#0f0f0f',         // C_SURFACE — tab bar, faixas fixas
-  card: '#1a1a1a',            // C_CARD    — cards e stat cards
-  cardAlt: '#222222',         // C_CARD2   — inputs dentro de card, estado hover
-  border: '#2a2a2a',          // C_BORDER
+  background: '#0a0a0a',      // L0 — fundo do app (igual ao splash do app.json)
+  surface: '#111113',         // chrome: tab bar, footers fixos, sheets
+  card: '#18181b',            // L1 — cards de conteúdo
+  cardAlt: '#222226',         // L2 — inputs, chips, controles não marcados
+  border: '#2a2a2e',          // hairline de 1px
+  divider: 'rgba(255, 255, 255, 0.06)', // separador de linhas dentro de card
 
-  primary: '#a2ff00',         // C_GREEN
-  primaryHover: '#b5f542',    // C_GREEN_ACTIVE
-  primaryDark: '#65a30d',     // C_GREEN_DK — estado pressed
-  primaryBg: '#1a2e0a',       // C_GREEN_BG — fundo de badge/ícone
-  primaryMuted: '#1a3a00',    // C_ACCENT_MUTED — seleção suave
-  onPrimary: '#000000',       // texto/ícone sobre superfície verde
+  primary: '#a2ff00',         // lima da marca — acento raro (ver regras acima)
+  onPrimary: '#000000',       // texto/ícone sobre superfície lima
+  primaryTint: 'rgba(162, 255, 0, 0.12)', // halo de sucesso, banner de PR
 
-  primaryText: '#ffffff',     // C_TEXT
-  secondaryText: '#6b7280',   // C_TEXT2 / C_TEXT3
-  tertiaryText: '#9ca3af',    // unidades nos stat cards (dashboard.py:111)
-  mutedText: '#3a3a3a',       // "—" do dia sem treino (dashboard.py:190)
+  primaryText: '#f4f4f5',     // ~18:1 sobre o fundo
+  secondaryText: '#a1a1aa',   // ~7.7:1 — subtítulos, labels
+  tertiaryText: '#71717a',    // ~4:1 — unidades, placeholders, inativos (nunca corpo)
+  mutedText: '#3f3f46',       // decorativo apenas
 
-  // C_GREEN_DK: valor próprio para não colidir com `primary` — tokens.test.ts
-  // exige que as chaves obrigatórias sejam distintas entre si.
-  success: '#65a30d',
-  error: '#ef4444',           // C_RED
-  errorBg: '#2a0a0a',         // C_RED_BG
-
-  primaryTint: 'rgba(162, 255, 0, 0.12)',   // hover de botão outline
-  successTint: 'rgba(101, 163, 13, 0.14)',
-  errorTint: 'rgba(239, 68, 68, 0.14)',
-  overlay: 'rgba(0, 0, 0, 0.85)',           // active_workout.py:964
-  scrim: '#000000',                         // degrades do hero (dashboard.py:44)
+  success: '#84cc16',
+  successTint: 'rgba(132, 204, 22, 0.14)',
+  error: '#f87171',
+  errorTint: 'rgba(248, 113, 113, 0.12)',
+  overlay: 'rgba(0, 0, 0, 0.64)', // scrim de sheets
 } as const;
 
 /**
@@ -50,16 +52,32 @@ export const spacing = {
   xs: 8,
   sm: 12,
   md: 16,
+  ml: 20,
   lg: 24,
   xl: 32,
   xxl: 40,
+  xxxl: 56,
 } as const;
 
 export const radii = {
-  sm: 6,    // RADIUS_SM
-  md: 10,   // RADIUS_MD
-  lg: 16,   // RADIUS_LG
+  xs: 4,    // progress bar, badges mínimos
+  sm: 8,    // células da grade de séries, segmentos do PSE
+  md: 12,   // botões, inputs, icon buttons
+  lg: 16,   // cards
+  xl: 24,   // topo dos sheets
   pill: 999,
+} as const;
+
+/** Medidas semânticas de layout — nenhuma tela declara número mágico. */
+export const layout = {
+  gutter: spacing.ml,          // margem horizontal de TODA tela
+  sectionGap: spacing.xl,      // entre blocos de topo
+  blockGap: spacing.sm,        // título de seção → conteúdo
+  cardPadding: spacing.md,
+  rowMinHeight: 56,
+  controlHeight: { sm: 36, md: 52 },
+  hitTarget: 44,
+  hairline: 1,
 } as const;
 
 /**
@@ -68,59 +86,74 @@ export const radii = {
  * Nunca combinar `fontFamily` destes tokens com `fontWeight`.
  */
 export const fonts = {
+  light: 'Inter_300Light',
   regular: 'Inter_400Regular',
   medium: 'Inter_500Medium',
+  semibold: 'Inter_600SemiBold',
   bold: 'Inter_700Bold',
   extraBold: 'Inter_800ExtraBold',
   black: 'Inter_900Black',
 } as const;
 
-export const typography = {
-  h1: { fontSize: 36, fontFamily: fonts.extraBold },         // QLabel#h1
-  h2: { fontSize: 26, fontFamily: fonts.bold },              // QLabel#h2
-  h3: { fontSize: 18, fontFamily: fonts.bold },              // QLabel#h3
-  body: { fontSize: 15, fontFamily: fonts.regular },         // corpo padrão QSS
-  bodyBold: { fontSize: 15, fontFamily: fonts.bold },
-  label: { fontSize: 14, fontFamily: fonts.bold },           // labels de formulário
-  sub: { fontSize: 13, fontFamily: fonts.medium },           // QLabel#sub / #stat_lbl
-  caption: { fontSize: 12, fontFamily: fonts.medium },
-  captionBold: { fontSize: 12, fontFamily: fonts.bold },
-  stat: { fontSize: 36, fontFamily: fonts.extraBold },       // QLabel#stat_val
-  statUnit: { fontSize: 25, fontFamily: fonts.medium },      // dashboard.py:111
-  setNumber: { fontSize: 20, fontFamily: fonts.black },      // active_workout.py:613
+// Fora do `as const`: dentro dele vira tupla readonly, que o TextStyle rejeita.
+const tabularNums: TextStyle['fontVariant'] = ['tabular-nums'];
 
-  /** @deprecated Aliases da escala antiga; migrar para h1/stat nas waves 2–5. */
-  heading: { fontSize: 26, fontFamily: fonts.bold },
-  metric: { fontSize: 36, fontFamily: fonts.extraBold },
+export const typography = {
+  display: { fontSize: 32, lineHeight: 38, letterSpacing: -0.8, fontFamily: fonts.semibold },
+  title: { fontSize: 28, lineHeight: 34, letterSpacing: -0.6, fontFamily: fonts.semibold },
+  h2: { fontSize: 22, lineHeight: 28, letterSpacing: -0.4, fontFamily: fonts.semibold },
+  h3: { fontSize: 17, lineHeight: 22, letterSpacing: -0.2, fontFamily: fonts.semibold },
+  body: { fontSize: 15, lineHeight: 22, letterSpacing: 0, fontFamily: fonts.regular },
+  bodyMedium: { fontSize: 15, lineHeight: 22, letterSpacing: 0, fontFamily: fonts.medium },
+  bodyStrong: { fontSize: 15, lineHeight: 22, letterSpacing: -0.1, fontFamily: fonts.semibold },
+  footnote: { fontSize: 13, lineHeight: 18, letterSpacing: 0, fontFamily: fonts.regular },
+  label: { fontSize: 13, lineHeight: 18, letterSpacing: 0, fontFamily: fonts.medium },
+  caption: { fontSize: 12, lineHeight: 16, letterSpacing: 0.2, fontFamily: fonts.medium },
+  captionStrong: { fontSize: 12, lineHeight: 16, letterSpacing: 0.2, fontFamily: fonts.semibold },
+  tab: { fontSize: 11, lineHeight: 14, letterSpacing: 0.2, fontFamily: fonts.medium },
+  metricXL: {
+    fontSize: 44,
+    lineHeight: 48,
+    letterSpacing: -1.5,
+    fontFamily: fonts.light,
+    fontVariant: tabularNums,
+  },
+  stat: {
+    fontSize: 28,
+    lineHeight: 32,
+    letterSpacing: -0.8,
+    fontFamily: fonts.medium,
+    fontVariant: tabularNums,
+  },
+  statUnit: { fontSize: 15, lineHeight: 20, letterSpacing: 0, fontFamily: fonts.regular },
+  numeric: {
+    fontSize: 15,
+    lineHeight: 20,
+    letterSpacing: 0,
+    fontFamily: fonts.medium,
+    fontVariant: tabularNums,
+  },
+
+  /** @deprecated Aliases transitórios da escala antiga — removidos ao fim do REDESIGN-04. */
+  h1: { fontSize: 28, lineHeight: 34, letterSpacing: -0.6, fontFamily: fonts.semibold },
+  /** @deprecated use `footnote`. */
+  sub: { fontSize: 13, lineHeight: 18, letterSpacing: 0, fontFamily: fonts.regular },
+  /** @deprecated use `bodyStrong`. */
+  bodyBold: { fontSize: 15, lineHeight: 22, letterSpacing: -0.1, fontFamily: fonts.semibold },
+  /** @deprecated use `captionStrong`. */
+  captionBold: { fontSize: 12, lineHeight: 16, letterSpacing: 0.2, fontFamily: fonts.semibold },
+  /** @deprecated use `numeric`. */
+  setNumber: { fontSize: 15, lineHeight: 20, letterSpacing: 0, fontFamily: fonts.medium },
+  /** @deprecated use `h2`. */
+  heading: { fontSize: 22, lineHeight: 28, letterSpacing: -0.4, fontFamily: fonts.semibold },
+  /** @deprecated use `stat`. */
+  metric: { fontSize: 28, lineHeight: 32, letterSpacing: -0.8, fontFamily: fonts.medium },
 } as const;
 
-/**
- * Equivalente ao neon_glow() do desktop (theme.py:249).
- *
- * `boxShadow` é suportado no RN 0.76 com a New Architecture ligada
- * (app.json já tem "newArchEnabled": true). Os campos shadow* / elevation
- * ficam como degradação para o caso de a New Arch estar desligada.
- */
-export function glow(
-  color: string = colors.primary,
-  radius: number = 20,
-  opacity: number = 0.35
-) {
-  const rgba = hexToRgba(color, opacity);
-  return {
-    boxShadow: `0px 0px ${radius}px ${rgba}`,
-    shadowColor: color,
-    shadowOpacity: opacity,
-    shadowRadius: radius / 2,
-    shadowOffset: { width: 0, height: 0 },
-    ...Platform.select({ android: { elevation: 6 }, default: {} }),
-  };
-}
-
-function hexToRgba(hex: string, alpha: number): string {
-  const n = parseInt(hex.replace('#', ''), 16);
-  const r = (n >> 16) & 255;
-  const g = (n >> 8) & 255;
-  const b = n & 255;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
+/** Durações e parâmetros de microinteração — ver designSystem/motion.ts. */
+export const motion = {
+  duration: { fast: 120, base: 200, slow: 300 },
+  pressScale: 0.97,
+  /** Distância (px) que o painel do sheet percorre ao entrar. */
+  sheetOffset: 32,
+} as const;

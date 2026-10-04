@@ -44,40 +44,48 @@ describe('Card', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
-  it('is bordered by default — no desktop todo card tem borda', () => {
+  it('is borderless by default — depth comes from the surface step', () => {
     const { getByTestId } = render(
       <Card testID="card">
         <Text>x</Text>
       </Card>,
     );
     const style = flatten(getByTestId('card').props.style);
-    expect(style.borderWidth).toBe(2);
+    expect(style.backgroundColor).toBe(colors.card);
+    expect(style.borderWidth).toBeUndefined();
+    expect(style.boxShadow).toBeUndefined();
+  });
+
+  it('draws a 1px hairline when bordered', () => {
+    const { getByTestId } = render(
+      <Card testID="card" bordered>
+        <Text>x</Text>
+      </Card>,
+    );
+    const style = flatten(getByTestId('card').props.style);
+    expect(style.borderWidth).toBe(1);
     expect(style.borderColor).toBe(colors.border);
   });
 
-  it('drops the border when bordered is explicitly false', () => {
+  it.each([
+    ['md', 16],
+    ['lg', 24],
+  ] as const)('applies the %s padding preset', (padding, expected) => {
     const { getByTestId } = render(
-      <Card testID="card" bordered={false}>
+      <Card testID="card" padding={padding}>
         <Text>x</Text>
       </Card>,
     );
-    expect(flatten(getByTestId('card').props.style).borderWidth).toBeUndefined();
+    expect(flatten(getByTestId('card').props.style).padding).toBe(expected);
   });
 
-  it('applies a neon glow only when glow is set', () => {
-    const { getByTestId: withGlow } = render(
-      <Card testID="card" glow>
+  it('has no padding with padding="none" (lists of ListRow)', () => {
+    const { getByTestId } = render(
+      <Card testID="card" padding="none">
         <Text>x</Text>
       </Card>,
     );
-    expect(flatten(withGlow('card').props.style).boxShadow).toContain('rgba(162, 255, 0,');
-
-    const { getByTestId: without } = render(
-      <Card testID="plain">
-        <Text>x</Text>
-      </Card>,
-    );
-    expect(flatten(without('plain').props.style).boxShadow).toBeUndefined();
+    expect(flatten(getByTestId('card').props.style).padding).toBeUndefined();
   });
 
   it('is static (no touchable wrapper) when onPress is not provided', () => {

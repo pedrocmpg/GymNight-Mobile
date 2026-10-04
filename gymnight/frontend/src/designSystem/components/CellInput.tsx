@@ -1,20 +1,17 @@
 /**
- * UnderlineInput — campo sem caixa, só com a linha de base. É o input de
- * peso/reps das séries do treino ativo (active_workout.py:589-604):
+ * CellInput — célula numérica compacta da grade de séries (peso / reps).
  *
- *   background: transparent; border: none; border-bottom: 1px solid #2a2a2a;
- *   border-radius: 0; padding: 10px 8px; font-size: 15px;
- *   :focus { border-bottom: 2px solid #a2ff00; }
- *
- * No estado de erro (active_workout.py:678) a linha vira 2px vermelha.
+ * Preenchida em cardAlt, número tabular centralizado. Foco pinta a borda de
+ * lima; erro pinta de vermelho e tinge o fundo. Série gravada ("locked")
+ * perde a superfície e vira texto — o check ao lado já diz que está feita.
  */
 
 import React, { useState } from 'react';
 import { TextInput, TextInputProps, StyleSheet } from 'react-native';
-import { colors, typography, spacing } from '../tokens';
+import { colors, typography, spacing, radii, layout } from '../tokens';
 
-export interface UnderlineInputProps extends Omit<TextInputProps, 'style'> {
-  /** Pinta a linha de base de vermelho. */
+export interface CellInputProps extends Omit<TextInputProps, 'style'> {
+  /** Pinta a borda de vermelho. */
   hasError?: boolean;
   /**
    * Exibe o texto apagado. Marca o valor como referência da sessão anterior
@@ -27,7 +24,7 @@ export interface UnderlineInputProps extends Omit<TextInputProps, 'style'> {
   testID?: string;
 }
 
-export function UnderlineInput({
+export function CellInput({
   hasError = false,
   isGhost = false,
   isLocked = false,
@@ -35,14 +32,15 @@ export function UnderlineInput({
   onFocus,
   onBlur,
   ...rest
-}: UnderlineInputProps) {
+}: CellInputProps) {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
     <TextInput
       testID={testID}
-      placeholderTextColor={colors.secondaryText}
+      placeholderTextColor={colors.tertiaryText}
       selectionColor={colors.primary}
+      cursorColor={colors.primary}
       editable={!isLocked && rest.editable !== false}
       style={[
         styles.input,
@@ -66,31 +64,32 @@ export function UnderlineInput({
 
 const styles = StyleSheet.create({
   input: {
-    height: 44,
-    backgroundColor: 'transparent',
+    ...typography.numeric,
+    // lineHeight num TextInput desalinha o texto verticalmente no Android.
+    lineHeight: undefined,
+    height: layout.hitTarget,
+    backgroundColor: colors.cardAlt,
     color: colors.primaryText,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    borderRadius: 0,
-    paddingVertical: spacing.xs,
+    borderWidth: layout.hairline,
+    borderColor: 'transparent',
+    borderRadius: radii.sm,
+    paddingVertical: 0,
     paddingHorizontal: spacing.xs,
     textAlign: 'center',
-    ...typography.body,
   },
   focused: {
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
+    borderColor: colors.primary,
   },
   errored: {
-    borderBottomWidth: 2,
-    borderBottomColor: colors.error,
+    borderColor: colors.error,
+    backgroundColor: colors.errorTint,
   },
   // Valor da sessão anterior: legível, mas visivelmente "não é seu ainda".
   ghost: {
-    color: colors.secondaryText,
+    color: colors.tertiaryText,
   },
   locked: {
+    backgroundColor: 'transparent',
     color: colors.primaryText,
-    borderBottomColor: 'transparent',
   },
 });

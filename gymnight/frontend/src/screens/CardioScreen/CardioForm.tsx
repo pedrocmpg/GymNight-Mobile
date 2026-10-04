@@ -10,7 +10,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors, typography, spacing, radii } from '../../designSystem/tokens';
 import { Input } from '../../designSystem/components/Input';
-import { UnderlineInput } from '../../designSystem/components/UnderlineInput';
+import { CellInput } from '../../designSystem/components/CellInput';
 import { Button } from '../../designSystem/components/Button';
 import { Card } from '../../designSystem/components/Card';
 import { filterExercises } from '../WorkoutCreatorScreen/exerciseSearch';
@@ -110,7 +110,7 @@ export function CardioForm({ onSave, onCancel, weightKg = 70 }: CardioFormProps)
       <View style={styles.fieldRow}>
         <View style={styles.fieldHalf}>
           <Text style={styles.fieldLabel}>Duração (min)</Text>
-          <UnderlineInput
+          <CellInput
             testID="cardio-duration-input"
             value={durationText}
             onChangeText={setDurationText}
@@ -120,7 +120,7 @@ export function CardioForm({ onSave, onCancel, weightKg = 70 }: CardioFormProps)
         </View>
         <View style={styles.fieldHalf}>
           <Text style={styles.fieldLabel}>Distância (km)</Text>
-          <UnderlineInput
+          <CellInput
             testID="cardio-distance-input"
             value={distanceText}
             onChangeText={setDistanceText}

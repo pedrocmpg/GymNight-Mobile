@@ -13,23 +13,23 @@ function flatten(style: unknown): Record<string, unknown> {
 }
 
 describe('SetCheckButton', () => {
-  it('is 52x52', () => {
+  it('is a 44x44 touch target', () => {
     const { getByTestId } = render(
       <SetCheckButton checked={false} onPress={jest.fn()} testID="c" />,
     );
     const style = flatten(getByTestId('c').props.style);
-    expect(style.width).toBe(52);
-    expect(style.height).toBe(52);
+    expect(style.width).toBe(44);
+    expect(style.height).toBe(44);
   });
 
-  it('renders unchecked on the alt surface, with a border', () => {
+  it('renders unchecked as a quiet cell on the alt surface', () => {
     const { getByTestId, UNSAFE_getByType } = render(
       <SetCheckButton checked={false} onPress={jest.fn()} testID="c" />,
     );
     const style = flatten(getByTestId('c').props.style);
     expect(style.backgroundColor).toBe(colors.cardAlt);
-    expect(style.borderWidth).toBe(1);
-    expect(UNSAFE_getByType('FontAwesome5' as never).props.color).toBe(colors.secondaryText);
+    expect(style.borderWidth).toBeUndefined();
+    expect(UNSAFE_getByType('FontAwesome5' as never).props.color).toBe(colors.tertiaryText);
   });
 
   it('renders checked as a green square with a black check, no border', () => {

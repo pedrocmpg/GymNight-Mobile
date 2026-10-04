@@ -39,12 +39,12 @@ const styles = StyleSheet.create({
   track: {
     height: 4,
     backgroundColor: colors.border,
-    borderRadius: radii.sm,
+    borderRadius: radii.xs,
     overflow: 'hidden',
   },
   fill: {
     height: '100%',
     backgroundColor: colors.primary,
-    borderRadius: radii.sm,
+    borderRadius: radii.xs,
   },
 });

@@ -6,6 +6,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Button } from '../Button';
 import { colors } from '../../tokens';
 
@@ -30,17 +31,42 @@ describe('Button', () => {
   });
 
   it.each([
-    ['ghost', colors.border, colors.secondaryText],
-    ['danger', colors.error, colors.error],
-    ['outlineAccent', colors.primary, colors.primary],
-  ] as const)('renders the %s variant transparent with its own border', (variant, borderColor, textColor) => {
+    ['secondary', colors.cardAlt, colors.primaryText],
+    ['ghost', 'transparent', colors.secondaryText],
+    ['danger', colors.errorTint, colors.error],
+  ] as const)('renders the %s variant borderless on its own surface', (variant, background, textColor) => {
     const { getByTestId, getByText } = render(
       <Button label="X" onPress={jest.fn()} variant={variant} testID="btn" />,
     );
     const style = flatten(getByTestId('btn').props.style);
-    expect(style.backgroundColor).toBe('transparent');
-    expect(style.borderColor).toBe(borderColor);
+    expect(style.backgroundColor).toBe(background);
+    expect(style.borderWidth).toBeUndefined();
     expect(flatten(getByText('X').props.style).color).toBe(textColor);
+  });
+
+  it('matches the 52px control height by default and 36px when small', () => {
+    const { getByTestId } = render(
+      <React.Fragment>
+        <Button label="A" onPress={jest.fn()} testID="md" />
+        <Button label="B" onPress={jest.fn()} size="sm" testID="sm" />
+      </React.Fragment>,
+    );
+    expect(flatten(getByTestId('md').props.style).minHeight).toBe(52);
+    expect(flatten(getByTestId('sm').props.style).minHeight).toBe(36);
+  });
+
+  it('fires a light haptic on the primary press — and none on secondary actions', () => {
+    (Haptics.impactAsync as jest.Mock).mockClear();
+    const { getByText } = render(
+      <React.Fragment>
+        <Button label="Salvar" onPress={jest.fn()} />
+        <Button label="Cancelar" onPress={jest.fn()} variant="ghost" />
+      </React.Fragment>,
+    );
+    fireEvent.press(getByText('Cancelar'));
+    expect(Haptics.impactAsync).not.toHaveBeenCalled();
+    fireEvent.press(getByText('Salvar'));
+    expect(Haptics.impactAsync).toHaveBeenCalledWith(Haptics.ImpactFeedbackStyle.Light);
   });
 
   it('does NOT call onPress when disabled', () => {
@@ -57,7 +83,7 @@ describe('Button', () => {
       <Button label="Salvar" onPress={jest.fn()} disabled testID="btn" />,
     );
     expect(flatten(getByTestId('btn').props.style).backgroundColor).toBe(colors.cardAlt);
-    expect(flatten(getByText('Salvar').props.style).color).toBe(colors.secondaryText);
+    expect(flatten(getByText('Salvar').props.style).color).toBe(colors.tertiaryText);
   });
 
   it('swaps the label for a spinner while loading, and blocks the press', () => {

@@ -28,7 +28,7 @@ afterEach(() => {
 const STARTED_AT = new Date('2024-01-01T00:00:00.000Z').getTime();
 
 /**
- * O UnderlineInput traduz isGhost/isLocked/hasError em estilo, sem repassar as
+ * O CellInput traduz isGhost/isLocked/hasError em estilo, sem repassar as
  * props ao TextInput — então a asserção é sobre o que aparece na tela.
  * `style` chega como array (possivelmente com nulls) do StyleSheet.
  */
@@ -150,7 +150,7 @@ describe('ActiveSessionScreen — Fantasma da última sessão', () => {
     const { getByTestId } = renderGrid({
       previousSessionSets: [makePrevious({ id: 'p1', exerciseId: 'ex1' })],
     });
-    expect(flatStyle(getByTestId('set-weight-ex1-0')).color).toBe(colors.secondaryText);
+    expect(flatStyle(getByTestId('set-weight-ex1-0')).color).toBe(colors.tertiaryText);
   });
 
   it('casa o fantasma pela MESMA posição de série', () => {
@@ -231,8 +231,8 @@ describe('ActiveSessionScreen — Marcar o check grava', () => {
     });
     fireEvent.press(getByTestId('set-check-ex1-0'));
     expect(onLogSet).not.toHaveBeenCalled();
-    expect(flatStyle(getByTestId('set-weight-ex1-0')).borderBottomColor).toBe(colors.error);
-    expect(flatStyle(getByTestId('set-reps-ex1-0')).borderBottomColor).toBe(colors.error);
+    expect(flatStyle(getByTestId('set-weight-ex1-0')).borderColor).toBe(colors.error);
+    expect(flatStyle(getByTestId('set-reps-ex1-0')).borderColor).toBe(colors.error);
   });
 
   it('limpa o erro depois que o campo é preenchido', () => {
@@ -244,14 +244,14 @@ describe('ActiveSessionScreen — Marcar o check grava', () => {
       ],
     });
     fireEvent.press(getByTestId('set-check-ex1-0'));
-    expect(flatStyle(getByTestId('set-weight-ex1-0')).borderBottomColor).toBe(colors.error);
+    expect(flatStyle(getByTestId('set-weight-ex1-0')).borderColor).toBe(colors.error);
 
     fireEvent.changeText(getByTestId('set-weight-ex1-0'), '80');
     fireEvent.changeText(getByTestId('set-reps-ex1-0'), '10');
     fireEvent.press(getByTestId('set-check-ex1-0'));
 
     expect(onLogSet).toHaveBeenCalledWith('ex1', 80, 10, 'N');
-    expect(flatStyle(getByTestId('set-weight-ex1-0')).borderBottomColor).not.toBe(colors.error);
+    expect(flatStyle(getByTestId('set-weight-ex1-0')).borderColor).not.toBe(colors.error);
   });
 
   it('mostra a série já gravada como marcada e travada', () => {

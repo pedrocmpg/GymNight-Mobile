@@ -19,19 +19,29 @@ describe('Banner', () => {
     expect(getByText('Você está offline.')).toBeTruthy();
   });
 
-  it('defaults to the info variant — green left border', () => {
-    const { getByTestId } = render(<Banner message="x" testID="b" />);
+  it('defaults to the neutral info variant — tinted surface, no side bar', () => {
+    const { getByTestId, UNSAFE_getByType } = render(<Banner message="x" testID="b" />);
     const style = flatten(getByTestId('b').props.style);
-    expect(style.borderLeftWidth).toBe(4);
-    expect(style.borderLeftColor).toBe(colors.primary);
+    expect(style.backgroundColor).toBe(colors.cardAlt);
+    expect(style.borderLeftWidth).toBeUndefined();
+    expect(UNSAFE_getByType('FontAwesome5' as never).props.name).toBe('info-circle');
   });
 
-  it('renders the error variant with a red left border and red text', () => {
+  it('renders the error variant on a red tint with red text', () => {
     const { getByTestId, getByText } = render(
       <Banner message="Falha ao sair." variant="error" testID="b" />,
     );
-    expect(flatten(getByTestId('b').props.style).borderLeftColor).toBe(colors.error);
+    expect(flatten(getByTestId('b').props.style).backgroundColor).toBe(colors.errorTint);
     expect(flatten(getByText('Falha ao sair.').props.style).color).toBe(colors.error);
+  });
+
+  it('renders the success variant on a lime tint with a trophy', () => {
+    const { getByTestId, getByText, UNSAFE_getByType } = render(
+      <Banner message="Novo recorde!" variant="success" testID="b" />,
+    );
+    expect(flatten(getByTestId('b').props.style).backgroundColor).toBe(colors.primaryTint);
+    expect(flatten(getByText('Novo recorde!').props.style).color).toBe(colors.primary);
+    expect(UNSAFE_getByType('FontAwesome5' as never).props.name).toBe('trophy');
   });
 
   it('always paints the text explicitly — the bug it fixes was invisible text', () => {

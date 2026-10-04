@@ -1,13 +1,15 @@
 /**
- * Chip — pill selecionável usado no seletor horizontal de exercício.
+ * Chip — pill selecionável (seletor de exercício, filtros).
  *
- * Alinhado aos tokens portados do desktop: não selecionado ganha fundo de
- * card com borda; selecionado usa o verde com texto preto.
+ * Não selecionado: superfície cardAlt, texto secundário, sem borda.
+ * Selecionado: lima com texto preto. Toque dá haptic de seleção.
+ * Sem margem própria — o container pai define o espaçamento com `gap`.
  */
 
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { colors, typography, spacing, radii } from '../tokens';
+import { Text, StyleSheet } from 'react-native';
+import { colors, typography, spacing, radii, layout } from '../tokens';
+import { Touchable } from './Touchable';
 
 export interface ChipProps {
   label: string;
@@ -18,38 +20,40 @@ export interface ChipProps {
 
 export function Chip({ label, selected, onPress, testID }: ChipProps) {
   return (
-    <TouchableOpacity
+    <Touchable
       testID={testID}
       style={[styles.chip, selected && styles.chipSelected]}
       onPress={onPress}
+      haptic="selection"
+      accessibilityRole="button"
       accessibilityLabel={`Selecionar ${label}`}
       accessibilityState={{ selected }}
     >
-      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
-    </TouchableOpacity>
+      <Text style={[styles.chipText, selected && styles.chipTextSelected]} numberOfLines={1}>
+        {label}
+      </Text>
+    </Touchable>
   );
 }
 
 const styles = StyleSheet.create({
   chip: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
+    minHeight: layout.controlHeight.sm,
+    justifyContent: 'center',
+    backgroundColor: colors.cardAlt,
     borderRadius: radii.pill,
-    paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
-    marginRight: spacing.xs,
   },
   chipSelected: {
     backgroundColor: colors.primary,
-    borderColor: colors.primary,
   },
   chipText: {
-    color: colors.primaryText,
-    ...typography.caption,
+    ...typography.label,
+    color: colors.secondaryText,
   },
   chipTextSelected: {
+    ...typography.captionStrong,
+    fontSize: typography.label.fontSize,
     color: colors.onPrimary,
-    fontFamily: typography.captionBold.fontFamily,
   },
 });

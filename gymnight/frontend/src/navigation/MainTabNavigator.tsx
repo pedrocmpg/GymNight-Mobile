@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import type { SyncEngine } from '../sync/SyncEngine';
 import type { LogoutManager } from '../auth/LogoutManager';
-import { colors, typography, spacing, glow } from '../designSystem/tokens';
+import { colors, typography, spacing, layout } from '../designSystem/tokens';
+import { haptic } from '../designSystem/haptics';
 import { DashboardScreenContainer } from './containers/DashboardScreenContainer';
 import { ProgressScreenContainer } from './containers/ProgressScreenContainer';
 import { StatisticsScreenContainer } from './containers/StatisticsScreenContainer';
@@ -19,14 +20,11 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 /**
  * Ícone de aba. Os nomes são os mesmos que o desktop usa na navegação
- * (`fa5s.home` / `fa5s.chart-line`); a aba ativa ganha o glow neon.
+ * (`fa5s.home` / `fa5s.chart-line`). Ativo/inativo muda só a cor — tint
+ * monocromático; o lima fica reservado para conteúdo, não para o chrome.
  */
-function TabIcon({ name, color, focused }: { name: string; color: string; focused: boolean }) {
-  return (
-    <View style={focused ? glow(colors.primary, 14, 0.5) : undefined}>
-      <FontAwesome5 name={name} size={20} color={color} solid />
-    </View>
-  );
+function TabIcon({ name, color }: { name: string; color: string }) {
+  return <FontAwesome5 name={name} size={20} color={color} solid />;
 }
 
 export interface MainTabNavigatorProps {
@@ -41,29 +39,32 @@ export interface MainTabNavigatorProps {
 }
 
 /**
- * Bottom-tab navigator for the two always-available screens (Dashboard,
- * Progress). WorkoutCreator and ActiveSession are full-screen flows that stay
- * as sibling Stack.Screens outside this navigator (see AppNavigator.tsx) —
- * they never show the tab bar, by React Navigation's default nesting rules.
- *
- * O desktop usa pílulas horizontais no topo (window.py:331), mas a tab bar
- * inferior é decisão deliberada do mobile — o que mudou aqui é só a estética.
+ * Bottom-tab navigator for the always-available screens (Dashboard,
+ * Progress, Statistics). WorkoutCreator and ActiveSession are full-screen
+ * flows that stay as sibling Stack.Screens outside this navigator (see
+ * AppNavigator.tsx) — they never show the tab bar, by React Navigation's
+ * default nesting rules.
  */
 export function MainTabNavigator(props: MainTabNavigatorProps) {
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        animation: 'fade',
         tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.secondaryText,
+        tabBarItemStyle: styles.tabItem,
+        tabBarActiveTintColor: colors.primaryText,
+        tabBarInactiveTintColor: colors.tertiaryText,
         tabBarLabelStyle: styles.tabLabel,
+      }}
+      screenListeners={{
+        tabPress: () => haptic('selection'),
       }}
     >
       <Tab.Screen
         name="Treinos"
         options={{
-          tabBarIcon: ({ color, focused }) => <TabIcon name="home" color={color} focused={focused} />,
+          tabBarIcon: ({ color }) => <TabIcon name="home" color={color} />,
         }}
       >
         {() => (
@@ -81,9 +82,7 @@ export function MainTabNavigator(props: MainTabNavigatorProps) {
       <Tab.Screen
         name="Progresso"
         options={{
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="chart-line" color={color} focused={focused} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon name="chart-line" color={color} />,
         }}
       >
         {() => <ProgressScreenContainer userId={props.userId} />}
@@ -93,9 +92,7 @@ export function MainTabNavigator(props: MainTabNavigatorProps) {
         options={{
           // O desktop usa `chart-line` na aba de progresso — evitar repetir
           // (PARIDADE-03-ESTATISTICAS.md §5).
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name="chart-pie" color={color} focused={focused} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon name="chart-pie" color={color} />,
         }}
       >
         {() => <StatisticsScreenContainer userId={props.userId} />}
@@ -104,16 +101,19 @@ export function MainTabNavigator(props: MainTabNavigatorProps) {
   );
 }
 
+// Sem altura fixa: o bottom-tabs soma o inset de baixo (gesture nav vs.
+// 3 botões) à altura natural da barra.
 const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: colors.surface,
     borderTopColor: colors.border,
-    borderTopWidth: 1,
-    height: 62,
-    paddingBottom: spacing.xs,
-    paddingTop: spacing.xs,
+    borderTopWidth: layout.hairline,
+    elevation: 0,
+  },
+  tabItem: {
+    paddingTop: spacing.xxs,
   },
   tabLabel: {
-    ...typography.caption,
+    ...typography.tab,
   },
 });

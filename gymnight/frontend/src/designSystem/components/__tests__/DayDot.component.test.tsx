@@ -1,6 +1,7 @@
 /**
- * Component tests for DayDot — o dia da semana do Dashboard. Ativo é raio
- * verde com glow forte; inativo é "—" sobre card com borda.
+ * Component tests for DayDot — o dia da semana do Dashboard. Ativo é um
+ * círculo lima com raio; inativo é um círculo vazio em cardAlt; hoje ganha
+ * um anel fino.
  */
 
 import React from 'react';
@@ -14,42 +15,42 @@ function flatten(style: unknown): Record<string, unknown> {
 }
 
 describe('DayDot', () => {
-  it('uppercases the day label', () => {
-    const { getByText } = render(<DayDot day="Seg" active={false} />);
-    expect(getByText('SEG')).toBeTruthy();
+  it('renders the day label as given (sentence case)', () => {
+    const { getByText, queryByText } = render(<DayDot day="Seg" active={false} />);
+    expect(getByText('Seg')).toBeTruthy();
+    expect(queryByText('SEG')).toBeNull();
   });
 
-  it('renders inactive as a dash on the card surface, with a border', () => {
-    const { getByText, getByLabelText } = render(<DayDot day="Ter" active={false} />);
-    expect(getByText('—')).toBeTruthy();
+  it('renders inactive as an empty circle on the alt surface', () => {
+    const { getByLabelText, UNSAFE_queryByType } = render(<DayDot day="Ter" active={false} />);
     const style = flatten(getByLabelText('Ter: sem treino').props.style);
-    expect(style.backgroundColor).toBe(colors.card);
-    expect(style.borderWidth).toBe(1);
+    expect(style.backgroundColor).toBe(colors.cardAlt);
+    expect(style.borderWidth).toBeUndefined();
+    expect(UNSAFE_queryByType('FontAwesome5' as never)).toBeNull();
   });
 
-  it('renders active as a green square with a bolt and a strong glow', () => {
-    const { getByLabelText, UNSAFE_getByType, queryByText } = render(
-      <DayDot day="Qua" active />,
-    );
+  it('renders active as a lime circle with a bolt — no glow', () => {
+    const { getByLabelText, UNSAFE_getByType } = render(<DayDot day="Qua" active />);
     const style = flatten(getByLabelText('Qua: treinou').props.style);
     expect(style.backgroundColor).toBe(colors.primary);
-    expect(style.boxShadow).toContain('rgba(162, 255, 0, 0.55)');
+    expect(style.boxShadow).toBeUndefined();
     expect(UNSAFE_getByType('FontAwesome5' as never).props.name).toBe('bolt');
-    expect(queryByText('—')).toBeNull();
   });
 
   it.each([
     [true, 'treinou'],
     [false, 'sem treino'],
-  ])('is 48x48 when active=%p', (active, suffix) => {
+  ])('is a 36px circle when active=%p', (active, suffix) => {
     const { getByLabelText } = render(<DayDot day="Qui" active={active} />);
     const style = flatten(getByLabelText(`Qui: ${suffix}`).props.style);
-    expect(style.width).toBe(48);
-    expect(style.height).toBe(48);
+    expect(style.width).toBe(36);
+    expect(style.height).toBe(36);
   });
 
-  it('carries no glow when inactive', () => {
-    const { getByLabelText } = render(<DayDot day="Sex" active={false} />);
-    expect(flatten(getByLabelText('Sex: sem treino').props.style).boxShadow).toBeUndefined();
+  it('rings today and highlights its label', () => {
+    const { getByLabelText, getByText } = render(<DayDot day="Sex" active={false} isToday />);
+    const style = flatten(getByLabelText('Sex: sem treino').props.style);
+    expect(style.borderColor).toBe(colors.secondaryText);
+    expect(flatten(getByText('Sex').props.style).color).toBe(colors.primaryText);
   });
 });

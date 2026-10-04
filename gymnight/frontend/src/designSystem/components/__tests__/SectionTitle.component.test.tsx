@@ -1,6 +1,6 @@
 /**
- * Component tests for SectionTitle — o .toUpperCase() é feito pelo próprio
- * componente, para que nenhum call site precise lembrar disso.
+ * Component tests for SectionTitle — sentence case como recebido, metadado
+ * opcional e ação à direita.
  */
 
 import React from 'react';
@@ -10,23 +10,29 @@ import { SectionTitle } from '../SectionTitle';
 import { colors, typography } from '../../tokens';
 
 describe('SectionTitle', () => {
-  it('uppercases its text', () => {
+  it('renders its text as given — no uppercasing', () => {
     const { getByText, queryByText } = render(<SectionTitle>Atividade semanal</SectionTitle>);
-    expect(getByText('ATIVIDADE SEMANAL')).toBeTruthy();
-    expect(queryByText('Atividade semanal')).toBeNull();
+    expect(getByText('Atividade semanal')).toBeTruthy();
+    expect(queryByText('ATIVIDADE SEMANAL')).toBeNull();
   });
 
-  it('leaves already-uppercase text alone', () => {
-    const { getByText } = render(<SectionTitle>SEUS TREINOS</SectionTitle>);
-    expect(getByText('SEUS TREINOS')).toBeTruthy();
-  });
-
-  it('styles the title as h3 in the primary text color', () => {
-    const { getByText } = render(<SectionTitle>x</SectionTitle>);
-    const style = Object.assign({}, ...[getByText('X').props.style].flat(Infinity).filter(Boolean));
+  it('styles the title as h3 in the primary text color, announced as a header', () => {
+    const { getByText } = render(<SectionTitle>Seus treinos</SectionTitle>);
+    const title = getByText('Seus treinos');
+    const style = Object.assign({}, ...[title.props.style].flat(Infinity).filter(Boolean));
     expect(style.color).toBe(colors.primaryText);
     expect(style.fontSize).toBe(typography.h3.fontSize);
     expect(style.fontFamily).toBe(typography.h3.fontFamily);
+    expect(title.props.accessibilityRole).toBe('header');
+  });
+
+  it('renders the meta text in a quieter tone', () => {
+    const { getByText } = render(<SectionTitle meta="3 de 7 dias">Esta semana</SectionTitle>);
+    const style = Object.assign(
+      {},
+      ...[getByText('3 de 7 dias').props.style].flat(Infinity).filter(Boolean),
+    );
+    expect(style.color).toBe(colors.tertiaryText);
   });
 
   it('renders the right slot when given', () => {

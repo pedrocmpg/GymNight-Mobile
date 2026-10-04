@@ -33,7 +33,7 @@ import { ProgressBar } from '../../designSystem/components/ProgressBar';
 import { ScreenHeader } from '../../designSystem/components/ScreenHeader';
 import { SetCheckButton } from '../../designSystem/components/SetCheckButton';
 import { SetTypeBadge, nextSetType } from '../../designSystem/components/SetTypeBadge';
-import { UnderlineInput } from '../../designSystem/components/UnderlineInput';
+import { CellInput } from '../../designSystem/components/CellInput';
 import { Chip } from '../../designSystem/components/Chip';
 import {
   buildSetGrid,
@@ -353,7 +353,6 @@ export function ActiveSessionScreen({
               {grid.map((exercise) => (
                 <Card
                   key={exercise.exerciseId}
-                  glow
                   style={styles.exerciseCard}
                   testID={`exercise-card-${exercise.exerciseId}`}
                 >
@@ -406,7 +405,7 @@ export function ActiveSessionScreen({
                           />
                         </View>
                         <View style={styles.colField}>
-                          <UnderlineInput
+                          <CellInput
                             testID={`set-weight-${exercise.exerciseId}-${index}`}
                             value={weightText}
                             placeholder="0"
@@ -424,7 +423,7 @@ export function ActiveSessionScreen({
                           />
                         </View>
                         <View style={styles.colField}>
-                          <UnderlineInput
+                          <CellInput
                             testID={`set-reps-${exercise.exerciseId}-${index}`}
                             value={repsText}
                             placeholder="10-12"
@@ -498,7 +497,7 @@ export function ActiveSessionScreen({
                     />
                   ))}
                 </ScrollView>
-                <UnderlineInput
+                <CellInput
                   testID="weight-input"
                   placeholder="Peso (kg)"
                   value={weight}
@@ -506,7 +505,7 @@ export function ActiveSessionScreen({
                   keyboardType="numeric"
                   accessibilityLabel="Peso"
                 />
-                <UnderlineInput
+                <CellInput
                   testID="reps-input"
                   placeholder="Repetições"
                   value={reps}
@@ -595,7 +594,7 @@ function SummaryCard({
   testID: string;
 }) {
   return (
-    <Card glow style={styles.summaryCard} testID={testID}>
+    <Card style={styles.summaryCard} testID={testID}>
       <FontAwesome5 name={icon} size={28} color={colors.primary} solid />
       <Text style={styles.summaryValue} testID={`${testID}-value`}>
         {value}

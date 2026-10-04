@@ -1,15 +1,14 @@
 /**
- * SetCheckButton — quadrado de 52×52 que marca uma série como concluída.
- * Porta o _style_check do desktop (active_workout.py:654-660):
- *
- *   marcado:    check #000000 sobre #a2ff00, radius 10, sem borda
- *   desmarcado: check #6b7280 sobre #222222, radius 10, borda 1px #2a2a2a
+ * SetCheckButton — conclui (grava) uma série. Desmarcado é uma célula
+ * neutra; marcado vira lima — é o momento de recompensa do treino, por isso
+ * o haptic médio.
  */
 
 import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { colors, radii } from '../tokens';
+import { colors, layout, radii } from '../tokens';
+import { Touchable } from './Touchable';
 
 export interface SetCheckButtonProps {
   checked: boolean;
@@ -26,18 +25,12 @@ export function SetCheckButton({
   testID,
   accessibilityLabel,
 }: SetCheckButtonProps) {
-  // O TouchableOpacity mockado nos testes ignora a prop `disabled`.
-  const handlePress = () => {
-    if (disabled) return;
-    onPress();
-  };
-
   return (
-    <TouchableOpacity
+    <Touchable
       testID={testID}
-      onPress={handlePress}
+      onPress={onPress}
       disabled={disabled}
-      activeOpacity={0.8}
+      haptic={checked ? 'selection' : 'medium'}
       accessibilityRole="checkbox"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ checked, disabled }}
@@ -45,18 +38,18 @@ export function SetCheckButton({
     >
       <FontAwesome5
         name="check"
-        size={18}
-        color={checked ? colors.onPrimary : colors.secondaryText}
+        size={16}
+        color={checked ? colors.onPrimary : colors.tertiaryText}
         solid
       />
-    </TouchableOpacity>
+    </Touchable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    width: 52,
-    height: 52,
+    width: layout.hitTarget,
+    height: layout.hitTarget,
     borderRadius: radii.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -66,7 +59,5 @@ const styles = StyleSheet.create({
   },
   unchecked: {
     backgroundColor: colors.cardAlt,
-    borderWidth: 1,
-    borderColor: colors.border,
   },
 });

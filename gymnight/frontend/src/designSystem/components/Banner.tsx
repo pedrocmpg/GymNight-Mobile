@@ -1,19 +1,17 @@
 /**
- * Banner — faixa de aviso com borda esquerda colorida de 4px. Unifica o
- * padrão de banner offline/erro que hoje está copiado em AuthScreen e
- * DashboardScreen.
+ * Banner — aviso em linha: superfície tingida + ícone + mensagem.
  *
- * Resolve um bug real: os banners de erro dos containers (por exemplo o
- * testID `logout-error-banner` do DashboardScreenContainer) renderizam
- * <View><Text>{...}</Text></View> sem estilo nenhum — ou seja, texto preto
- * padrão sobre fundo preto, invisível.
+ *   info     neutro (offline, "verifique seu email")
+ *   error    vermelho
+ *   success  lima (recorde pessoal)
  */
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { colors, typography, spacing, radii } from '../tokens';
 
-export type BannerVariant = 'info' | 'error';
+export type BannerVariant = 'info' | 'error' | 'success';
 
 export interface BannerProps {
   message: string;
@@ -21,38 +19,38 @@ export interface BannerProps {
   testID?: string;
 }
 
+const VARIANT: Record<BannerVariant, { icon: string; color: string; background: string }> = {
+  info: { icon: 'info-circle', color: colors.secondaryText, background: colors.cardAlt },
+  error: { icon: 'exclamation-circle', color: colors.error, background: colors.errorTint },
+  success: { icon: 'trophy', color: colors.primary, background: colors.primaryTint },
+};
+
 export function Banner({ message, variant = 'info', testID }: BannerProps) {
+  const config = VARIANT[variant];
   return (
     <View
-      style={[styles.banner, variant === 'error' ? styles.error : styles.info]}
+      style={[styles.banner, { backgroundColor: config.background }]}
       testID={testID}
       accessibilityRole="alert"
     >
-      <Text style={[styles.message, variant === 'error' && styles.errorMessage]}>{message}</Text>
+      <FontAwesome5 name={config.icon} size={14} color={config.color} solid />
+      <Text style={[styles.message, variant !== 'info' && { color: config.color }]}>{message}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   banner: {
-    borderLeftWidth: 4,
-    borderRadius: radii.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderRadius: radii.md,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
   },
-  info: {
-    backgroundColor: colors.primaryTint,
-    borderLeftColor: colors.primary,
-  },
-  error: {
-    backgroundColor: colors.errorBg,
-    borderLeftColor: colors.error,
-  },
   message: {
-    ...typography.sub,
+    ...typography.footnote,
     color: colors.primaryText,
-  },
-  errorMessage: {
-    color: colors.error,
+    flex: 1,
   },
 });

@@ -1,15 +1,13 @@
 /**
  * Input — campo de texto com label e estado de erro.
  *
- * Porta o QLineEdit do desktop (theme.py:130-140):
- *   background: #1a1a1a; color: #ffffff; border: 2px solid #2a2a2a;
- *   border-radius: 10px; padding: 12px 18px; font-size: 15px;
- *   :focus { border-color: #a2ff00; }
+ * Superfície cardAlt com hairline; foco pinta a borda de lima, erro de
+ * vermelho. Altura fixa de 52 alinha com o Button md.
  */
 
 import React, { useState } from 'react';
 import { View, Text, TextInput, TextInputProps, StyleSheet } from 'react-native';
-import { colors, typography, spacing, radii } from '../tokens';
+import { colors, typography, spacing, radii, layout } from '../tokens';
 
 export interface InputProps extends Omit<TextInputProps, 'style'> {
   /** Renderizado acima do campo, em typography.label. */
@@ -27,8 +25,9 @@ export function Input({ label, error, testID, onFocus, onBlur, ...rest }: InputP
       {label ? <Text style={styles.label}>{label}</Text> : null}
       <TextInput
         testID={testID}
-        placeholderTextColor={colors.secondaryText}
+        placeholderTextColor={colors.tertiaryText}
         selectionColor={colors.primary}
+        cursorColor={colors.primary}
         style={[styles.input, isFocused && styles.focused, !!error && styles.errored]}
         onFocus={(event) => {
           setIsFocused(true);
@@ -55,17 +54,19 @@ const styles = StyleSheet.create({
   },
   label: {
     ...typography.label,
-    color: colors.primaryText,
+    color: colors.secondaryText,
   },
   input: {
-    backgroundColor: colors.card,
+    ...typography.body,
+    // lineHeight num TextInput desalinha o texto verticalmente no Android.
+    lineHeight: undefined,
+    height: layout.controlHeight.md,
+    backgroundColor: colors.cardAlt,
     color: colors.primaryText,
-    borderWidth: 2,
+    borderWidth: layout.hairline,
     borderColor: colors.border,
     borderRadius: radii.md,
-    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    ...typography.body,
   },
   focused: {
     borderColor: colors.primary,
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
     borderColor: colors.error,
   },
   error: {
-    ...typography.sub,
+    ...typography.footnote,
     color: colors.error,
   },
 });

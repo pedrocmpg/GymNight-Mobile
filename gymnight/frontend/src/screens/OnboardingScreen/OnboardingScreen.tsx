@@ -207,7 +207,7 @@ export function OnboardingScreen({ onComplete, isSaving = false, error = null }:
                   accessibilityLabel={`Selecionar objetivo ${option.label}`}
                   onPress={() => setGoals((prev) => toggleGoalFifo(prev, option.id))}
                 >
-                  <Card bordered={!selected} glow={selected} style={styles.goalCard}>
+                  <Card bordered style={styles.goalCard}>
                     <Text style={[styles.goalLabel, selected && styles.goalLabelSelected]}>
                       {option.label}
                     </Text>

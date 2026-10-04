@@ -1,39 +1,37 @@
 /**
- * DayDot — quadrado de 48×48 representando um dia da semana, com o label
- * abaixo. Porta o _WeekDayIcon do desktop (dashboard.py:171-199):
+ * DayDot — um dia da semana na faixa de atividade.
  *
- *   ativo:   raio (fa5s.bolt) escuro sobre #a2ff00, com glow FORTE
- *   inativo: "—" sobre #1a1a1a, borda 1px #2a2a2a
- *
- * Substitui a faixa de 7 barrinhas planas de 8px do DashboardScreen atual.
+ *   rótulo do dia (como recebido, ex.: "Seg") acima
+ *   ativo:   círculo lima com raio escuro
+ *   inativo: círculo cardAlt vazio
+ *   hoje:    anel fino ao redor + rótulo em destaque
  */
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { colors, typography, spacing, glow } from '../tokens';
+import { colors, typography, spacing, radii } from '../tokens';
+
+const DOT_SIZE = 36;
 
 export interface DayDotProps {
-  /** Nome curto do dia — ex.: 'Seg'. O componente faz .toUpperCase(). */
+  /** Nome curto do dia — ex.: 'Seg'. Renderizado como recebido. */
   day: string;
   active: boolean;
+  isToday?: boolean;
   testID?: string;
 }
 
-export function DayDot({ day, active, testID }: DayDotProps) {
+export function DayDot({ day, active, isToday = false, testID }: DayDotProps) {
   return (
     <View style={styles.container} testID={testID}>
+      <Text style={[styles.label, isToday && styles.labelToday]}>{day}</Text>
       <View
-        style={[styles.dot, active ? [styles.active, glow(colors.primary, 20, 0.55)] : styles.inactive]}
+        style={[styles.dot, active ? styles.active : styles.inactive, isToday && styles.today]}
         accessibilityLabel={`${day}: ${active ? 'treinou' : 'sem treino'}`}
       >
-        {active ? (
-          <FontAwesome5 name="bolt" size={20} color={colors.card} solid />
-        ) : (
-          <Text style={styles.dash}>—</Text>
-        )}
+        {active ? <FontAwesome5 name="bolt" size={14} color={colors.onPrimary} solid /> : null}
       </View>
-      <Text style={styles.label}>{day.toUpperCase()}</Text>
     </View>
   );
 }
@@ -44,9 +42,9 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   dot: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: DOT_SIZE,
+    height: DOT_SIZE,
+    borderRadius: radii.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -54,16 +52,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   inactive: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.cardAlt,
   },
-  dash: {
-    fontSize: 20,
-    color: colors.mutedText,
+  today: {
+    borderWidth: 1.5,
+    borderColor: colors.secondaryText,
   },
   label: {
     ...typography.caption,
-    color: colors.secondaryText,
+    color: colors.tertiaryText,
+  },
+  labelToday: {
+    color: colors.primaryText,
   },
 });

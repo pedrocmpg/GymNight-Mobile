@@ -6,7 +6,7 @@
  * - Requirements 13.2: Spacing scale is strictly increasing with at least 4 values
  * - Requirements 13.5: No light-mode keys present in the exported module
  */
-import { colors, typography, spacing, radii, fonts, glow } from './tokens';
+import { colors, typography, spacing, radii, fonts, layout, motion } from './tokens';
 
 describe('Design_Token_Module', () => {
   describe('Requirement 13.1 — Color tokens exist and are distinct', () => {
@@ -126,29 +126,84 @@ describe('Design_Token_Module', () => {
     });
   });
 
-  describe('Wave 0 — Paleta portada do GymNight-Desktop', () => {
-    it('uses the desktop palette values verbatim (theme.py:10-38)', () => {
-      expect(colors.background).toBe('#0a0a0a'); // C_BG
-      expect(colors.surface).toBe('#0f0f0f'); // C_SURFACE
-      expect(colors.card).toBe('#1a1a1a'); // C_CARD
-      expect(colors.cardAlt).toBe('#222222'); // C_CARD2
-      expect(colors.border).toBe('#2a2a2a'); // C_BORDER
-      expect(colors.primary).toBe('#a2ff00'); // C_GREEN
-      expect(colors.primaryHover).toBe('#b5f542'); // C_GREEN_ACTIVE
-      expect(colors.primaryDark).toBe('#65a30d'); // C_GREEN_DK
-      expect(colors.primaryText).toBe('#ffffff'); // C_TEXT
-      expect(colors.secondaryText).toBe('#6b7280'); // C_TEXT2
-      expect(colors.error).toBe('#ef4444'); // C_RED
+  describe('REDESIGN-04 — paleta minimal premium', () => {
+    it('pins the layered surfaces, the brand lime and the text hierarchy', () => {
+      expect(colors.background).toBe('#0a0a0a');
+      expect(colors.surface).toBe('#111113');
+      expect(colors.card).toBe('#18181b');
+      expect(colors.cardAlt).toBe('#222226');
+      expect(colors.border).toBe('#2a2a2e');
+      expect(colors.primary).toBe('#a2ff00');
+      expect(colors.primaryText).toBe('#f4f4f5');
+      expect(colors.secondaryText).toBe('#a1a1aa');
+      expect(colors.tertiaryText).toBe('#71717a');
+      expect(colors.error).toBe('#f87171');
     });
 
-    it('radii match RADIUS_SM / RADIUS_MD / RADIUS_LG of the desktop', () => {
-      expect(radii.sm).toBe(6);
-      expect(radii.md).toBe(10);
+    it('retires the neon-era keys', () => {
+      for (const key of ['primaryHover', 'primaryDark', 'primaryBg', 'primaryMuted', 'errorBg', 'scrim']) {
+        expect(colors).not.toHaveProperty(key);
+      }
+    });
+
+    it('radii step from tiny badges to sheet corners', () => {
+      expect(radii.xs).toBe(4);
+      expect(radii.sm).toBe(8);
+      expect(radii.md).toBe(12);
       expect(radii.lg).toBe(16);
+      expect(radii.xl).toBe(24);
+    });
+
+    it('every screen shares a 20px gutter and 44px hit targets', () => {
+      expect(layout.gutter).toBe(20);
+      expect(layout.hitTarget).toBe(44);
+      expect(layout.controlHeight.md).toBeGreaterThanOrEqual(layout.hitTarget);
+    });
+
+    it('press feedback is subtle and durations stay short', () => {
+      expect(motion.pressScale).toBeGreaterThan(0.9);
+      expect(motion.pressScale).toBeLessThan(1);
+      expect(motion.duration.slow).toBeLessThanOrEqual(300);
     });
   });
 
-  describe('Wave 0 — Tipografia com famílias da Inter', () => {
+  describe('REDESIGN-04 — contraste WCAG', () => {
+    function luminance(hex: string): number {
+      const n = parseInt(hex.replace('#', ''), 16);
+      const channel = (c: number) => {
+        const s = c / 255;
+        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+      };
+      return 0.2126 * channel((n >> 16) & 255) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255);
+    }
+
+    function contrast(a: string, b: string): number {
+      const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+      return (hi + 0.05) / (lo + 0.05);
+    }
+
+    const surfaces = [colors.background, colors.surface, colors.card];
+
+    it.each(['primaryText', 'secondaryText', 'error'] as const)(
+      '%s passes AA (4.5:1) on every surface',
+      (key) => {
+        for (const surface of surfaces) {
+          expect(contrast(colors[key], surface)).toBeGreaterThanOrEqual(4.5);
+        }
+      },
+    );
+
+    it('tertiaryText passes 3:1 on background and card (large/secondary text only)', () => {
+      expect(contrast(colors.tertiaryText, colors.background)).toBeGreaterThanOrEqual(3);
+      expect(contrast(colors.tertiaryText, colors.card)).toBeGreaterThanOrEqual(3);
+    });
+
+    it('text on the lime CTA passes AA', () => {
+      expect(contrast(colors.onPrimary, colors.primary)).toBeGreaterThanOrEqual(4.5);
+    });
+  });
+
+  describe('Tipografia com famílias da Inter', () => {
     it('every font token is a distinct Inter family name', () => {
       const families = Object.values(fonts);
       for (const family of families) {
@@ -171,24 +226,11 @@ describe('Design_Token_Module', () => {
         expect(style).not.toHaveProperty('fontWeight');
       }
     });
-  });
 
-  describe('Wave 0 — glow() (equivalente ao neon_glow do desktop)', () => {
-    it('produces a centered boxShadow in the requested color and radius', () => {
-      const style = glow('#a2ff00', 20, 0.35);
-      expect(style.boxShadow).toBe('0px 0px 20px rgba(162, 255, 0, 0.35)');
-      expect(style.shadowOffset).toEqual({ width: 0, height: 0 });
-    });
-
-    it('defaults to the primary accent', () => {
-      expect(glow().boxShadow).toContain('rgba(162, 255, 0,');
-    });
-
-    it('keeps the shadow* fallback consistent with the requested values', () => {
-      const style = glow(colors.error, 12, 0.5);
-      expect(style.shadowColor).toBe(colors.error);
-      expect(style.shadowOpacity).toBe(0.5);
-      expect(style.shadowRadius).toBe(6);
+    it('every typography token sets a lineHeight at least as tall as its fontSize', () => {
+      for (const style of Object.values(typography)) {
+        expect(style.lineHeight).toBeGreaterThanOrEqual(style.fontSize);
+      }
     });
   });
 });

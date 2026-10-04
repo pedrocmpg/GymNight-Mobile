@@ -44,7 +44,7 @@ export function RadarChart({ slices, size, testID }: RadarChartProps) {
         {geometry.polygonPath !== '' && (
           <Path
             d={geometry.polygonPath}
-            fill={colors.primaryMuted}
+            fill={colors.primaryTint}
             fillOpacity={0.6}
             stroke={colors.primary}
             strokeWidth={2}

@@ -19,6 +19,7 @@ export const Image = 'Image';
 export const ImageBackground = 'ImageBackground';
 export const Switch = 'Switch';
 export const Modal = 'Modal';
+export const KeyboardAvoidingView = 'KeyboardAvoidingView';
 const absoluteFill = { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 } as const;
 export const StyleSheet = {
   create: <T extends Record<string, unknown>>(styles: T): T => styles,
@@ -140,6 +141,7 @@ export default {
   ImageBackground,
   Switch,
   Modal,
+  KeyboardAvoidingView,
   StyleSheet,
   Platform,
   Dimensions,

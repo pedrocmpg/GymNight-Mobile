@@ -129,8 +129,8 @@ describe('DashboardScreen — Atividade semanal', () => {
 
   it('exibe os dias começando na segunda, como o desktop', () => {
     const { getByText } = renderScreen();
-    expect(getByText('SEG')).toBeTruthy();
-    expect(getByText('DOM')).toBeTruthy();
+    expect(getByText('Seg')).toBeTruthy();
+    expect(getByText('Dom')).toBeTruthy();
   });
 
   // O weeklyStreak chega indexado por domingo=0; a tela reordena para

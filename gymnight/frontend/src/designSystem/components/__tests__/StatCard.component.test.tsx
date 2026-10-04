@@ -28,13 +28,13 @@ describe('StatCard', () => {
     expect(queryByText('dias')).toBeNull();
   });
 
-  it('renders the requested FontAwesome5 icon in the accent color', () => {
+  it('renders the requested FontAwesome5 icon in a neutral tone — lime is not decoration', () => {
     const { UNSAFE_getByType } = render(
       <StatCard icon="weight-hanging" title="Volume" value="12k" />,
     );
     const icon = UNSAFE_getByType('FontAwesome5' as never);
     expect(icon.props.name).toBe('weight-hanging');
-    expect(icon.props.color).toBe(colors.primary);
+    expect(icon.props.color).toBe(colors.tertiaryText);
   });
 
   it('styles the value as the big stat and the unit as its lighter companion', () => {
@@ -50,11 +50,14 @@ describe('StatCard', () => {
     expect(unit.color).toBe(colors.tertiaryText);
   });
 
-  it('carries the neon glow of the desktop stat cards', () => {
+  it('sits on a plain card surface — no glow, no border', () => {
     const { getByTestId } = render(
       <StatCard icon="dumbbell" title="Treinos" value="4" testID="s" />,
     );
-    expect(flatten(getByTestId('s').props.style).boxShadow).toContain('rgba(162, 255, 0,');
+    const style = flatten(getByTestId('s').props.style);
+    expect(style.backgroundColor).toBe(colors.card);
+    expect(style.boxShadow).toBeUndefined();
+    expect(style.borderWidth).toBeUndefined();
   });
 
   describe('delta (Wave 7 — Estatísticas)', () => {

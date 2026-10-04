@@ -71,7 +71,7 @@ describe('HeroBanner', () => {
     const stops = UNSAFE_getAllByType('Stop' as never);
     expect(stops).toHaveLength(8);
     for (const stop of stops) {
-      expect(stop.props.stopColor).toBe(colors.scrim);
+      expect(stop.props.stopColor).toBe(colors.background);
     }
     expect(stops.filter((s) => s.props.stopOpacity === 0)).toHaveLength(4);
   });

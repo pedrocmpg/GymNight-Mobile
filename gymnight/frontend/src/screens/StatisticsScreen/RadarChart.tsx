@@ -9,7 +9,7 @@ import React from 'react';
 import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { computeRadarGeometry, type RadarSlice } from './computeRadarGeometry';
-import { colors, spacing, typography } from '../../designSystem/tokens';
+import { colors, layout, spacing, typography } from '../../designSystem/tokens';
 
 export interface RadarChartProps {
   slices: RadarSlice[];
@@ -19,8 +19,8 @@ export interface RadarChartProps {
   testID?: string;
 }
 
-// StatisticsScreen `padding: spacing.md` (×2) + Card `padding: spacing.lg` (×2) + Card `borderWidth: 2` (×2).
-const CHART_HORIZONTAL_CHROME = spacing.md * 2 + spacing.lg * 2 + 4;
+// Gutter da tela (×2) + padding `lg` do card do radar (×2); cards não têm borda.
+const CHART_HORIZONTAL_CHROME = layout.gutter * 2 + spacing.lg * 2;
 const MAX_SIZE = 260;
 /** Metade da largura reservada para cada rótulo, para centralizá-lo na posição calculada. */
 const LABEL_HALF_WIDTH = 32;
@@ -36,18 +36,18 @@ export function RadarChart({ slices, size, testID }: RadarChartProps) {
     <View style={{ width: resolvedSize, height: resolvedSize }} testID={testID}>
       <Svg width={resolvedSize} height={resolvedSize} viewBox={`0 0 ${resolvedSize} ${resolvedSize}`}>
         {geometry.gridRings.map((ring, i) => (
-          <Path key={`ring-${i}`} d={ring} fill="none" stroke={colors.border} strokeWidth={1} />
+          <Path key={`ring-${i}`} d={ring} fill="none" stroke={colors.divider} strokeWidth={1} />
         ))}
         {geometry.axisLines.map((line, i) => (
-          <Path key={`axis-${i}`} d={line} stroke={colors.border} strokeWidth={1} />
+          <Path key={`axis-${i}`} d={line} stroke={colors.divider} strokeWidth={1} />
         ))}
         {geometry.polygonPath !== '' && (
           <Path
             d={geometry.polygonPath}
-            fill={colors.primaryTint}
-            fillOpacity={0.6}
+            fill={colors.primary}
+            fillOpacity={0.14}
             stroke={colors.primary}
-            strokeWidth={2}
+            strokeWidth={1.5}
             strokeLinejoin="round"
           />
         )}

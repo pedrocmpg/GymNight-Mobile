@@ -1,7 +1,7 @@
 /**
- * StatisticsScreen — Wave 7. Terceira aba do mobile (o desktop tem 4
- * destinos; radar muscular + grid 2×2 de métricas com delta período-contra-
- * período, ambos sobre os últimos 30 dias fixos.
+ * StatisticsScreen — Wave 7. Terceira aba do mobile: radar muscular + grade
+ * 2×2 de métricas com delta período-contra-período, ambos sobre os últimos
+ * 30 dias fixos.
  *
  * Porta `GymNight-Desktop/src/ui/screens/statistics.py`. Nenhuma mudança de
  * schema — puramente consumidora do catálogo muscular da Wave 6.
@@ -10,10 +10,12 @@
  */
 
 import React from 'react';
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, typography, spacing } from '../../designSystem/tokens';
+import { View, StyleSheet } from 'react-native';
+import { layout, spacing } from '../../designSystem/tokens';
 import { Card } from '../../designSystem/components/Card';
+import { LoadingState } from '../../designSystem/components/LoadingState';
+import { Screen } from '../../designSystem/components/Screen';
+import { SectionTitle } from '../../designSystem/components/SectionTitle';
 import { StatCard } from '../../designSystem/components/StatCard';
 import { formatVolume } from '../../hooks/historyDomainUtils';
 import { RadarChart } from './RadarChart';
@@ -52,30 +54,37 @@ export function StatisticsScreen({
 }: StatisticsScreenProps) {
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']} testID="statistics-screen">
-        <View style={styles.loadingContainer} testID="statistics-loading-state">
-          <ActivityIndicator testID="statistics-loading-indicator" size="large" color={colors.primary} />
-        </View>
-      </SafeAreaView>
+      <Screen edges={['top']} testID="statistics-screen" scroll={false}>
+        <LoadingState
+          testID="statistics-loading-state"
+          indicatorTestID="statistics-loading-indicator"
+        />
+      </Screen>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']} testID="statistics-screen">
-      <Text style={styles.title}>ESTATÍSTICAS</Text>
-
-      <ScrollView testID="statistics-content" contentContainerStyle={styles.scrollContent}>
-        <Card style={styles.radarCard} testID="muscle-radar-card">
-          <View style={styles.radarWrapper}>
-            <RadarChart slices={radarSlices} testID="muscle-radar-chart" />
-          </View>
+    <Screen
+      edges={['top']}
+      testID="statistics-screen"
+      scrollTestID="statistics-content"
+      title="Estatísticas"
+      subtitle="Últimos 30 dias, comparados aos 30 anteriores"
+    >
+      <View style={styles.block}>
+        <SectionTitle>Distribuição muscular</SectionTitle>
+        <Card padding="lg" style={styles.radarCard} testID="muscle-radar-card">
+          <RadarChart slices={radarSlices} testID="muscle-radar-chart" />
         </Card>
+      </View>
 
+      <View style={styles.block}>
+        <SectionTitle>Resumo</SectionTitle>
         <View style={styles.statsGrid} testID="statistics-stats-grid">
           <View style={styles.statsCell}>
             <StatCard
               icon="calendar-check"
-              title="Treinamentos"
+              title="Treinos"
               value={String(sessionCount.value)}
               deltaPct={sessionCount.deltaPct}
               testID="stat-session-count"
@@ -110,39 +119,19 @@ export function StatisticsScreen({
             />
           </View>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    padding: spacing.md,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    color: colors.primaryText,
-    ...typography.h1,
-    marginBottom: spacing.sm,
-  },
-  scrollContent: {
-    gap: spacing.sm,
-    paddingBottom: spacing.xl,
+  block: {
+    gap: layout.blockGap,
   },
   radarCard: {
-    padding: spacing.lg,
     alignItems: 'center',
   },
-  radarWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  // `flexBasis: '48%'` com `flexWrap` produz a grade 2×2 sem medir a tela.
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

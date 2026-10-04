@@ -44,7 +44,7 @@ describe('StatisticsScreen', () => {
 
   it('shows the title in uppercase', () => {
     const { getByText } = renderScreen();
-    expect(getByText('ESTATÍSTICAS')).toBeTruthy();
+    expect(getByText('Estatísticas')).toBeTruthy();
   });
 
   it('renders the muscle radar chart', () => {

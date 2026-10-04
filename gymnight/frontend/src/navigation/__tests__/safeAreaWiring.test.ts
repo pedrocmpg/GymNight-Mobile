@@ -24,6 +24,7 @@ const SCREENS: ReadonlyArray<readonly [string, readonly string[]]> = [
   // Abas: a tab bar cuida da borda de baixo.
   ['src/screens/DashboardScreen/DashboardScreen.tsx', ['top']],
   ['src/screens/ProgressScreen/ProgressScreen.tsx', ['top']],
+  ['src/screens/StatisticsScreen/StatisticsScreen.tsx', ['top']],
   // Tela cheia com rodapé fixo (Finalizar treino): precisa da borda de baixo.
   ['src/screens/ActiveSessionScreen/ActiveSessionScreen.tsx', ['top', 'bottom']],
   // Rodapé fixo com "Salvar treino".

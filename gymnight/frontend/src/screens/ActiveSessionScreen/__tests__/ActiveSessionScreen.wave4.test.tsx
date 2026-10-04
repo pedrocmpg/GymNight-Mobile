@@ -86,9 +86,9 @@ describe('ActiveSessionScreen — Modo grade', () => {
     expect(queryByTestId('set-row-ex1-3')).toBeNull();
   });
 
-  it('mostra o nome do treino em caixa alta', () => {
+  it('mostra o nome do treino como digitado', () => {
     const { getByTestId } = renderGrid({ workoutName: 'Treino A — Peito' });
-    expect(getByTestId('workout-title').props.children).toBe('TREINO A — PEITO');
+    expect(getByTestId('workout-title').props.children).toBe('Treino A — Peito');
   });
 
   it('renderiza um card por exercício com o contador de séries', () => {
@@ -347,7 +347,7 @@ describe('ActiveSessionScreen — Resumo pós-treino', () => {
   it('mostra o resumo ao finalizar', () => {
     const { getByTestId } = renderGrid();
     fireEvent.press(getByTestId('end-session-button'));
-    expect(getByTestId('summary-title').props.children).toBe('TREINO CONCLUÍDO!');
+    expect(getByTestId('summary-title').props.children).toBe('Treino concluído');
   });
 
   it('mostra volume, duração e contagem de séries', () => {

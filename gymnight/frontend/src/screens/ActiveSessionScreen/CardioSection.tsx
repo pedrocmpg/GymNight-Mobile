@@ -1,9 +1,8 @@
 /**
- * CardioSection — "+ Cardio" e a lista de entradas removíveis dentro do
- * treino ativo (Wave 9, PARIDADE-05-CARDIO.md §4.2). Extraído como
+ * CardioSection — "Adicionar cardio" e a lista de entradas removíveis dentro
+ * do treino ativo (Wave 9, PARIDADE-05-CARDIO.md §4.2). Extraído como
  * componente próprio desde o início — o `ActiveSessionScreen` já tem dois
- * modos (grade e livre) e a seção de cardio aparece nos dois; empurrar isso
- * para dentro do componente principal o deixaria grande demais.
+ * modos (grade e livre) e a seção de cardio aparece nos dois.
  *
  * ⚠️ Estas entradas NUNCA entram no contador `X/Y séries` nem na
  * ProgressBar do header — ambos continuam vindo só de `countGridProgress`
@@ -11,11 +10,16 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
-import { colors, typography, spacing, radii } from '../../designSystem/tokens';
+import { View, StyleSheet } from 'react-native';
+import { layout } from '../../designSystem/tokens';
+import { animateLayout } from '../../designSystem/motion';
+import { Button } from '../../designSystem/components/Button';
 import { Card } from '../../designSystem/components/Card';
 import { IconBadge } from '../../designSystem/components/IconBadge';
+import { IconButton } from '../../designSystem/components/IconButton';
+import { ListRow } from '../../designSystem/components/ListRow';
+import { SectionTitle } from '../../designSystem/components/SectionTitle';
+import { Sheet } from '../../designSystem/components/Sheet';
 import { CardioForm, type CardioFormValue } from '../CardioScreen/CardioForm';
 import { estimateCardioCalories } from '../CardioScreen/cardioDomain';
 
@@ -43,124 +47,74 @@ export function CardioSection({ entries, onAdd, onRemove, weightKg = 70 }: Cardi
   const [showForm, setShowForm] = useState(false);
 
   const handleSave = (value: CardioFormValue) => {
+    animateLayout();
     onAdd(value);
     setShowForm(false);
   };
 
+  const handleRemove = (id: string) => {
+    animateLayout();
+    onRemove(id);
+  };
+
   return (
-    <View testID="cardio-section">
-      <View style={styles.header}>
-        <Text style={styles.title}>CARDIO</Text>
-        <TouchableOpacity
-          testID="add-cardio-button"
-          onPress={() => setShowForm(true)}
-          style={styles.addButton}
-          accessibilityLabel="Adicionar cardio"
-        >
-          <FontAwesome5 name="plus" size={12} color={colors.primary} solid />
-          <Text style={styles.addButtonText}>Cardio</Text>
-        </TouchableOpacity>
-      </View>
+    <View testID="cardio-section" style={styles.section}>
+      <SectionTitle
+        right={
+          <Button
+            label="Adicionar"
+            icon="plus"
+            variant="secondary"
+            size="sm"
+            fullWidth={false}
+            onPress={() => setShowForm(true)}
+            testID="add-cardio-button"
+            accessibilityLabel="Adicionar cardio"
+          />
+        }
+      >
+        Cardio
+      </SectionTitle>
 
-      {entries.map((entry) => (
-        <Card key={entry.id} bordered={false} style={styles.entryCard} testID={`cardio-entry-${entry.id}`}>
-          <IconBadge icon="heartbeat" size={36} />
-          <View style={styles.entryBody}>
-            <Text style={styles.entryName} numberOfLines={1}>
-              {entry.cardioType}
-            </Text>
-            <Text style={styles.entryMeta}>
-              {entry.durationMin}min{formatDistance(entry.distanceKm)} · PSE {entry.pse}
-            </Text>
-          </View>
-          <Text style={styles.entryCalories} testID={`cardio-entry-calories-${entry.id}`}>
-            {estimateCardioCalories(entry.durationMin, entry.pse, weightKg)} kcal
-          </Text>
-          <TouchableOpacity
-            testID={`cardio-entry-remove-${entry.id}`}
-            onPress={() => onRemove(entry.id)}
-            style={styles.removeButton}
-            accessibilityLabel={`Remover cardio ${entry.cardioType}`}
-          >
-            <FontAwesome5 name="times" size={16} color={colors.secondaryText} solid />
-          </TouchableOpacity>
+      {entries.length > 0 && (
+        <Card padding="none">
+          {entries.map((entry, index) => (
+            <ListRow
+              key={entry.id}
+              testID={`cardio-entry-${entry.id}`}
+              leading={<IconBadge icon="heartbeat" />}
+              title={entry.cardioType}
+              subtitle={`${entry.durationMin}min${formatDistance(entry.distanceKm)} · PSE ${entry.pse}`}
+              value={`${estimateCardioCalories(entry.durationMin, entry.pse, weightKg)} kcal`}
+              divider={index < entries.length - 1}
+              trailing={
+                <IconButton
+                  icon="times"
+                  onPress={() => handleRemove(entry.id)}
+                  testID={`cardio-entry-remove-${entry.id}`}
+                  accessibilityLabel={`Remover cardio ${entry.cardioType}`}
+                />
+              }
+            />
+          ))}
         </Card>
-      ))}
+      )}
 
-      <Modal visible={showForm} transparent animationType="slide" onRequestClose={() => setShowForm(false)} testID="cardio-form-modal">
-        <View style={styles.overlay}>
-          <View style={styles.formCard} testID="cardio-form-card">
-            <CardioForm onSave={handleSave} onCancel={() => setShowForm(false)} weightKg={weightKg} />
-          </View>
-        </View>
-      </Modal>
+      <Sheet
+        visible={showForm}
+        onClose={() => setShowForm(false)}
+        title="Adicionar cardio"
+        testID="cardio-form-modal"
+        panelTestID="cardio-form-card"
+      >
+        <CardioForm onSave={handleSave} onCancel={() => setShowForm(false)} weightKg={weightKg} />
+      </Sheet>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  title: {
-    color: colors.primaryText,
-    ...typography.h3,
-  },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xxs,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    borderRadius: radii.pill,
-    paddingVertical: spacing.xxs,
-    paddingHorizontal: spacing.sm,
-  },
-  addButtonText: {
-    color: colors.primary,
-    ...typography.captionBold,
-  },
-  entryCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    backgroundColor: colors.cardAlt,
-    padding: spacing.sm,
-    marginBottom: spacing.xs,
-  },
-  entryBody: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
-  entryName: {
-    color: colors.primaryText,
-    ...typography.bodyBold,
-  },
-  entryMeta: {
-    color: colors.secondaryText,
-    ...typography.caption,
-  },
-  entryCalories: {
-    color: colors.primary,
-    ...typography.captionBold,
-  },
-  removeButton: {
-    padding: spacing.xxs,
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'flex-end',
-  },
-  formCard: {
-    backgroundColor: colors.card,
-    borderTopLeftRadius: radii.lg,
-    borderTopRightRadius: radii.lg,
-    padding: spacing.lg,
-    maxHeight: '85%',
+  section: {
+    gap: layout.blockGap,
   },
 });

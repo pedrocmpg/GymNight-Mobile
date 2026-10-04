@@ -3,16 +3,16 @@
  * PARIDADE-05-CARDIO.md §4.1). Usado tanto dentro do treino ativo quanto no
  * cardio avulso — mesma tela, mesmos campos, na ordem do desktop: tipo (com
  * busca), duração, distância (opcional), PSE, e a estimativa de calorias ao
- * vivo.
+ * vivo. Vive dentro de um Sheet, por isso rola por conta própria.
  */
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
-import { colors, typography, spacing, radii } from '../../designSystem/tokens';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { colors, typography, spacing, radii, layout } from '../../designSystem/tokens';
 import { Input } from '../../designSystem/components/Input';
-import { CellInput } from '../../designSystem/components/CellInput';
 import { Button } from '../../designSystem/components/Button';
-import { Card } from '../../designSystem/components/Card';
+import { ListRow } from '../../designSystem/components/ListRow';
+import { Touchable } from '../../designSystem/components/Touchable';
 import { filterExercises } from '../WorkoutCreatorScreen/exerciseSearch';
 import { CARDIO_TYPES } from './cardioTypes';
 import { isValidCardioDuration, isValidCardioDistance, pseLabelFor, estimateCardioCalories } from './cardioDomain';
@@ -31,12 +31,9 @@ export interface CardioFormProps {
   weightKg?: number;
 }
 
-const PSE_LEGEND = [
-  { emoji: '😌', label: 'Leve' },
-  { emoji: '😊', label: 'Moderado' },
-  { emoji: '😤', label: 'Intenso' },
-  { emoji: '🔥', label: 'Máximo' },
-];
+const PSE_VALUES = Array.from({ length: 10 }, (_, i) => i + 1);
+const PSE_LEGEND = ['Leve', 'Moderado', 'Intenso', 'Máximo'] as const;
+const TYPE_LIST_MAX_HEIGHT = 220;
 
 const SEARCHABLE_TYPES = CARDIO_TYPES.map((t) => ({ id: t.name, name: t.name }));
 
@@ -58,7 +55,7 @@ export function CardioForm({ onSave, onCancel, weightKg = 70 }: CardioFormProps)
   const canSave = selectedTypeName !== null && durationOk && distanceOk;
 
   const liveCalories = durationOk ? estimateCardioCalories(duration, pse, weightKg) : 0;
-  const pseLegendEntry = pseLabelFor(pse);
+  const pseLabel = pseLabelFor(pse).label;
 
   const handleSave = () => {
     if (!canSave || selectedTypeName === null) return;
@@ -66,62 +63,69 @@ export function CardioForm({ onSave, onCancel, weightKg = 70 }: CardioFormProps)
   };
 
   return (
-    <View testID="cardio-form">
-      <Text style={styles.sectionLabel}>Tipo de cardio</Text>
-      <Input
-        testID="cardio-type-search"
-        placeholder="Buscar tipo de cardio..."
-        value={selectedTypeName ?? searchQuery}
-        onChangeText={(v) => {
-          setSearchQuery(v);
-          setSelectedTypeName(null);
-        }}
-        accessibilityLabel="Buscar tipo de cardio"
-      />
+    <ScrollView
+      testID="cardio-form"
+      contentContainerStyle={styles.form}
+      keyboardShouldPersistTaps="handled"
+    >
+      <View style={styles.field}>
+        <Input
+          testID="cardio-type-search"
+          label="Tipo de cardio"
+          placeholder="Buscar: corrida, bike, natação…"
+          value={selectedTypeName ?? searchQuery}
+          onChangeText={(v) => {
+            setSearchQuery(v);
+            setSelectedTypeName(null);
+          }}
+          accessibilityLabel="Buscar tipo de cardio"
+        />
 
-      {selectedTypeName === null && (
-        <ScrollView style={styles.typeList} testID="cardio-type-list">
-          {visibleTypes.map((type) => (
-            <TouchableOpacity
-              key={type.id}
-              testID={`cardio-type-option-${type.id}`}
-              onPress={() => {
-                setSelectedTypeName(type.id);
-                setSearchQuery('');
-              }}
-            >
-              <Text style={styles.typeOptionText}>{type.name}</Text>
-            </TouchableOpacity>
-          ))}
-          {visibleTypes.length === 0 && (
-            <Text style={styles.noResultsText} testID="cardio-type-no-results">
-              Nenhum tipo encontrado.
-            </Text>
-          )}
-        </ScrollView>
-      )}
+        {selectedTypeName === null && (
+          <ScrollView style={styles.typeList} testID="cardio-type-list" nestedScrollEnabled>
+            {visibleTypes.map((type, index) => (
+              <ListRow
+                key={type.id}
+                testID={`cardio-type-option-${type.id}`}
+                title={type.name}
+                divider={index < visibleTypes.length - 1}
+                onPress={() => {
+                  setSelectedTypeName(type.id);
+                  setSearchQuery('');
+                }}
+              />
+            ))}
+            {visibleTypes.length === 0 && (
+              <Text style={styles.noResultsText} testID="cardio-type-no-results">
+                Nenhum tipo encontrado.
+              </Text>
+            )}
+          </ScrollView>
+        )}
 
-      {selectedType && (
-        <Card bordered={false} style={styles.selectedTypeCard} testID="cardio-selected-type-description">
-          <Text style={styles.selectedTypeDescription}>{selectedType.description}</Text>
-        </Card>
-      )}
+        {selectedType && (
+          <Text style={styles.selectedTypeDescription} testID="cardio-selected-type-description">
+            {selectedType.description}
+          </Text>
+        )}
+      </View>
 
       <View style={styles.fieldRow}>
         <View style={styles.fieldHalf}>
-          <Text style={styles.fieldLabel}>Duração (min)</Text>
-          <CellInput
+          <Input
             testID="cardio-duration-input"
+            label="Duração (min)"
             value={durationText}
             onChangeText={setDurationText}
             keyboardType="numeric"
+            placeholder="30"
             accessibilityLabel="Duração em minutos"
           />
         </View>
         <View style={styles.fieldHalf}>
-          <Text style={styles.fieldLabel}>Distância (km)</Text>
-          <CellInput
+          <Input
             testID="cardio-distance-input"
+            label="Distância (km)"
             value={distanceText}
             onChangeText={setDistanceText}
             keyboardType="numeric"
@@ -131,151 +135,173 @@ export function CardioForm({ onSave, onCancel, weightKg = 70 }: CardioFormProps)
         </View>
       </View>
 
-      <Text style={styles.sectionLabel}>Intensidade (PSE) — {pse} · {pseLegendEntry.emoji} {pseLegendEntry.label}</Text>
-      <View style={styles.pseRow}>
-        {Array.from({ length: 10 }, (_, i) => i + 1).map((value) => (
-          <TouchableOpacity
-            key={value}
-            testID={`cardio-pse-${value}`}
-            style={[styles.pseChip, pse === value && styles.pseChipSelected]}
-            onPress={() => setPse(value)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: pse === value }}
-            accessibilityLabel={`PSE ${value}`}
-          >
-            <Text style={[styles.pseChipText, pse === value && styles.pseChipTextSelected]}>{value}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <View style={styles.pseLegendRow}>
-        {PSE_LEGEND.map((item) => (
-          <Text key={item.label} style={styles.pseLegendText}>
-            {item.emoji} {item.label}
+      <View style={styles.field}>
+        <View style={styles.pseHeader}>
+          <Text style={styles.fieldLabel}>Intensidade (PSE)</Text>
+          <Text style={styles.pseValue}>
+            {pse} · {pseLabel}
           </Text>
-        ))}
+        </View>
+        <View style={styles.pseTrack}>
+          {PSE_VALUES.map((value) => {
+            const selected = pse === value;
+            return (
+              <Touchable
+                key={value}
+                testID={`cardio-pse-${value}`}
+                style={[styles.pseCell, selected && styles.pseCellSelected]}
+                onPress={() => setPse(value)}
+                haptic="selection"
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                accessibilityLabel={`PSE ${value}`}
+              >
+                <Text style={[styles.pseCellText, selected && styles.pseCellTextSelected]}>
+                  {value}
+                </Text>
+              </Touchable>
+            );
+          })}
+        </View>
+        <View style={styles.pseLegendRow}>
+          {PSE_LEGEND.map((label) => (
+            <Text
+              key={label}
+              style={[styles.pseLegendText, label === pseLabel && styles.pseLegendTextActive]}
+            >
+              {label}
+            </Text>
+          ))}
+        </View>
       </View>
 
-      <Card style={styles.calorieCard} testID="cardio-calorie-estimate">
+      <View style={styles.calorieRow} testID="cardio-calorie-estimate">
         <Text style={styles.calorieLabel}>Estimativa de calorias</Text>
         <Text style={styles.calorieValue}>{liveCalories} kcal</Text>
-      </Card>
+      </View>
 
       <View style={styles.actionsRow}>
-        <Button label="Cancelar" variant="ghost" onPress={onCancel} style={styles.actionButton} testID="cardio-cancel-button" />
+        <Button
+          label="Cancelar"
+          variant="ghost"
+          onPress={onCancel}
+          style={styles.cancelButton}
+          testID="cardio-cancel-button"
+        />
         <Button
           label="Adicionar"
+          icon="plus"
           onPress={handleSave}
           disabled={!canSave}
-          style={styles.actionButton}
+          style={styles.saveButton}
           testID="cardio-save-button"
         />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionLabel: {
+  form: {
+    gap: spacing.lg,
+    paddingBottom: spacing.xs,
+  },
+  field: {
+    gap: spacing.xs,
+  },
+  fieldLabel: {
+    ...typography.label,
     color: colors.secondaryText,
-    ...typography.captionBold,
-    marginTop: spacing.sm,
-    marginBottom: spacing.xs,
   },
   typeList: {
-    maxHeight: 160,
-    borderWidth: 1,
-    borderColor: colors.border,
+    maxHeight: TYPE_LIST_MAX_HEIGHT,
+    backgroundColor: colors.card,
     borderRadius: radii.md,
   },
-  typeOptionText: {
-    color: colors.primaryText,
-    ...typography.body,
-    padding: spacing.sm,
-  },
   noResultsText: {
-    color: colors.secondaryText,
-    ...typography.body,
-    padding: spacing.sm,
+    ...typography.footnote,
+    color: colors.tertiaryText,
+    padding: spacing.md,
     textAlign: 'center',
   },
-  selectedTypeCard: {
-    backgroundColor: colors.cardAlt,
-    padding: spacing.sm,
-    marginTop: spacing.xs,
-  },
   selectedTypeDescription: {
+    ...typography.footnote,
     color: colors.secondaryText,
-    ...typography.caption,
   },
   fieldRow: {
     flexDirection: 'row',
-    gap: spacing.md,
-    marginTop: spacing.sm,
+    gap: spacing.sm,
   },
   fieldHalf: {
     flex: 1,
   },
-  fieldLabel: {
-    color: colors.secondaryText,
-    ...typography.caption,
-    marginBottom: spacing.xxs,
-  },
-  pseRow: {
+  pseHeader: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+  },
+  pseValue: {
+    ...typography.bodyStrong,
+    color: colors.primaryText,
+  },
+  pseTrack: {
+    flexDirection: 'row',
     gap: spacing.xxs,
   },
-  pseChip: {
-    width: 32,
-    height: 32,
+  pseCell: {
+    flex: 1,
+    height: layout.hitTarget,
     borderRadius: radii.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.card,
+    backgroundColor: colors.cardAlt,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pseChipSelected: {
+  pseCellSelected: {
     backgroundColor: colors.primary,
-    borderColor: colors.primary,
   },
-  pseChipText: {
-    color: colors.primaryText,
-    ...typography.caption,
+  pseCellText: {
+    ...typography.numeric,
+    color: colors.secondaryText,
   },
-  pseChipTextSelected: {
+  pseCellTextSelected: {
     color: colors.onPrimary,
-    fontFamily: typography.captionBold.fontFamily,
   },
   pseLegendRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: spacing.xs,
   },
   pseLegendText: {
-    color: colors.secondaryText,
     ...typography.caption,
+    color: colors.tertiaryText,
   },
-  calorieCard: {
-    marginTop: spacing.md,
-    padding: spacing.md,
+  pseLegendTextActive: {
+    color: colors.primaryText,
+  },
+  calorieRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: spacing.xxs,
+    backgroundColor: colors.card,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   calorieLabel: {
+    ...typography.footnote,
     color: colors.secondaryText,
-    ...typography.caption,
   },
   calorieValue: {
-    color: colors.primary,
-    ...typography.h3,
+    ...typography.bodyStrong,
+    color: colors.primaryText,
   },
   actionsRow: {
     flexDirection: 'row',
     gap: spacing.sm,
-    marginTop: spacing.md,
   },
-  actionButton: {
+  cancelButton: {
     flex: 1,
+  },
+  saveButton: {
+    flex: 2,
   },
 });

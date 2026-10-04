@@ -1,19 +1,17 @@
 /**
- * ActiveSessionScreen — Wave 4.
+ * ActiveSessionScreen — o treino em andamento.
  *
- * Estrutura portada de active_workout.py (`_build_workout_page` 65-197 e
- * `_create_exercise_card` 544-652): header com voltar + contador, título em
- * caixa alta, ProgressBar, um Card por exercício com a grade de séries, e
- * rodapé FIXO fora do scroll com "Finalizar Treino".
+ * Header FIXO (voltar · timer ao vivo · contador) com a barra de progresso
+ * logo abaixo, o conteúdo rolando no meio e o CTA "Finalizar treino" num
+ * rodapé fixo na zona do polegar.
  *
  * DOIS MODOS:
  *   - grade  — sessão com treino definido. As linhas já vêm montadas a partir
  *              de `series_target`, cada uma pré-preenchida com o que o usuário
- *              levantou na MESMA série da última vez ("fantasma", em cinza).
+ *              levantou na MESMA série da última vez ("fantasma", apagado).
  *              Marcar o check grava. Repetir a carga anterior é um toque.
  *   - livre  — sessão sem treino (freestyle). Não há lista de exercícios para
- *              montar grade, então mantém o formulário histórico da tela,
- *              reestilizado com os tokens novos.
+ *              montar grade, então usa o formulário de registro avulso.
  *
  * O fantasma é feature NOVA, não port: o desktop usa placeholder fixo "0"/"10-12"
  * (active_workout.py:622,629) e nunca consulta o histórico.
@@ -22,19 +20,23 @@
  */
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, Modal } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, ScrollView, StyleSheet, Animated } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { colors, typography, spacing, radii } from '../../designSystem/tokens';
+import { colors, typography, spacing, radii, layout } from '../../designSystem/tokens';
+import { haptic } from '../../designSystem/haptics';
+import { useEnterAnimation } from '../../designSystem/motion';
 import { Button } from '../../designSystem/components/Button';
 import { Card } from '../../designSystem/components/Card';
-import { IconBadge } from '../../designSystem/components/IconBadge';
-import { ProgressBar } from '../../designSystem/components/ProgressBar';
-import { ScreenHeader } from '../../designSystem/components/ScreenHeader';
-import { SetCheckButton } from '../../designSystem/components/SetCheckButton';
-import { SetTypeBadge, nextSetType } from '../../designSystem/components/SetTypeBadge';
 import { CellInput } from '../../designSystem/components/CellInput';
 import { Chip } from '../../designSystem/components/Chip';
+import { ConfirmSheet } from '../../designSystem/components/ConfirmSheet';
+import { Input } from '../../designSystem/components/Input';
+import { ProgressBar } from '../../designSystem/components/ProgressBar';
+import { Screen } from '../../designSystem/components/Screen';
+import { ScreenHeader } from '../../designSystem/components/ScreenHeader';
+import { SectionTitle } from '../../designSystem/components/SectionTitle';
+import { SetCheckButton } from '../../designSystem/components/SetCheckButton';
+import { SetTypeBadge, nextSetType } from '../../designSystem/components/SetTypeBadge';
 import {
   buildSetGrid,
   countGridProgress,
@@ -83,7 +85,7 @@ export interface ActiveSessionProps {
   exerciseOptions: ActiveSessionExerciseOption[];
   onLogSet: (exerciseId: string, weight: number, reps: number, setType?: string) => void;
   onEndSession: () => void;
-  /** Nome do treino, exibido em caixa alta. Ausente = treino livre. */
+  /** Nome do treino, exibido como título. Ausente = treino livre. */
   workoutName?: string | null;
   /** Séries da última sessão do mesmo treino. */
   previousSessionSets?: ActiveSessionPreviousSet[];
@@ -154,6 +156,7 @@ export function ActiveSessionScreen({
   const [showSummary, setShowSummary] = useState(false);
   const [finalElapsed, setFinalElapsed] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const summaryEnter = useEnterAnimation(showSummary);
 
   // Edições do usuário nas linhas da grade, por `exerciseId:index`. Uma chave
   // presente aqui deixou de ser fantasma — o valor passou a ser dele.
@@ -171,6 +174,10 @@ export function ActiveSessionScreen({
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [session.started_at]);
+
+  useEffect(() => {
+    if (showSummary) haptic('success');
+  }, [showSummary]);
 
   const gridExercises: GridWorkoutExercise[] = useMemo(
     () =>
@@ -230,6 +237,7 @@ export function ActiveSessionScreen({
     const result = validateSetEntry(weightText, repsText);
 
     if (!result.valid) {
+      haptic('warning');
       setRowErrors((prev) => ({
         ...prev,
         [key]: { weight: result.weightError, reps: result.repsError },
@@ -260,223 +268,274 @@ export function ActiveSessionScreen({
   };
 
   if (showSummary) {
+    const cardioMinutes = cardioEntries.reduce((sum, e) => sum + e.durationMin, 0);
+    const cardioPse =
+      cardioEntries.length > 0
+        ? (cardioEntries.reduce((sum, e) => sum + e.pse, 0) / cardioEntries.length).toFixed(1)
+        : '';
+
     return (
-      <SafeAreaView style={styles.container} edges={['top', 'bottom']} testID="session-summary">
-        <ScrollView contentContainerStyle={styles.summaryContent}>
-          <Text style={styles.summaryTrophy}>🏆</Text>
-          <Text style={styles.summaryTitle} testID="summary-title">
-            TREINO CONCLUÍDO!
-          </Text>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryCards}>
-            <SummaryCard
-              icon="weight-hanging"
-              value={`${totalVolume}kg`}
-              label="Volume"
-              testID="summary-volume"
-            />
-            <SummaryCard
-              icon="clock"
-              value={formatSummaryDuration(finalElapsed)}
-              label="Duração"
-              testID="summary-duration"
-            />
-            <SummaryCard
-              icon="layer-group"
-              value={String(loggedSets.length)}
-              label="Séries"
-              testID="summary-sets"
-            />
-            {cardioEntries.length > 0 && (
-              <>
-                <SummaryCard
-                  icon="running"
-                  value={`${cardioEntries.reduce((sum, e) => sum + e.durationMin, 0)}min`}
-                  label="Cardio"
-                  testID="summary-cardio-duration"
-                />
-                <SummaryCard
-                  icon="heartbeat"
-                  value={(
-                    cardioEntries.reduce((sum, e) => sum + e.pse, 0) / cardioEntries.length
-                  ).toFixed(1)}
-                  label="PSE médio"
-                  testID="summary-cardio-pse"
-                />
-              </>
-            )}
-          </View>
+      <Screen
+        edges={['top', 'bottom']}
+        testID="session-summary"
+        contentStyle={styles.summaryContent}
+        footer={
           <Button
-            label="Voltar para Treinos"
+            label="Voltar para treinos"
             icon="home"
             onPress={onEndSession}
             testID="summary-back-button"
           />
-        </ScrollView>
-      </SafeAreaView>
+        }
+      >
+        <Animated.View style={[styles.summaryBody, summaryEnter]}>
+          <View style={styles.summaryBadge}>
+            <FontAwesome5 name="check" size={28} color={colors.primary} solid />
+          </View>
+          <View style={styles.summaryHeading}>
+            <Text style={styles.summaryTitle} testID="summary-title" accessibilityRole="header">
+              Treino concluído
+            </Text>
+            <Text style={styles.summarySubtitle}>{workoutName ?? 'Treino livre'}</Text>
+          </View>
+
+          <Card style={styles.summaryMetrics}>
+            <SummaryMetric value={`${totalVolume}kg`} label="Volume" testID="summary-volume" />
+            <View style={styles.summaryDivider} />
+            <SummaryMetric
+              value={formatSummaryDuration(finalElapsed)}
+              label="Duração"
+              testID="summary-duration"
+            />
+            <View style={styles.summaryDivider} />
+            <SummaryMetric value={String(loggedSets.length)} label="Séries" testID="summary-sets" />
+          </Card>
+
+          {cardioEntries.length > 0 && (
+            <Card style={styles.summaryMetrics}>
+              <SummaryMetric
+                value={`${cardioMinutes}min`}
+                label="Cardio"
+                testID="summary-cardio-duration"
+              />
+              <View style={styles.summaryDivider} />
+              <SummaryMetric value={cardioPse} label="PSE médio" testID="summary-cardio-pse" />
+            </Card>
+          )}
+        </Animated.View>
+      </Screen>
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']} testID="active-session-screen">
-      <View style={styles.body}>
-        <ScreenHeader
-          onBack={onBack ? handleBackPress : undefined}
-          testID="active-session-header"
-          right={
-            <View style={styles.headerRight}>
-              <Text style={styles.headerTimer} testID="session-timer">
-                {formatElapsedTime(elapsed)}
-              </Text>
-              <Text style={styles.headerCounter} testID="set-counter">
-                {useGrid
-                  ? `${progress.completed}/${progress.total} séries`
-                  : `${loggedSets.length} séries`}
-              </Text>
-            </View>
-          }
-        />
-
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          testID="logged-sets-list"
-          keyboardShouldPersistTaps="handled"
-        >
-          <Text style={styles.title} testID="workout-title">
-            {(workoutName ?? 'Treino Livre').toUpperCase()}
+  const header = (
+    <View>
+      <ScreenHeader
+        onBack={onBack ? handleBackPress : undefined}
+        testID="active-session-header"
+        title={
+          <View style={styles.timerRow}>
+            <View style={styles.liveDot} />
+            <Text style={styles.timer} testID="session-timer">
+              {formatElapsedTime(elapsed)}
+            </Text>
+          </View>
+        }
+        right={
+          <Text style={styles.counter} testID="set-counter">
+            {useGrid ? `${progress.completed}/${progress.total} séries` : `${loggedSets.length} séries`}
           </Text>
+        }
+      />
+      {useGrid ? (
+        <View style={styles.progressWrap}>
+          <ProgressBar value={progress.ratio} testID="session-progress" />
+        </View>
+      ) : null}
+    </View>
+  );
 
-          {useGrid ? (
-            <>
-              <ProgressBar value={progress.ratio} testID="session-progress" />
-              {grid.map((exercise) => (
-                <Card
-                  key={exercise.exerciseId}
-                  style={styles.exerciseCard}
-                  testID={`exercise-card-${exercise.exerciseId}`}
-                >
-                  <View style={styles.exerciseHeader}>
-                    <IconBadge glyph="◈" />
-                    <Text style={styles.exerciseName} numberOfLines={2}>
-                      {exercise.name.toUpperCase()}
-                    </Text>
+  return (
+    <Screen
+      edges={['top', 'bottom']}
+      testID="active-session-screen"
+      scrollTestID="logged-sets-list"
+      header={header}
+      title={workoutName ?? 'Treino livre'}
+      titleTestID="workout-title"
+      footer={
+        <View testID="session-footer">
+          <Button
+            label="Finalizar treino"
+            icon="flag-checkered"
+            onPress={handleFinish}
+            testID="end-session-button"
+            accessibilityLabel="Finalizar treino"
+          />
+        </View>
+      }
+    >
+      {useGrid ? (
+        <View style={styles.exerciseList}>
+          {grid.map((exercise) => {
+            const isComplete =
+              exercise.totalCount > 0 && exercise.completedCount === exercise.totalCount;
+            return (
+              <Card
+                key={exercise.exerciseId}
+                style={styles.exerciseCard}
+                testID={`exercise-card-${exercise.exerciseId}`}
+              >
+                <View style={styles.exerciseHeader}>
+                  <Text style={styles.exerciseName} numberOfLines={2}>
+                    {exercise.name}
+                  </Text>
+                  <View style={styles.exerciseCountWrap}>
+                    {isComplete ? (
+                      <FontAwesome5 name="check" size={11} color={colors.success} solid />
+                    ) : null}
                     <Text
-                      style={styles.exerciseCount}
+                      style={[styles.exerciseCount, isComplete && styles.exerciseCountDone]}
                       testID={`exercise-count-${exercise.exerciseId}`}
                     >
                       {exercise.completedCount}/{exercise.totalCount}
                     </Text>
                   </View>
+                </View>
 
-                  <View style={styles.columnHeader}>
-                    <Text style={[styles.columnLabel, styles.colNumber]}>Série</Text>
-                    <View style={styles.colType} />
-                    <Text style={[styles.columnLabel, styles.colField]}>Peso (kg)</Text>
-                    <Text style={[styles.columnLabel, styles.colField]}>Reps</Text>
-                    <View style={styles.colCheck} />
-                  </View>
+                <View style={styles.setRow}>
+                  <Text style={[styles.columnLabel, styles.colNumber]}>Série</Text>
+                  <View style={styles.colType} />
+                  <Text style={[styles.columnLabel, styles.colField]}>kg</Text>
+                  <Text style={[styles.columnLabel, styles.colField]}>Reps</Text>
+                  <View style={styles.colCheck} />
+                </View>
 
-                  {exercise.rows.map((row, index) => {
-                    const key = rowKeyOf({ exerciseId: exercise.exerciseId, index });
-                    const edit = edits[key] ?? {};
-                    const errors = rowErrors[key];
-                    const weightText = edit.weight ?? toFieldText(row.weight);
-                    const repsText = edit.reps ?? toFieldText(row.reps);
-                    // Fantasma só enquanto o usuário não tocou no campo.
-                    const weightIsGhost = row.source === 'ghost' && edit.weight === undefined;
-                    const repsIsGhost = row.source === 'ghost' && edit.reps === undefined;
-                    const setType = row.isLogged ? row.setType : pendingSetTypes[key] ?? 'N';
+                {exercise.rows.map((row, index) => {
+                  const key = rowKeyOf({ exerciseId: exercise.exerciseId, index });
+                  const edit = edits[key] ?? {};
+                  const errors = rowErrors[key];
+                  const weightText = edit.weight ?? toFieldText(row.weight);
+                  const repsText = edit.reps ?? toFieldText(row.reps);
+                  // Fantasma só enquanto o usuário não tocou no campo.
+                  const weightIsGhost = row.source === 'ghost' && edit.weight === undefined;
+                  const repsIsGhost = row.source === 'ghost' && edit.reps === undefined;
+                  const setType = row.isLogged ? row.setType : (pendingSetTypes[key] ?? 'N');
 
-                    return (
-                      <View
-                        key={key}
-                        style={styles.setRow}
-                        testID={`set-row-${exercise.exerciseId}-${index}`}
+                  return (
+                    <View
+                      key={key}
+                      style={[styles.setRow, styles.setRowBody]}
+                      testID={`set-row-${exercise.exerciseId}-${index}`}
+                    >
+                      <Text
+                        style={[
+                          styles.setNumber,
+                          styles.colNumber,
+                          row.isLogged && styles.setNumberDone,
+                        ]}
                       >
-                        <Text style={[styles.setNumber, styles.colNumber]}>{row.setNumber}</Text>
-                        <View style={styles.colType}>
-                          <SetTypeBadge
-                            testID={`set-type-${exercise.exerciseId}-${index}`}
-                            setType={setType}
-                            disabled={row.isLogged}
-                            accessibilityLabel={`Tipo da série ${row.setNumber}: ${setType}. Toque para trocar.`}
-                            onPress={() => handleCycleSetType(key, setType)}
-                          />
-                        </View>
-                        <View style={styles.colField}>
-                          <CellInput
-                            testID={`set-weight-${exercise.exerciseId}-${index}`}
-                            value={weightText}
-                            placeholder="0"
-                            keyboardType="numeric"
-                            isGhost={weightIsGhost}
-                            isLocked={row.isLogged}
-                            hasError={errors?.weight ?? false}
-                            accessibilityLabel={`Peso da série ${row.setNumber}`}
-                            onChangeText={(text) =>
-                              setEdits((prev) => ({
-                                ...prev,
-                                [key]: { ...prev[key], weight: text },
-                              }))
-                            }
-                          />
-                        </View>
-                        <View style={styles.colField}>
-                          <CellInput
-                            testID={`set-reps-${exercise.exerciseId}-${index}`}
-                            value={repsText}
-                            placeholder="10-12"
-                            keyboardType="numeric"
-                            isGhost={repsIsGhost}
-                            isLocked={row.isLogged}
-                            hasError={errors?.reps ?? false}
-                            accessibilityLabel={`Repetições da série ${row.setNumber}`}
-                            onChangeText={(text) =>
-                              setEdits((prev) => ({
-                                ...prev,
-                                [key]: { ...prev[key], reps: text },
-                              }))
-                            }
-                          />
-                        </View>
-                        <View style={styles.colCheck}>
-                          <SetCheckButton
-                            testID={`set-check-${exercise.exerciseId}-${index}`}
-                            checked={row.isLogged}
-                            // Série gravada não desmarca: nada some do histórico
-                            // por toque acidental no meio do treino.
-                            disabled={row.isLogged}
-                            accessibilityLabel={`Concluir série ${row.setNumber} de ${exercise.name}`}
-                            onPress={() =>
-                              handleToggleSet(key, exercise.exerciseId, row.weight, row.reps)
-                            }
-                          />
-                        </View>
+                        {row.setNumber}
+                      </Text>
+                      <View style={styles.colType}>
+                        <SetTypeBadge
+                          testID={`set-type-${exercise.exerciseId}-${index}`}
+                          setType={setType}
+                          disabled={row.isLogged}
+                          accessibilityLabel={`Tipo da série ${row.setNumber}: ${setType}. Toque para trocar.`}
+                          onPress={() => handleCycleSetType(key, setType)}
+                        />
                       </View>
-                    );
-                  })}
-                </Card>
-              ))}
-            </>
-          ) : (
-            <>
-              <View style={styles.volumeContainer} testID="volume-summary">
-                <Text style={styles.volumeLabel}>Volume Total</Text>
-                <Text style={styles.volumeValue} testID="volume-value">
-                  {totalVolume} kg
-                </Text>
-              </View>
+                      <View style={styles.colField}>
+                        <CellInput
+                          testID={`set-weight-${exercise.exerciseId}-${index}`}
+                          value={weightText}
+                          placeholder="0"
+                          keyboardType="numeric"
+                          isGhost={weightIsGhost}
+                          isLocked={row.isLogged}
+                          hasError={errors?.weight ?? false}
+                          accessibilityLabel={`Peso da série ${row.setNumber}`}
+                          onChangeText={(text) =>
+                            setEdits((prev) => ({
+                              ...prev,
+                              [key]: { ...prev[key], weight: text },
+                            }))
+                          }
+                        />
+                      </View>
+                      <View style={styles.colField}>
+                        <CellInput
+                          testID={`set-reps-${exercise.exerciseId}-${index}`}
+                          value={repsText}
+                          placeholder="10-12"
+                          keyboardType="numeric"
+                          isGhost={repsIsGhost}
+                          isLocked={row.isLogged}
+                          hasError={errors?.reps ?? false}
+                          accessibilityLabel={`Repetições da série ${row.setNumber}`}
+                          onChangeText={(text) =>
+                            setEdits((prev) => ({
+                              ...prev,
+                              [key]: { ...prev[key], reps: text },
+                            }))
+                          }
+                        />
+                      </View>
+                      <View style={styles.colCheck}>
+                        <SetCheckButton
+                          testID={`set-check-${exercise.exerciseId}-${index}`}
+                          checked={row.isLogged}
+                          // Série gravada não desmarca: nada some do histórico
+                          // por toque acidental no meio do treino.
+                          disabled={row.isLogged}
+                          accessibilityLabel={`Concluir série ${row.setNumber} de ${exercise.name}`}
+                          onPress={() =>
+                            handleToggleSet(key, exercise.exerciseId, row.weight, row.reps)
+                          }
+                        />
+                      </View>
+                    </View>
+                  );
+                })}
+              </Card>
+            );
+          })}
+        </View>
+      ) : (
+        <View style={styles.freestyle}>
+          <Card style={styles.metricsCard} testID="volume-summary">
+            <View style={styles.metric}>
+              <Text style={styles.metricLabel}>Volume total</Text>
+              <Text style={styles.metricValue} testID="volume-value">
+                {totalVolume} kg
+              </Text>
+            </View>
+            <View style={styles.summaryDivider} />
+            <View style={styles.metric}>
+              <Text style={styles.metricLabel}>Séries</Text>
+              <Text style={styles.metricValue}>{loggedSets.length}</Text>
+            </View>
+          </Card>
 
-              {loggedSets.map((item) => (
+          {loggedSets.length > 0 && (
+            <Card padding="none">
+              {loggedSets.map((item, index) => (
                 <View
                   key={item.id}
-                  style={[styles.setItem, item.error ? styles.setItemError : null]}
+                  style={[styles.loggedSet, index < loggedSets.length - 1 && styles.loggedSetDivider]}
                   testID={`logged-set-${item.id}`}
                 >
-                  <Text style={styles.setItemText} testID={`set-info-${item.id}`}>
-                    {item.exerciseName} — {item.weight}kg × {item.reps}
-                  </Text>
+                  <View style={styles.loggedSetLine}>
+                    <Text style={styles.loggedSetText} testID={`set-info-${item.id}`}>
+                      {item.exerciseName} — {item.weight}kg × {item.reps}
+                    </Text>
+                    <FontAwesome5
+                      name={item.error ? 'exclamation-circle' : 'check'}
+                      size={12}
+                      color={item.error ? colors.error : colors.success}
+                      solid
+                    />
+                  </View>
                   {item.error && (
                     <Text style={styles.errorText} testID={`set-error-${item.id}`}>
                       {item.error}
@@ -484,336 +543,305 @@ export function ActiveSessionScreen({
                   )}
                 </View>
               ))}
+            </Card>
+          )}
 
-              <View style={styles.logForm} testID="set-logger-form">
-                <ScrollView horizontal testID="exercise-picker" style={styles.exercisePicker}>
-                  {exerciseOptions.map((option) => (
-                    <Chip
-                      key={option.id}
-                      label={option.name}
-                      selected={exerciseId === option.id}
-                      onPress={() => setExerciseId(option.id)}
-                      testID={`exercise-option-${option.id}`}
-                    />
-                  ))}
-                </ScrollView>
-                <CellInput
-                  testID="weight-input"
-                  placeholder="Peso (kg)"
-                  value={weight}
-                  onChangeText={setWeight}
-                  keyboardType="numeric"
-                  accessibilityLabel="Peso"
-                />
-                <CellInput
-                  testID="reps-input"
-                  placeholder="Repetições"
-                  value={reps}
-                  onChangeText={setReps}
-                  keyboardType="numeric"
-                  accessibilityLabel="Repetições"
-                />
-                <Button
-                  label="Registrar Série"
-                  icon="plus"
-                  onPress={handleLogSet}
-                  testID="log-set-button"
-                  accessibilityLabel="Registrar série"
-                />
+          <View style={styles.loggerSection}>
+            <SectionTitle>Registrar série</SectionTitle>
+            <Card style={styles.logForm} testID="set-logger-form">
+              <ScrollView
+                horizontal
+                testID="exercise-picker"
+                style={styles.exercisePicker}
+                contentContainerStyle={styles.exercisePickerContent}
+                showsHorizontalScrollIndicator={false}
+              >
+                {exerciseOptions.map((option) => (
+                  <Chip
+                    key={option.id}
+                    label={option.name}
+                    selected={exerciseId === option.id}
+                    onPress={() => setExerciseId(option.id)}
+                    testID={`exercise-option-${option.id}`}
+                  />
+                ))}
+              </ScrollView>
+              <View style={styles.inputRow}>
+                <View style={styles.inputHalf}>
+                  <Input
+                    testID="weight-input"
+                    label="Peso (kg)"
+                    placeholder="0"
+                    value={weight}
+                    onChangeText={setWeight}
+                    keyboardType="numeric"
+                    accessibilityLabel="Peso"
+                  />
+                </View>
+                <View style={styles.inputHalf}>
+                  <Input
+                    testID="reps-input"
+                    label="Repetições"
+                    placeholder="10"
+                    value={reps}
+                    onChangeText={setReps}
+                    keyboardType="numeric"
+                    accessibilityLabel="Repetições"
+                  />
+                </View>
               </View>
-            </>
-          )}
-
-          {onAddCardio && onRemoveCardio && (
-            <CardioSection
-              entries={cardioEntries}
-              onAdd={onAddCardio}
-              onRemove={onRemoveCardio}
-              weightKg={weightKg}
-            />
-          )}
-        </ScrollView>
-      </View>
-
-      {/* Rodapé fixo, fora do scroll (active_workout.py:171-195) */}
-      <View style={styles.footer} testID="session-footer">
-        <Button
-          label="Finalizar Treino"
-          icon="flag-checkered"
-          onPress={handleFinish}
-          testID="end-session-button"
-          accessibilityLabel="Finalizar treino"
-        />
-      </View>
-
-      <Modal
-        visible={showExitConfirm}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowExitConfirm(false)}
-        testID="exit-confirm-modal"
-      >
-        <View style={styles.overlay}>
-          <View style={styles.confirmCard} testID="exit-confirm-card">
-            <FontAwesome5 name="question-circle" size={48} color={colors.primary} solid />
-            <Text style={styles.confirmText}>Abandonar o treino atual?</Text>
-            <View style={styles.confirmActions}>
               <Button
-                label="Não"
-                variant="ghost"
-                onPress={() => setShowExitConfirm(false)}
-                style={styles.confirmButton}
-                testID="exit-confirm-no"
+                label="Registrar série"
+                icon="plus"
+                variant="secondary"
+                haptic="medium"
+                onPress={handleLogSet}
+                testID="log-set-button"
+                accessibilityLabel="Registrar série"
               />
-              <Button
-                label="Sim"
-                onPress={() => {
-                  setShowExitConfirm(false);
-                  onBack?.();
-                }}
-                style={styles.confirmButton}
-                testID="exit-confirm-yes"
-              />
-            </View>
+            </Card>
           </View>
         </View>
-      </Modal>
-    </SafeAreaView>
+      )}
+
+      {onAddCardio && onRemoveCardio && (
+        <CardioSection
+          entries={cardioEntries}
+          onAdd={onAddCardio}
+          onRemove={onRemoveCardio}
+          weightKg={weightKg}
+        />
+      )}
+
+      <ConfirmSheet
+        visible={showExitConfirm}
+        testID="exit-confirm"
+        title="Sair do treino?"
+        message="A sessão continua aberta — você pode retomá-la pelo Dashboard."
+        confirmLabel="Sair"
+        cancelLabel="Continuar treinando"
+        onConfirm={() => {
+          setShowExitConfirm(false);
+          onBack?.();
+        }}
+        onCancel={() => setShowExitConfirm(false)}
+      />
+    </Screen>
   );
 }
 
-function SummaryCard({
-  icon,
-  value,
-  label,
-  testID,
-}: {
-  icon: string;
-  value: string;
-  label: string;
-  testID: string;
-}) {
+function SummaryMetric({ value, label, testID }: { value: string; label: string; testID: string }) {
   return (
-    <Card style={styles.summaryCard} testID={testID}>
-      <FontAwesome5 name={icon} size={28} color={colors.primary} solid />
+    <View style={styles.metric} testID={testID}>
       <Text style={styles.summaryValue} testID={`${testID}-value`}>
         {value}
       </Text>
-      <Text style={styles.summaryLabel}>{label}</Text>
-    </Card>
+      <Text style={styles.metricLabel}>{label}</Text>
+    </View>
   );
 }
 
+const LIVE_DOT_SIZE = 6;
+const SUMMARY_BADGE_SIZE = 64;
+const COL_NUMBER_WIDTH = 32;
+const COL_TYPE_WIDTH = 28;
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
+  timerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
-  body: {
-    flex: 1,
-    paddingHorizontal: spacing.lg,
+  liveDot: {
+    width: LIVE_DOT_SIZE,
+    height: LIVE_DOT_SIZE,
+    borderRadius: radii.pill,
+    backgroundColor: colors.primary,
   },
-  headerRight: {
-    alignItems: 'flex-end',
-  },
-  headerTimer: {
-    color: colors.primary,
-    ...typography.bodyBold,
-  },
-  headerCounter: {
-    color: colors.secondaryText,
-    ...typography.sub,
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    gap: spacing.md,
-    paddingBottom: spacing.xl,
-  },
-  title: {
+  timer: {
+    ...typography.numeric,
     color: colors.primaryText,
-    ...typography.h1,
+  },
+  counter: {
+    ...typography.caption,
+    color: colors.secondaryText,
+  },
+  progressWrap: {
+    paddingBottom: spacing.xs,
+  },
+  exerciseList: {
+    gap: spacing.md,
   },
   exerciseCard: {
-    padding: spacing.lg,
-    // O desktop usa gap 14 (active_workout.py:566); sem token equivalente,
-    // fica no vizinho da escala em vez de criar um valor paralelo.
-    gap: spacing.sm,
-    // gap 32 entre cards (active_workout.py:132)
-    marginBottom: spacing.md,
+    gap: spacing.xs,
   },
   exerciseHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    marginBottom: spacing.xxs,
   },
   exerciseName: {
-    flex: 1,
-    color: colors.primaryText,
-    ...typography.h2,
-  },
-  exerciseCount: {
-    color: colors.primary,
     ...typography.h3,
+    color: colors.primaryText,
+    flex: 1,
   },
-  columnHeader: {
+  exerciseCountWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    gap: spacing.xxs,
+  },
+  exerciseCount: {
+    ...typography.captionStrong,
+    color: colors.secondaryText,
+  },
+  exerciseCountDone: {
+    color: colors.success,
   },
   columnLabel: {
-    color: colors.secondaryText,
-    ...typography.sub,
+    ...typography.caption,
+    color: colors.tertiaryText,
     textAlign: 'center',
   },
   setRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    gap: spacing.xs,
+  },
+  setRowBody: {
+    minHeight: layout.controlHeight.md,
   },
   colNumber: {
-    width: 40,
+    width: COL_NUMBER_WIDTH,
     textAlign: 'center',
   },
   colType: {
-    width: 28,
+    width: COL_TYPE_WIDTH,
     alignItems: 'center',
   },
   colField: {
-    flex: 5,
+    flex: 1,
   },
   colCheck: {
-    width: 52,
+    width: layout.hitTarget,
     alignItems: 'center',
   },
   setNumber: {
-    color: colors.primary,
-    ...typography.setNumber,
+    ...typography.numeric,
+    color: colors.secondaryText,
   },
-  footer: {
-    backgroundColor: colors.card,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xs,
+  setNumberDone: {
+    color: colors.tertiaryText,
   },
   // --- Modo livre (freestyle) ---
-  volumeContainer: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radii.md,
-    padding: spacing.sm,
+  freestyle: {
+    gap: spacing.md,
+  },
+  metricsCard: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  volumeLabel: {
-    color: colors.secondaryText,
+  metric: {
+    flex: 1,
+    alignItems: 'center',
+    gap: spacing.xxs,
+  },
+  metricLabel: {
     ...typography.caption,
+    color: colors.secondaryText,
   },
-  volumeValue: {
+  metricValue: {
+    ...typography.stat,
     color: colors.primaryText,
-    ...typography.bodyBold,
   },
-  setItem: {
-    backgroundColor: colors.card,
-    borderRadius: radii.md,
-    padding: spacing.sm,
+  loggedSet: {
+    paddingHorizontal: layout.cardPadding,
+    paddingVertical: spacing.sm,
+    gap: spacing.xxs,
   },
-  setItemError: {
-    borderLeftWidth: 4,
-    borderLeftColor: colors.error,
+  loggedSetDivider: {
+    borderBottomWidth: layout.hairline,
+    borderBottomColor: colors.divider,
   },
-  setItemText: {
+  loggedSetLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  loggedSetText: {
+    ...typography.bodyMedium,
     color: colors.primaryText,
-    ...typography.body,
+    flex: 1,
   },
   errorText: {
+    ...typography.footnote,
     color: colors.error,
-    ...typography.caption,
-    marginTop: spacing.xs,
+  },
+  loggerSection: {
+    gap: layout.blockGap,
   },
   logForm: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radii.lg,
-    padding: spacing.md,
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   exercisePicker: {
     flexGrow: 0,
   },
-  // --- Overlay de saída (active_workout.py:960) ---
-  overlay: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.lg,
+  exercisePickerContent: {
+    gap: spacing.xs,
   },
-  confirmCard: {
-    width: '85%',
-    backgroundColor: colors.card,
-    borderRadius: radii.lg,
-    padding: spacing.xl,
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  confirmText: {
-    color: colors.primaryText,
-    ...typography.h3,
-    textAlign: 'center',
-  },
-  confirmActions: {
+  inputRow: {
     flexDirection: 'row',
     gap: spacing.sm,
-    alignSelf: 'stretch',
   },
-  confirmButton: {
+  inputHalf: {
     flex: 1,
   },
-  // --- Resumo (active_workout.py:778) ---
+  // --- Resumo ---
   summaryContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: spacing.lg,
-    gap: spacing.md,
   },
-  summaryTrophy: {
-    // Emoji do resumo (active_workout.py:790): usa o maior token da escala
-    // dobrado, em vez de um literal solto.
-    ...typography.h1,
-    fontSize: typography.h1.fontSize * 2,
-    textAlign: 'center',
+  summaryBody: {
+    gap: spacing.lg,
+    alignItems: 'stretch',
+  },
+  summaryBadge: {
+    alignSelf: 'center',
+    width: SUMMARY_BADGE_SIZE,
+    height: SUMMARY_BADGE_SIZE,
+    borderRadius: radii.pill,
+    backgroundColor: colors.primaryTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  summaryHeading: {
+    alignItems: 'center',
+    gap: spacing.xxs,
   },
   summaryTitle: {
-    color: colors.primary,
-    ...typography.h2,
+    ...typography.display,
+    color: colors.primaryText,
     textAlign: 'center',
+  },
+  summarySubtitle: {
+    ...typography.body,
+    color: colors.secondaryText,
+    textAlign: 'center',
+  },
+  summaryMetrics: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
   },
   summaryDivider: {
-    height: 2,
-    backgroundColor: colors.border,
+    width: layout.hairline,
     alignSelf: 'stretch',
-  },
-  summaryCards: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  summaryCard: {
-    flex: 1,
-    alignItems: 'center',
-    gap: spacing.xs,
-    padding: spacing.md,
+    backgroundColor: colors.divider,
   },
   summaryValue: {
+    ...typography.stat,
     color: colors.primaryText,
-    ...typography.h3,
     textAlign: 'center',
-  },
-  summaryLabel: {
-    color: colors.secondaryText,
-    ...typography.sub,
   },
 });

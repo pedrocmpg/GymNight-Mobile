@@ -19,8 +19,10 @@ function read(relativePath: string): string {
   return fs.readFileSync(path.join(FRONTEND_ROOT, relativePath), 'utf-8');
 }
 
-/** Telas já na casca `Screen` e o edge set que cada uma precisa. */
+/** Toda tela usa a casca `Screen`; o edge set que cada uma precisa. */
 const SCREENS: ReadonlyArray<readonly [string, readonly string[]]> = [
+  // Tela cheia sem tab bar: conteúdo centralizado entre as duas bordas.
+  ['src/screens/AuthScreen/AuthScreen.tsx', ['top', 'bottom']],
   // Abas: a tab bar cuida da borda de baixo.
   ['src/screens/DashboardScreen/DashboardScreen.tsx', ['top']],
   ['src/screens/ProgressScreen/ProgressScreen.tsx', ['top']],
@@ -31,10 +33,6 @@ const SCREENS: ReadonlyArray<readonly [string, readonly string[]]> = [
   ['src/screens/WorkoutCreatorScreen/WorkoutCreatorScreen.tsx', ['top', 'bottom']],
 ];
 
-/** Telas ainda com SafeAreaView direto (migram ao longo do REDESIGN-04). */
-const LEGACY_SCREENS: ReadonlyArray<readonly [string, readonly string[]]> = [
-  ['src/screens/AuthScreen/AuthScreen.tsx', ['top']],
-];
 
 function parseEdges(raw: string): string[] {
   return raw
@@ -74,23 +72,6 @@ describe('SafeArea wiring', () => {
     });
   });
 
-  describe.each(LEGACY_SCREENS)('%s (legado)', (screenPath, edges) => {
-    const content = read(screenPath);
-
-    it('importa o SafeAreaView', () => {
-      expect(content).toMatch(/import \{ SafeAreaView \} from 'react-native-safe-area-context'/);
-    });
-
-    it(`declara edges={${JSON.stringify(edges)}} em toda raiz`, () => {
-      const roots = Array.from(
-        content.matchAll(/<SafeAreaView style=\{styles\.container\} edges=\{\[([^\]]*)\]\}/g),
-      );
-      expect(roots.length).toBeGreaterThan(0);
-      for (const root of roots) {
-        expect(parseEdges(root[1])).toEqual([...edges]);
-      }
-    });
-  });
 
   it('o estado "sessão não encontrada" do container também respeita a SafeArea', () => {
     const content = read('src/navigation/containers/ActiveSessionScreenContainer.tsx');

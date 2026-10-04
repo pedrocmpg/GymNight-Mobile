@@ -1,11 +1,9 @@
 /**
  * AuthScreen Component
  *
- * Displays login/sign-up form with UI states for loading, offline, and error.
- * Uses Design_Tokens exclusively for styling.
- *
- * Porta o lockup da marca da titlebar do desktop (window.py:94-106),
- * REDESIGN-03-TELAS.md §5.2.
+ * Entrar / criar conta, centralizado verticalmente: lockup da marca, título
+ * que diz o que a tela faz, campos com label e um único CTA lima. A troca de
+ * modo é um link discreto logo abaixo. Uses Design_Tokens exclusively.
  *
  * Cadastro (mode 'signUp') usa Supabase Auth com confirmação de email
  * obrigatória neste projeto — signUp nunca retorna sessão imediata, então
@@ -23,13 +21,14 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { colors, typography, spacing } from '../../designSystem/tokens';
+import { colors, typography, spacing, radii } from '../../designSystem/tokens';
+import { animateLayout } from '../../designSystem/motion';
 import { Banner } from '../../designSystem/components/Banner';
 import { Input } from '../../designSystem/components/Input';
 import { Button } from '../../designSystem/components/Button';
+import { Screen } from '../../designSystem/components/Screen';
 import { isSubmitEnabled, isSignUpSubmitEnabled } from './authValidation';
 
 export type AuthScreenMode = 'signIn' | 'signUp';
@@ -45,6 +44,18 @@ export interface AuthScreenProps {
    * para 'idle', já que é a prop (não estado interno) que decide mostrar
    * este modo (senão o botão nunca conseguiria de fato sair dele). */
   onDismissCheckEmail: () => void;
+}
+
+/** Lockup da marca: raio lima + nome. */
+function BrandLockup() {
+  return (
+    <View style={styles.brand}>
+      <View style={styles.brandMark}>
+        <FontAwesome5 name="bolt" size={16} color={colors.onPrimary} solid />
+      </View>
+      <Text style={styles.brandName}>GymNight</Text>
+    </View>
+  );
 }
 
 export function AuthScreen({
@@ -75,149 +86,207 @@ export function AuthScreen({
     onSignUp(email, password);
   };
 
+  const switchMode = (next: AuthScreenMode) => {
+    animateLayout();
+    setMode(next);
+  };
+
   if (signUpStatus === 'confirmationRequired') {
     return (
-      <SafeAreaView style={styles.container} edges={['top']} testID="auth-screen">
-        <View style={styles.brand}>
-          <FontAwesome5 name="bolt" size={18} color={colors.primary} solid />
-          <Text style={styles.brandName}>GYMNight</Text>
+      <Screen edges={['top', 'bottom']} testID="auth-screen" contentStyle={styles.centered}>
+        <BrandLockup />
+        <View style={styles.checkEmail}>
+          <View style={styles.checkEmailIcon}>
+            <FontAwesome5 name="envelope-open-text" size={24} color={colors.primary} solid />
+          </View>
+          <View style={styles.heading}>
+            <Text style={styles.title} accessibilityRole="header">
+              Verifique seu email
+            </Text>
+          </View>
+          <Banner
+            message={`Confirme seu email para continuar. Enviamos um link de confirmação para ${email}.`}
+            variant="info"
+            testID="check-email-banner"
+          />
         </View>
-
-        <Banner
-          message={`Confirme seu email para continuar. Enviamos um link de confirmação para ${email}.`}
-          variant="info"
-          testID="check-email-banner"
-        />
-
         <Button
           testID="back-to-sign-in-button"
           label="Já confirmou? Entrar"
-          variant="ghost"
+          variant="secondary"
           onPress={() => {
             setMode('signIn');
             onDismissCheckEmail();
           }}
         />
-      </SafeAreaView>
+      </Screen>
     );
   }
 
+  const isSignIn = mode === 'signIn';
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']} testID="auth-screen">
-      {/* Lockup da marca — window.py:94-106 */}
-      <View style={styles.brand}>
-        <FontAwesome5 name="bolt" size={18} color={colors.primary} solid />
-        <Text style={styles.brandName}>GYMNight</Text>
+    <Screen edges={['top', 'bottom']} testID="auth-screen" contentStyle={styles.centered}>
+      <View style={styles.intro}>
+        <BrandLockup />
+        <View style={styles.heading}>
+          <Text style={styles.title} accessibilityRole="header">
+            {isSignIn ? 'Entre na sua conta' : 'Crie sua conta'}
+          </Text>
+          <Text style={styles.subtitle}>
+            {isSignIn
+              ? 'Seus treinos ficam salvos no aparelho e sincronizados na nuvem.'
+              : 'Leva menos de um minuto. Você confirma pelo email.'}
+          </Text>
+        </View>
       </View>
 
-      {/* Offline Banner */}
-      {!isOnline && (
-        <Banner
-          message="Sem conexão. Autenticação requer internet."
-          variant="info"
-          testID="offline-banner"
-        />
-      )}
+      <View style={styles.form}>
+        {!isOnline && (
+          <Banner
+            message="Sem conexão. Autenticação requer internet."
+            variant="info"
+            testID="offline-banner"
+          />
+        )}
+        {error && <Banner message={error} variant="error" testID="error-banner" />}
 
-      {/* Error Banner */}
-      {error && <Banner message={error} variant="error" testID="error-banner" />}
-
-      {/* Email Input */}
-      <Input
-        testID="email-input"
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        editable={!isLoading}
-      />
-
-      {/* Password Input */}
-      <Input
-        testID="password-input"
-        placeholder="Senha"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        editable={!isLoading}
-      />
-
-      {mode === 'signUp' && (
         <Input
-          testID="confirm-password-input"
-          placeholder="Confirmar senha"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
+          testID="email-input"
+          label="Email"
+          placeholder="voce@email.com"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          textContentType="emailAddress"
           editable={!isLoading}
         />
-      )}
+        <Input
+          testID="password-input"
+          label="Senha"
+          placeholder="Sua senha"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          autoComplete={isSignIn ? 'current-password' : 'new-password'}
+          textContentType={isSignIn ? 'password' : 'newPassword'}
+          editable={!isLoading}
+        />
+        {!isSignIn && (
+          <Input
+            testID="confirm-password-input"
+            label="Confirmar senha"
+            placeholder="Repita a senha"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+            autoComplete="new-password"
+            textContentType="newPassword"
+            editable={!isLoading}
+          />
+        )}
 
-      {mode === 'signIn' ? (
-        <>
-          <Button
-            testID="submit-button"
-            label="Entrar"
-            onPress={handleSubmit}
-            disabled={!canSubmit}
-            loading={isLoading}
-            accessibilityLabel="submit"
-            style={styles.submitButton}
-          />
-          <TouchableOpacity testID="go-to-sign-up-link" onPress={() => setMode('signUp')}>
-            <Text style={styles.linkText}>Não tem conta? Cadastre-se</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <>
-          <Button
-            testID="sign-up-button"
-            label="Cadastrar"
-            onPress={handleSignUp}
-            disabled={!canSignUp}
-            loading={isLoading}
-            accessibilityLabel="sign up"
-            style={styles.submitButton}
-          />
-          <TouchableOpacity testID="go-to-sign-in-link" onPress={() => setMode('signIn')}>
-            <Text style={styles.linkText}>Já tem conta? Entrar</Text>
-          </TouchableOpacity>
-        </>
-      )}
-    </SafeAreaView>
+        <View style={styles.actions}>
+          {isSignIn ? (
+            <>
+              <Button
+                testID="submit-button"
+                label="Entrar"
+                onPress={handleSubmit}
+                disabled={!canSubmit}
+                loading={isLoading}
+                accessibilityLabel="submit"
+              />
+              <Button
+                testID="go-to-sign-up-link"
+                label="Não tem conta? Cadastre-se"
+                variant="ghost"
+                size="sm"
+                onPress={() => switchMode('signUp')}
+              />
+            </>
+          ) : (
+            <>
+              <Button
+                testID="sign-up-button"
+                label="Criar conta"
+                onPress={handleSignUp}
+                disabled={!canSignUp}
+                loading={isLoading}
+                accessibilityLabel="sign up"
+              />
+              <Button
+                testID="go-to-sign-in-link"
+                label="Já tem conta? Entrar"
+                variant="ghost"
+                size="sm"
+                onPress={() => switchMode('signIn')}
+              />
+            </>
+          )}
+        </View>
+      </View>
+    </Screen>
   );
 }
 
+const BRAND_MARK_SIZE = 32;
+const CHECK_EMAIL_ICON_SIZE = 56;
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    padding: spacing.md,
+  centered: {
+    flexGrow: 1,
     justifyContent: 'center',
-    gap: spacing.sm,
+  },
+  intro: {
+    gap: spacing.xl,
   },
   brand: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.sm,
+  },
+  brandMark: {
+    width: BRAND_MARK_SIZE,
+    height: BRAND_MARK_SIZE,
+    borderRadius: radii.md,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
-    marginBottom: spacing.lg,
   },
   brandName: {
     ...typography.h3,
-    fontFamily: typography.h2.fontFamily,
-    fontSize: 15,
     color: colors.primaryText,
-    letterSpacing: 1,
   },
-  submitButton: {
+  heading: {
+    gap: spacing.xs,
+  },
+  title: {
+    ...typography.title,
+    color: colors.primaryText,
+  },
+  subtitle: {
+    ...typography.body,
+    color: colors.secondaryText,
+  },
+  form: {
+    gap: spacing.md,
+  },
+  actions: {
+    gap: spacing.xs,
     marginTop: spacing.xs,
   },
-  linkText: {
-    ...typography.caption,
-    color: colors.primary,
-    textAlign: 'center',
-    marginTop: spacing.sm,
+  checkEmail: {
+    gap: spacing.lg,
+  },
+  checkEmailIcon: {
+    width: CHECK_EMAIL_ICON_SIZE,
+    height: CHECK_EMAIL_ICON_SIZE,
+    borderRadius: radii.pill,
+    backgroundColor: colors.primaryTint,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

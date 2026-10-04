@@ -14,6 +14,7 @@ Correções em relação ao router legado (app/routers/sync.py):
 Requirements: 1.1, 1.2, 2.1, 2.2
 """
 
+import logging
 import time
 from typing import Any, Optional
 
@@ -41,6 +42,8 @@ from app.database.models import (
 # ============================================================================
 # ROUTER
 # ============================================================================
+
+logger = logging.getLogger(__name__)
 
 sync_router = APIRouter(prefix="/sync", tags=["sync v1"])
 
@@ -821,6 +824,8 @@ def push(
         raise
 
     except Exception as exc:
-        # Erros inesperados de banco → HTTP 500 após rollback
+        # Erros inesperados de banco → HTTP 500 após rollback. Loga a causa: sem
+        # isto ela só existia no corpo da resposta, invisível no servidor.
         db.rollback()
+        logger.exception("sync push falhou para o usuário %s", current_user_id)
         raise HTTPException(status_code=500, detail=str(exc))

@@ -1,5 +1,10 @@
 # Redesign Visual — Portar a identidade do GymNight-Desktop para o Mobile
 
+> ⚠️ **Identidade superada em 2026-10-04 por [`REDESIGN-04-MINIMAL-PREMIUM.md`](REDESIGN-04-MINIMAL-PREMIUM.md).**
+> O glow neon, os títulos em CAIXA ALTA, as bordas de 2px e o hero com imagem foram aposentados. O preto e o lima `#a2ff00` continuam, mas o lima agora é acento raro.
+> A Wave 5 abaixo nunca foi executada nesta forma: Creator, Auth e Progress foram redesenhados direto no REDESIGN-04.
+> Este documento fica como histórico da port do desktop.
+
 > **Documento índice.** Leia este primeiro, depois execute as waves na ordem.
 > Escrito em 2026-08-26.
 
@@ -12,7 +17,7 @@
 | **2** — Navegação/SafeArea | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §1 | ✅ **Concluída** em 2026-08-28 |
 | **3** — DashboardScreen | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §2 | ✅ **Concluída** em 2026-08-28 |
 | **4** — ActiveSessionScreen | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §3 | ✅ **Concluída** em 2026-08-31 |
-| **5** — Creator + Auth + Progress | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §5 | ⬜ Pendente |
+| **5** — Creator + Auth + Progress | [`REDESIGN-03-TELAS.md`](REDESIGN-03-TELAS.md) §5 | ⏭️ Superada pelo [REDESIGN-04](REDESIGN-04-MINIMAL-PREMIUM.md) |
 
 Depois da wave 4 a suíte está em **126 suites / 754 testes**, 100% verde (a baseline antes do redesign era 106/530).
 

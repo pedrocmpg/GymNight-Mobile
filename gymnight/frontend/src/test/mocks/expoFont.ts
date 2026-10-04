@@ -21,8 +21,6 @@ jest.mock('@expo-google-fonts/inter', () => ({
   Inter_500Medium: 'Inter_500Medium',
   Inter_600SemiBold: 'Inter_600SemiBold',
   Inter_700Bold: 'Inter_700Bold',
-  Inter_800ExtraBold: 'Inter_800ExtraBold',
-  Inter_900Black: 'Inter_900Black',
 }));
 
 export {};

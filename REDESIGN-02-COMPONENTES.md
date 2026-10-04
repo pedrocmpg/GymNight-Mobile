@@ -1,5 +1,7 @@
 # Wave 1 — Biblioteca de componentes do design system
 
+> 🗄️ **Histórico.** Tokens, glow e componentes descritos aqui foram substituídos pelo [REDESIGN-04](REDESIGN-04-MINIMAL-PREMIUM.md) (2026-10-04).
+
 > Parte de [`REDESIGN-VISUAL.md`](REDESIGN-VISUAL.md). Depende da [Wave 0](REDESIGN-01-FUNDACAO.md).
 > Local: `gymnight/frontend/src/designSystem/components/`
 

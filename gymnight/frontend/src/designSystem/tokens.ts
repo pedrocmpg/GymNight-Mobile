@@ -91,8 +91,6 @@ export const fonts = {
   medium: 'Inter_500Medium',
   semibold: 'Inter_600SemiBold',
   bold: 'Inter_700Bold',
-  extraBold: 'Inter_800ExtraBold',
-  black: 'Inter_900Black',
 } as const;
 
 // Fora do `as const`: dentro dele vira tupla readonly, que o TextStyle rejeita.
@@ -133,21 +131,6 @@ export const typography = {
     fontFamily: fonts.medium,
     fontVariant: tabularNums,
   },
-
-  /** @deprecated Aliases transitórios da escala antiga — removidos ao fim do REDESIGN-04. */
-  h1: { fontSize: 28, lineHeight: 34, letterSpacing: -0.6, fontFamily: fonts.semibold },
-  /** @deprecated use `footnote`. */
-  sub: { fontSize: 13, lineHeight: 18, letterSpacing: 0, fontFamily: fonts.regular },
-  /** @deprecated use `bodyStrong`. */
-  bodyBold: { fontSize: 15, lineHeight: 22, letterSpacing: -0.1, fontFamily: fonts.semibold },
-  /** @deprecated use `captionStrong`. */
-  captionBold: { fontSize: 12, lineHeight: 16, letterSpacing: 0.2, fontFamily: fonts.semibold },
-  /** @deprecated use `numeric`. */
-  setNumber: { fontSize: 15, lineHeight: 20, letterSpacing: 0, fontFamily: fonts.medium },
-  /** @deprecated use `h2`. */
-  heading: { fontSize: 22, lineHeight: 28, letterSpacing: -0.4, fontFamily: fonts.semibold },
-  /** @deprecated use `stat`. */
-  metric: { fontSize: 28, lineHeight: 32, letterSpacing: -0.8, fontFamily: fonts.medium },
 } as const;
 
 /** Durações e parâmetros de microinteração — ver designSystem/motion.ts. */

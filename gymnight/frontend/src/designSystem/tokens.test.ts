@@ -112,8 +112,8 @@ describe('Design_Token_Module', () => {
   });
 
   describe('Additional structural validation', () => {
-    it('typography defines heading, body, and caption styles', () => {
-      expect(typography).toHaveProperty('heading');
+    it('typography defines title, body, and caption styles', () => {
+      expect(typography).toHaveProperty('title');
       expect(typography).toHaveProperty('body');
       expect(typography).toHaveProperty('caption');
     });

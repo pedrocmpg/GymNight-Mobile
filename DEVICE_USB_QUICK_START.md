@@ -79,6 +79,8 @@ npx expo run:android
 # Metro bundler inicia; hot-reload funciona
 ```
 
+> ⚠️ **Dependência nativa nova → rebuild.** Quando entra um módulo nativo (ex.: `expo-haptics`, no REDESIGN-04), é obrigatório rodar `npx expo run:android` de novo. Só recarregar o Metro não instala o módulo no app já instalado.
+
 **Alternativa (se preferir LAN mode tradicional):**
 ```bash
 # Terminal 2A: Start Expo dev server

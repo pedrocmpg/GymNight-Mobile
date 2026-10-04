@@ -1,5 +1,7 @@
 # Wave 0 — Fundação: tokens, fonte, ícones e assets
 
+> 🗄️ **Histórico.** Tokens, glow e componentes descritos aqui foram substituídos pelo [REDESIGN-04](REDESIGN-04-MINIMAL-PREMIUM.md) (2026-10-04).
+
 > Parte de [`REDESIGN-VISUAL.md`](REDESIGN-VISUAL.md). Executar **antes** das outras waves.
 > Todos os caminhos são relativos a `gymnight/frontend/` salvo indicação contrária.
 

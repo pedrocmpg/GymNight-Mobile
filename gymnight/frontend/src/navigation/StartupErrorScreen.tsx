@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, typography, spacing } from '../designSystem/tokens';
+import { colors, typography, spacing, radii } from '../designSystem/tokens';
 
 export interface StartupErrorScreenProps {
   offending: string[];
@@ -18,7 +18,7 @@ export interface StartupErrorScreenProps {
 export function StartupErrorScreen({ offending }: StartupErrorScreenProps) {
   return (
     <View style={styles.container} testID="startup-error-screen">
-      <Text style={styles.title}>CONFIGURAÇÃO INVÁLIDA</Text>
+      <Text style={styles.title}>Configuração inválida</Text>
       <Text style={styles.subtitle}>
         As seguintes variáveis de ambiente estão ausentes ou inválidas:
       </Text>
@@ -37,13 +37,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: spacing.lg,
+    padding: spacing.ml,
     justifyContent: 'center',
     gap: spacing.md,
   },
   title: {
     color: colors.error,
-    ...typography.h2,
+    ...typography.title,
   },
   subtitle: {
     color: colors.secondaryText,
@@ -51,14 +51,12 @@ const styles = StyleSheet.create({
   },
   list: {
     backgroundColor: colors.card,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.error,
-    borderRadius: spacing.xxs,
+    borderRadius: radii.lg,
     padding: spacing.md,
     gap: spacing.xs,
   },
   item: {
     color: colors.primaryText,
-    ...typography.bodyBold,
+    ...typography.numeric,
   },
 });

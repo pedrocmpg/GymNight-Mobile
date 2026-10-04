@@ -123,7 +123,9 @@ export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainer
     return (
       <SafeAreaView style={styles.notFoundContainer} edges={['top']} testID="session-not-found">
         <EmptyState
-          message="Sessão não encontrada."
+          icon="search"
+          title="Sessão não encontrada"
+          message="Ela pode ter sido encerrada em outro aparelho."
           actionLabel="Voltar"
           onAction={props.onSessionEnded}
           testID="session-not-found-empty"

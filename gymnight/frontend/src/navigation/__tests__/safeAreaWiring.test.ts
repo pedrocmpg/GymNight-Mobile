@@ -23,6 +23,7 @@ function read(relativePath: string): string {
 const SCREENS: ReadonlyArray<readonly [string, readonly string[]]> = [
   // Tela cheia sem tab bar: conteúdo centralizado entre as duas bordas.
   ['src/screens/AuthScreen/AuthScreen.tsx', ['top', 'bottom']],
+  ['src/screens/OnboardingScreen/OnboardingScreen.tsx', ['top', 'bottom']],
   // Abas: a tab bar cuida da borda de baixo.
   ['src/screens/DashboardScreen/DashboardScreen.tsx', ['top']],
   ['src/screens/ProgressScreen/ProgressScreen.tsx', ['top']],

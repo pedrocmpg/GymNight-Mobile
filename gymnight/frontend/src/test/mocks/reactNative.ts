@@ -19,9 +19,13 @@ export const Image = 'Image';
 export const ImageBackground = 'ImageBackground';
 export const Switch = 'Switch';
 export const Modal = 'Modal';
+const absoluteFill = { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 } as const;
 export const StyleSheet = {
   create: <T extends Record<string, unknown>>(styles: T): T => styles,
   flatten: (style: unknown) => style,
+  absoluteFill,
+  absoluteFillObject: absoluteFill,
+  hairlineWidth: 1,
 };
 export const Platform = {
   OS: 'ios',
@@ -34,14 +38,64 @@ export const useWindowDimensions = () => ({ width: 375, height: 812, scale: 2, f
 export const Alert = {
   alert: jest.fn(),
 };
+/**
+ * Animações terminam de forma síncrona: `start(cb)` chama o callback na hora
+ * com `{ finished: true }`, como o RN faz ao fim de uma animação real.
+ */
+const _animation = () => ({
+  start: (cb?: (result: { finished: boolean }) => void) => cb?.({ finished: true }),
+  stop: () => {},
+  reset: () => {},
+});
+class AnimatedValue {
+  _value: number;
+  constructor(value = 0) {
+    this._value = value;
+  }
+  setValue(value: number) {
+    this._value = value;
+  }
+  interpolate() {
+    return this;
+  }
+  stopAnimation(cb?: (value: number) => void) {
+    cb?.(this._value);
+  }
+}
 export const Animated = {
   createAnimatedComponent: <T,>(component: T): T => component,
-  Value: class {
-    setValue() {}
-  },
-  timing: () => ({ start: (cb?: () => void) => cb?.() }),
+  Value: AnimatedValue,
+  timing: _animation,
+  spring: _animation,
+  parallel: _animation,
+  sequence: _animation,
+  loop: _animation,
+  delay: _animation,
   View: 'Animated.View',
   Text: 'Animated.Text',
+};
+const _identityEasing = (t: unknown) => t;
+export const Easing = {
+  linear: _identityEasing,
+  ease: _identityEasing,
+  cubic: _identityEasing,
+  quad: _identityEasing,
+  out: (fn: unknown) => fn,
+  in: (fn: unknown) => fn,
+  inOut: (fn: unknown) => fn,
+  bezier: () => _identityEasing,
+};
+export const LayoutAnimation = {
+  configureNext: jest.fn(),
+  create: (duration: number, type?: string, property?: string) => ({ duration, type, property }),
+  Types: { easeInEaseOut: 'easeInEaseOut', linear: 'linear', spring: 'spring' },
+  Properties: { opacity: 'opacity', scaleXY: 'scaleXY' },
+  Presets: { easeInEaseOut: {}, linear: {}, spring: {} },
+};
+export const UIManager = {};
+export const AccessibilityInfo = {
+  isReduceMotionEnabled: jest.fn().mockResolvedValue(false),
+  addEventListener: jest.fn(() => ({ remove: jest.fn() })),
 };
 export const RefreshControl = 'RefreshControl';
 
@@ -92,6 +146,10 @@ export default {
   useWindowDimensions,
   Alert,
   Animated,
+  Easing,
+  LayoutAnimation,
+  UIManager,
+  AccessibilityInfo,
   RefreshControl,
   AppState,
 };

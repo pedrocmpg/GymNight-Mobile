@@ -35,6 +35,7 @@ module.exports = {
         '^react-native-safe-area-context$': '<rootDir>/src/test/mocks/reactNativeSafeAreaContext.ts',
         '^@expo/vector-icons$': '<rootDir>/src/test/mocks/expoVectorIcons.ts',
         '^@expo/vector-icons/(.*)$': '<rootDir>/src/test/mocks/expoVectorIcons.ts',
+        '^expo-haptics$': '<rootDir>/src/test/mocks/expoHaptics.ts',
       },
       transformIgnorePatterns: TRANSFORM_IGNORE_PATTERNS,
       setupFiles: [

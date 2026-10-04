@@ -1,10 +1,48 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
-from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError, DecodeError
+from jwt import PyJWKClient
+from jwt.exceptions import ExpiredSignatureError, InvalidAlgorithmError, PyJWTError
 from app.core.config import settings
 
 bearer_scheme = HTTPBearer(auto_error=False)
+
+# Access tokens do Supabase Auth sempre trazem `aud: "authenticated"`.
+SUPABASE_AUDIENCE = "authenticated"
+
+# Projetos com "JWT signing keys" assinam com chave assimétrica e publicam a
+# chave pública no JWKS; projetos legados assinam HS256 com o JWT secret.
+_ASYMMETRIC_ALGORITHMS = ("ES256", "RS256")
+_jwks_client: PyJWKClient | None = None
+
+
+def _get_jwks_client() -> PyJWKClient:
+    """Cliente JWKS único por processo — as chaves ficam em cache por 1h."""
+    global _jwks_client
+    if _jwks_client is None:
+        jwks_url = f"{settings.SUPABASE_URL.rstrip('/')}/auth/v1/.well-known/jwks.json"
+        _jwks_client = PyJWKClient(jwks_url, cache_keys=True, lifespan=3600)
+    return _jwks_client
+
+
+def _verify_token(token: str) -> dict:
+    """
+    Escolhe a chave pelo `alg` do header: HS256 → JWT secret; ES256/RS256 →
+    chave pública do JWKS do projeto. A audiência é exigida sempre que o token
+    a declara (todo token real do Supabase declara).
+    """
+    alg = jwt.get_unverified_header(token).get("alg")
+    unverified_claims = jwt.decode(token, options={"verify_signature": False})
+    audience = SUPABASE_AUDIENCE if "aud" in unverified_claims else None
+
+    if alg == "HS256":
+        key = settings.SUPABASE_JWT_SECRET
+    elif alg in _ASYMMETRIC_ALGORITHMS:
+        key = _get_jwks_client().get_signing_key_from_jwt(token).key
+    else:
+        raise InvalidAlgorithmError(f"Algoritmo não suportado: {alg!r}")
+
+    return jwt.decode(token, key, algorithms=[alg], audience=audience)
 
 
 def _decode_supabase_jwt(credentials: HTTPAuthorizationCredentials | None) -> dict:
@@ -21,14 +59,12 @@ def _decode_supabase_jwt(credentials: HTTPAuthorizationCredentials | None) -> di
         raise HTTPException(status_code=401, detail="Token não fornecido")
 
     try:
-        return jwt.decode(
-            token,
-            settings.SUPABASE_JWT_SECRET,
-            algorithms=["HS256"],
-        )
+        return _verify_token(token)
     except ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expirado")
-    except (InvalidSignatureError, DecodeError):
+    except PyJWTError:
+        # Assinatura, algoritmo, audiência, formato ou JWKS indisponível: nada
+        # disso pode virar 500 — o cliente trata 401 como "refaça o login".
         raise HTTPException(status_code=401, detail="Token inválido")
 
 

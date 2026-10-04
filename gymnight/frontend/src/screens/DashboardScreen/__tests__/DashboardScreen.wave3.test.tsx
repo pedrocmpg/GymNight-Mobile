@@ -61,11 +61,12 @@ describe('DashboardScreen — Hero', () => {
     expect(queryByTestId('hero-subtitle')).toBeNull();
   });
 
-  it('mostra o nome do usuário em caixa alta na saudação', () => {
-    const { getByText } = renderScreen({
-      profile: { name: 'Pedro', weight: 78, height: 180 },
+  it('cumprimenta pelo primeiro nome, em sentence case', () => {
+    const { getByText, queryByText } = renderScreen({
+      profile: { name: 'Pedro Campagnolo', weight: 78, height: 180 },
     });
-    expect(getByText(', PEDRO')).toBeTruthy();
+    expect(getByText(', Pedro')).toBeTruthy();
+    expect(queryByText(', PEDRO')).toBeNull();
   });
 
   it('compõe o subtítulo como peso · altura', () => {
@@ -217,11 +218,31 @@ describe('DashboardScreen — Rota para o WorkoutCreator', () => {
   });
 });
 
-describe('DashboardScreen — Logout', () => {
-  it('chama onLogout ao tocar em Sair', () => {
+describe('DashboardScreen — Conta e logout', () => {
+  it('abre o sheet da conta pelo avatar', () => {
+    const { getByTestId } = renderScreen({
+      profile: { name: 'Pedro Campagnolo', weight: 78, height: 180 },
+    });
+    expect(getByTestId('account-sheet').props.visible).toBe(false);
+    fireEvent.press(getByTestId('profile-button'));
+    expect(getByTestId('account-sheet').props.visible).toBe(true);
+  });
+
+  it('mostra o nome completo e o status de sync dentro do sheet', () => {
+    const { getByText } = renderScreen({
+      profile: { name: 'Pedro Campagnolo', weight: 78, height: 180 },
+      syncStatus: 'pending',
+    });
+    expect(getByText('Pedro Campagnolo')).toBeTruthy();
+    expect(getByText('Alterações aguardando envio')).toBeTruthy();
+  });
+
+  it('chama onLogout ao tocar em Sair e fecha o sheet', () => {
     const onLogout = jest.fn();
     const { getByTestId } = renderScreen({ onLogout });
+    fireEvent.press(getByTestId('profile-button'));
     fireEvent.press(getByTestId('logout-button'));
     expect(onLogout).toHaveBeenCalledTimes(1);
+    expect(getByTestId('account-sheet').props.visible).toBe(false);
   });
 });

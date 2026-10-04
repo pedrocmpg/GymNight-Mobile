@@ -535,3 +535,37 @@ export function computeSmaDelta(
 
   return ((currentVolume - historicalAvg) / historicalAvg) * 100;
 }
+
+const WEEKDAYS_LONG = [
+  'Domingo',
+  'Segunda-feira',
+  'Terça-feira',
+  'Quarta-feira',
+  'Quinta-feira',
+  'Sexta-feira',
+  'Sábado',
+] as const;
+
+const MONTHS_LONG = [
+  'janeiro',
+  'fevereiro',
+  'março',
+  'abril',
+  'maio',
+  'junho',
+  'julho',
+  'agosto',
+  'setembro',
+  'outubro',
+  'novembro',
+  'dezembro',
+] as const;
+
+/**
+ * Data por extenso no cabeçalho do Dashboard: "Sábado, 4 de outubro".
+ * Nomes escritos à mão — o `Intl` do Hermes não garante locale pt-BR.
+ */
+export function formatLongDate(timestampMs: number): string {
+  const d = new Date(timestampMs);
+  return `${WEEKDAYS_LONG[d.getDay()]}, ${d.getDate()} de ${MONTHS_LONG[d.getMonth()]}`;
+}

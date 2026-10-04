@@ -8,12 +8,12 @@ import React from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import Svg, { Path, Circle, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { computeChartGeometry, type ChartPoint } from './computeChartGeometry';
-import { colors, spacing } from '../../designSystem/tokens';
+import { colors, layout } from '../../designSystem/tokens';
 
 export interface OneRmChartProps {
   series: ChartPoint[];
   /** Quando ausente, calculado a partir da largura da janela menos o padding
-   * horizontal do container (ProgressScreen padding + Card padding+borda) —
+   * horizontal do container (gutter da tela + padding do card) —
    * antes era `300` fixo, ignorando o tamanho real do device. */
   width?: number;
   height?: number;
@@ -22,8 +22,8 @@ export interface OneRmChartProps {
 
 const GRADIENT_ID = 'oneRmAreaFill';
 const CHART_VERTICAL_PADDING = 10;
-// ProgressScreen `padding: spacing.md` (×2) + Card `padding: spacing.lg` (×2) + Card `borderWidth: 2` (×2).
-const CHART_HORIZONTAL_CHROME = spacing.md * 2 + spacing.lg * 2 + 4;
+// Gutter da tela (×2) + padding do Card (×2); cards não têm borda.
+const CHART_HORIZONTAL_CHROME = layout.gutter * 2 + layout.cardPadding * 2;
 
 export function OneRmChart({ series, width, height = 120, testID }: OneRmChartProps) {
   const { width: windowWidth } = useWindowDimensions();
@@ -39,13 +39,13 @@ export function OneRmChart({ series, width, height = 120, testID }: OneRmChartPr
       <Svg width={resolvedWidth} height={height} viewBox={`0 0 ${resolvedWidth} ${height}`}>
         <Defs>
           <LinearGradient id={GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0%" stopColor={colors.primary} stopOpacity={0.28} />
+            <Stop offset="0%" stopColor={colors.primary} stopOpacity={0.18} />
             <Stop offset="100%" stopColor={colors.primary} stopOpacity={0} />
           </LinearGradient>
         </Defs>
-        <Line x1={0} y1={height * 0.25} x2={resolvedWidth} y2={height * 0.25} stroke={colors.border} strokeWidth={1} />
-        <Line x1={0} y1={height * 0.5} x2={resolvedWidth} y2={height * 0.5} stroke={colors.border} strokeWidth={1} />
-        <Line x1={0} y1={height * 0.75} x2={resolvedWidth} y2={height * 0.75} stroke={colors.border} strokeWidth={1} />
+                {/* Duas guias discretas — referência sem ruído. */}
+        <Line x1={0} y1={height / 3} x2={resolvedWidth} y2={height / 3} stroke={colors.divider} strokeWidth={1} />
+        <Line x1={0} y1={(height * 2) / 3} x2={resolvedWidth} y2={(height * 2) / 3} stroke={colors.divider} strokeWidth={1} />
         {geometry.areaPath !== '' && (
           <Path d={geometry.areaPath} fill={`url(#${GRADIENT_ID})`} />
         )}
@@ -54,7 +54,7 @@ export function OneRmChart({ series, width, height = 120, testID }: OneRmChartPr
             d={geometry.linePath}
             fill="none"
             stroke={colors.primary}
-            strokeWidth={2.5}
+            strokeWidth={2}
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -66,10 +66,10 @@ export function OneRmChart({ series, width, height = 120, testID }: OneRmChartPr
               key={index}
               cx={point.x}
               cy={point.y}
-              r={isLast ? 5 : 3}
-              fill={isLast ? colors.background : colors.primary}
+              r={isLast ? 5 : 2}
+              fill={isLast ? colors.card : colors.primary}
               stroke={colors.primary}
-              strokeWidth={isLast ? 2.5 : 0}
+              strokeWidth={isLast ? 2 : 0}
             />
           );
         })}

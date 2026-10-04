@@ -1,9 +1,9 @@
 /**
  * ProgressScreen Component
  *
- * Displays exercise progress: a selectable exercise chip row, a 1RM evolution
- * chart for the selected exercise, a "new personal record" banner when
- * applicable, and a list of recent sessions. Uses Design_Tokens exclusively.
+ * Evolução por exercício: seletor de exercício em chips, o 1RM estimado como
+ * número protagonista com o gráfico logo abaixo, um banner de recorde quando
+ * aplicável e as sessões recentes. Uses Design_Tokens exclusively.
  *
  * Props:
  * - isLoading: whether data is still loading (first emission pending)
@@ -16,12 +16,17 @@
  */
 
 import React from 'react';
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, typography, spacing, radii } from '../../designSystem/tokens';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { colors, typography, spacing, layout } from '../../designSystem/tokens';
+import { Banner } from '../../designSystem/components/Banner';
 import { Card } from '../../designSystem/components/Card';
 import { Chip } from '../../designSystem/components/Chip';
-import { StatRow } from '../../designSystem/components/StatRow';
+import { DeltaBadge } from '../../designSystem/components/DeltaBadge';
+import { EmptyState } from '../../designSystem/components/EmptyState';
+import { ListRow } from '../../designSystem/components/ListRow';
+import { LoadingState } from '../../designSystem/components/LoadingState';
+import { Screen } from '../../designSystem/components/Screen';
+import { SectionTitle } from '../../designSystem/components/SectionTitle';
 import { OneRmChart } from './OneRmChart';
 import { computeProgressUIState } from './computeProgressUIState';
 import type { ChartPoint } from './computeChartGeometry';
@@ -85,20 +90,31 @@ export function ProgressScreen({
 
   if (uiState.showLoading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']} testID="progress-screen">
-        <View style={styles.loadingContainer} testID="progress-loading-state">
-          <ActivityIndicator testID="progress-loading-indicator" size="large" color={colors.primary} />
-        </View>
-      </SafeAreaView>
+      <Screen edges={['top']} testID="progress-screen" scroll={false}>
+        <LoadingState
+          testID="progress-loading-state"
+          indicatorTestID="progress-loading-indicator"
+        />
+      </Screen>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']} testID="progress-screen">
-      <Text style={styles.title}>PROGRESSO</Text>
-
+    <Screen
+      edges={['top']}
+      testID="progress-screen"
+      scrollTestID="progress-content"
+      title="Progresso"
+      subtitle="Evolução do 1RM estimado por exercício"
+    >
       {exercises.length > 0 && (
-        <ScrollView horizontal testID="exercise-selector" style={styles.chipRow} showsHorizontalScrollIndicator={false}>
+        <ScrollView
+          horizontal
+          testID="exercise-selector"
+          style={styles.chipRow}
+          contentContainerStyle={styles.chipRowContent}
+          showsHorizontalScrollIndicator={false}
+        >
           {exercises.map((exercise) => (
             <Chip
               key={exercise.id}
@@ -111,167 +127,93 @@ export function ProgressScreen({
         </ScrollView>
       )}
 
-      <ScrollView testID="progress-content">
-        {uiState.showEmptyState && (
-          <View style={styles.emptyContainer} testID="progress-empty-state">
-            <Text style={styles.emptyText}>
-              {exercises.length === 0
-                ? 'Nenhum exercício registrado ainda.'
-                : 'Sem dados de 1RM para este exercício ainda.'}
-            </Text>
-          </View>
-        )}
+      {uiState.showEmptyState && (
+        <EmptyState
+          testID="progress-empty-state"
+          icon="chart-line"
+          message={
+            exercises.length === 0
+              ? 'Nenhum exercício registrado ainda.'
+              : 'Sem dados de 1RM para este exercício ainda.'
+          }
+        />
+      )}
 
-        {uiState.showChart && (
-          <Card testID="one-rm-card" style={styles.chartCard}>
-            <View style={styles.chartHeader}>
-              <View>
-                <Text style={styles.chartLabel}>1RM estimado</Text>
-                <Text style={styles.chartValue} testID="one-rm-value">
-                  {latestOneRm?.toFixed(1)} kg
-                </Text>
-              </View>
-              {delta !== null && (
-                <View style={[styles.deltaBadge, delta >= 0 ? styles.deltaPositive : styles.deltaNegative]}>
-                  <Text style={[styles.deltaText, { color: delta >= 0 ? colors.success : colors.error }]}>
-                    {delta >= 0 ? '+' : ''}
-                    {delta.toFixed(1)} kg
+      {(uiState.showChart || uiState.showPrBanner) && (
+        <View style={styles.block}>
+          {uiState.showPrBanner && (
+            <Banner variant="success" message="Novo recorde pessoal!" testID="pr-banner" />
+          )}
+
+          {uiState.showChart && (
+            <Card testID="one-rm-card" style={styles.chartCard}>
+              <View style={styles.chartHeader}>
+                <View style={styles.chartHeading}>
+                  <Text style={styles.chartLabel}>1RM estimado</Text>
+                  <Text style={styles.chartValue} testID="one-rm-value">
+                    {latestOneRm?.toFixed(1)} kg
                   </Text>
                 </View>
-              )}
-            </View>
-            <OneRmChart series={oneRmSeries} testID="one-rm-chart" />
-          </Card>
-        )}
+                {delta !== null && <DeltaBadge value={delta} format="kg" testID="one-rm-delta" />}
+              </View>
+              <OneRmChart series={oneRmSeries} testID="one-rm-chart" />
+            </Card>
+          )}
+        </View>
+      )}
 
-        {uiState.showPrBanner && (
-          <View style={styles.prBanner} testID="pr-banner">
-            <Text style={styles.prBannerText}>Novo recorde pessoal!</Text>
-          </View>
-        )}
-
-        {uiState.showSessionsList && (
-          <View style={styles.sessionsSection} testID="sessions-list">
-            <Text style={styles.sessionsTitle}>Sessões recentes</Text>
-            {sessions.map((session) => (
-              <Card key={session.id} testID={`session-item-${session.id}`} style={styles.sessionCard}>
-                <View style={styles.sessionRow}>
-                  <View>
-                    <Text style={styles.sessionName}>{session.workoutName ?? 'Treino livre'}</Text>
-                    <Text style={styles.sessionDate}>
-                      {formatRelativeDate(session.startedAt)} · {formatDuration(session.durationMs)}
-                    </Text>
-                  </View>
-                  <StatRow
-                    align="flex-end"
-                    label="volume"
-                    value={`${session.totalVolume.toLocaleString('pt-BR')} kg`}
-                  />
-                </View>
-              </Card>
+      {uiState.showSessionsList && (
+        <View style={styles.block} testID="sessions-list">
+          <SectionTitle>Sessões recentes</SectionTitle>
+          <Card padding="none">
+            {sessions.map((session, index) => (
+              <ListRow
+                key={session.id}
+                testID={`session-item-${session.id}`}
+                title={session.workoutName ?? 'Treino livre'}
+                subtitle={`${formatRelativeDate(session.startedAt)} · ${formatDuration(session.durationMs)}`}
+                value={`${session.totalVolume.toLocaleString('pt-BR')} kg`}
+                divider={index < sessions.length - 1}
+              />
             ))}
-          </View>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+          </Card>
+        </View>
+      )}
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    padding: spacing.md,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: colors.secondaryText,
-    ...typography.body,
-  },
-  title: {
-    color: colors.primaryText,
-    ...typography.h1,
-    marginBottom: spacing.sm,
-  },
+  // Os chips sangram até a borda da tela e ficam colados ao título.
   chipRow: {
-    marginBottom: spacing.sm,
+    marginHorizontal: -layout.gutter,
+    marginTop: -spacing.md,
+    flexGrow: 0,
   },
-  emptyContainer: {
-    paddingVertical: spacing.lg,
-    alignItems: 'center',
+  chipRowContent: {
+    paddingHorizontal: layout.gutter,
+    gap: spacing.xs,
   },
-  emptyText: {
-    color: colors.secondaryText,
-    ...typography.body,
-    textAlign: 'center',
+  block: {
+    gap: layout.blockGap,
   },
   chartCard: {
-    marginBottom: spacing.sm,
+    gap: spacing.md,
   },
   chartHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: spacing.sm,
+  },
+  chartHeading: {
+    gap: spacing.xxs,
   },
   chartLabel: {
-    color: colors.secondaryText,
     ...typography.caption,
+    color: colors.secondaryText,
   },
   chartValue: {
+    ...typography.metricXL,
     color: colors.primaryText,
-    ...typography.stat,
-  },
-  deltaBadge: {
-    borderRadius: radii.lg,
-    paddingVertical: spacing.xs / 2,
-    paddingHorizontal: spacing.xs,
-  },
-  deltaPositive: {
-    backgroundColor: colors.successTint,
-  },
-  deltaNegative: {
-    backgroundColor: colors.errorTint,
-  },
-  deltaText: {
-    ...typography.captionBold,
-  },
-  prBanner: {
-    backgroundColor: colors.primaryTint,
-    borderRadius: radii.md,
-    padding: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  prBannerText: {
-    color: colors.primary,
-    ...typography.bodyBold,
-  },
-  sessionsSection: {
-    gap: spacing.xs,
-  },
-  sessionsTitle: {
-    color: colors.primaryText,
-    ...typography.bodyBold,
-    marginBottom: spacing.xs,
-  },
-  sessionCard: {
-    marginBottom: spacing.xs,
-  },
-  sessionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  sessionName: {
-    color: colors.primaryText,
-    ...typography.bodyBold,
-  },
-  sessionDate: {
-    color: colors.secondaryText,
-    ...typography.caption,
   },
 });

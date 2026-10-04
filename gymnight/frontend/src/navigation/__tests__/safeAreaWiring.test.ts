@@ -23,6 +23,7 @@ function read(relativePath: string): string {
 const SCREENS: ReadonlyArray<readonly [string, readonly string[]]> = [
   // Abas: a tab bar cuida da borda de baixo.
   ['src/screens/DashboardScreen/DashboardScreen.tsx', ['top']],
+  ['src/screens/ProgressScreen/ProgressScreen.tsx', ['top']],
   // Tela cheia com rodapé fixo (Finalizar treino): precisa da borda de baixo.
   ['src/screens/ActiveSessionScreen/ActiveSessionScreen.tsx', ['top', 'bottom']],
   // Rodapé fixo com "Salvar treino".
@@ -32,7 +33,6 @@ const SCREENS: ReadonlyArray<readonly [string, readonly string[]]> = [
 /** Telas ainda com SafeAreaView direto (migram ao longo do REDESIGN-04). */
 const LEGACY_SCREENS: ReadonlyArray<readonly [string, readonly string[]]> = [
   ['src/screens/AuthScreen/AuthScreen.tsx', ['top']],
-  ['src/screens/ProgressScreen/ProgressScreen.tsx', ['top']],
 ];
 
 function parseEdges(raw: string): string[] {

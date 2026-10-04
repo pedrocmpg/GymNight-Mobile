@@ -5,6 +5,9 @@
     <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
     <item name="colorPrimary">@color/colorPrimary</item>
     <item name="android:statusBarColor">#0D0D0D</item>
+    <!-- O autofill continua funcionando; só some o realce amarelo do sistema, que
+         ignorava o borderRadius dos inputs e quebrava o tema escuro (REDESIGN-04). -->
+    <item name="android:autofilledHighlight" tools:targetApi="o">@android:color/transparent</item>
   </style>
   <style name="ResetEditText" parent="@android:style/Widget.EditText">
     <item name="android:padding">0dp</item>

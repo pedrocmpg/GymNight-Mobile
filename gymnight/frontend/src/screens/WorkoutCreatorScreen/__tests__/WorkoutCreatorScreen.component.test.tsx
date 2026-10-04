@@ -259,7 +259,7 @@ describe('WorkoutCreatorScreen — Modo edição (Wave 8)', () => {
       onDelete: jest.fn(),
     });
 
-    expect(getByText('EDITAR TREINO')).toBeTruthy();
+    expect(getByText('Editar treino')).toBeTruthy();
     expect(getByTestId('workout-name-input').props.value).toBe('Treino A');
     expect(getByTestId('exercise-toggle-ex1').props.value).toBe(true);
     expect(getByTestId('series-input-ex1').props.value).toBe('4');
@@ -274,7 +274,7 @@ describe('WorkoutCreatorScreen — Modo edição (Wave 8)', () => {
 
   it('mostra "CRIAR TREINO" por default (mode ausente)', () => {
     const { getByText } = renderWorkoutCreatorScreen();
-    expect(getByText('CRIAR TREINO')).toBeTruthy();
+    expect(getByText('Criar treino')).toBeTruthy();
   });
 
   it('apagar exige confirmação: só chama onDelete depois de "Sim, apagar"', () => {

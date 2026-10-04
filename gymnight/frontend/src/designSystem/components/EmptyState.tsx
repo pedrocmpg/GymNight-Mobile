@@ -18,15 +18,27 @@ export interface EmptyStateProps {
   actionLabel?: string;
   onAction?: () => void;
   testID?: string;
+  /** testID da mensagem, para quem precisa ler o texto exibido. */
+  messageTestID?: string;
 }
 
-export function EmptyState({ message, icon, title, actionLabel, onAction, testID }: EmptyStateProps) {
+export function EmptyState({
+  message,
+  icon,
+  title,
+  actionLabel,
+  onAction,
+  testID,
+  messageTestID,
+}: EmptyStateProps) {
   return (
     <View style={styles.container} testID={testID}>
       {icon ? <FontAwesome5 name={icon} size={28} color={colors.tertiaryText} solid /> : null}
       <View style={styles.text}>
         {title ? <Text style={styles.title}>{title}</Text> : null}
-        <Text style={styles.message}>{message}</Text>
+        <Text style={styles.message} testID={messageTestID}>
+          {message}
+        </Text>
       </View>
       {actionLabel && onAction ? (
         <Button

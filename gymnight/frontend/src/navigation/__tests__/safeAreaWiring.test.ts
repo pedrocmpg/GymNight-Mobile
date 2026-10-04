@@ -25,13 +25,14 @@ const SCREENS: ReadonlyArray<readonly [string, readonly string[]]> = [
   ['src/screens/DashboardScreen/DashboardScreen.tsx', ['top']],
   // Tela cheia com rodapé fixo (Finalizar treino): precisa da borda de baixo.
   ['src/screens/ActiveSessionScreen/ActiveSessionScreen.tsx', ['top', 'bottom']],
+  // Rodapé fixo com "Salvar treino".
+  ['src/screens/WorkoutCreatorScreen/WorkoutCreatorScreen.tsx', ['top', 'bottom']],
 ];
 
 /** Telas ainda com SafeAreaView direto (migram ao longo do REDESIGN-04). */
 const LEGACY_SCREENS: ReadonlyArray<readonly [string, readonly string[]]> = [
   ['src/screens/AuthScreen/AuthScreen.tsx', ['top']],
   ['src/screens/ProgressScreen/ProgressScreen.tsx', ['top']],
-  ['src/screens/WorkoutCreatorScreen/WorkoutCreatorScreen.tsx', ['top']],
 ];
 
 function parseEdges(raw: string): string[] {

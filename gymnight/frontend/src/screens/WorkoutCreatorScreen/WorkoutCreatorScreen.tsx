@@ -4,10 +4,14 @@
  * Cria (ou edita) um treino: nome, e quais exercícios do catálogo entram,
  * cada um com a meta de séries/reps/peso. Uses Design_Tokens exclusively.
  *
- * Layout (REDESIGN-04):
+ * Layout (REDESIGN-04 + catálogo de 500):
  *   header fixo  — "‹ Voltar" · [lixeira, só no modo edição]
- *   scroll       — título, nome, busca e a lista de exercícios; tocar na
- *                  linha alterna a seleção e revela as metas
+ *   lista        — título, nome, busca e filtros como cabeçalho de uma
+ *                  FlatList (500 exercícios não cabem num ScrollView); cada
+ *                  linha tem a miniatura do exercício — JPG estática, que
+ *                  vira a animação quando o exercício entra no treino.
+ *                  Tocar na linha alterna a seleção e revela as metas; tocar
+ *                  na miniatura abre o ExerciseDetailSheet
  *   rodapé fixo  — "Salvar treino", o único CTA lima da tela
  *
  * Props:
@@ -18,13 +22,13 @@
  * - onBack: quando presente, o header mostra o botão de voltar
  */
 
-import React, { useState } from 'react';
-import { View, Text, Switch, StyleSheet } from 'react-native';
-import { colors, typography, spacing, layout } from '../../designSystem/tokens';
+import React, { useMemo, useState } from 'react';
+import { View, Text, Switch, StyleSheet, FlatList, ScrollView } from 'react-native';
+import { colors, typography, spacing, layout, radii } from '../../designSystem/tokens';
 import { animateLayout } from '../../designSystem/motion';
 import { haptic } from '../../designSystem/haptics';
 import { Button } from '../../designSystem/components/Button';
-import { Card } from '../../designSystem/components/Card';
+import { Chip } from '../../designSystem/components/Chip';
 import { ConfirmSheet } from '../../designSystem/components/ConfirmSheet';
 import { EmptyState } from '../../designSystem/components/EmptyState';
 import { IconButton } from '../../designSystem/components/IconButton';
@@ -34,13 +38,19 @@ import { LoadingState } from '../../designSystem/components/LoadingState';
 import { Screen } from '../../designSystem/components/Screen';
 import { ScreenHeader } from '../../designSystem/components/ScreenHeader';
 import { SectionTitle } from '../../designSystem/components/SectionTitle';
+import { ExerciseThumb } from '../../components/exercise/ExerciseThumb';
+import {
+  ExerciseDetailSheet,
+  type ExerciseDetails,
+} from '../../components/exercise/ExerciseDetailSheet';
+import { useLanguage } from '../../i18n/LanguageContext';
+import { exerciseName, exerciseSubtitle, muscleGroupLabel } from '../../i18n/exerciseLabels';
 import { buildExerciseInputs, canSaveWorkout, type SelectedExerciseEntry } from './workoutCreatorSelection';
 import type { ExerciseInput } from './saveWorkoutWithExercises';
 import { filterExercises } from './exerciseSearch';
 
-export interface WorkoutCreatorExercise {
+export interface WorkoutCreatorExercise extends ExerciseDetails {
   id: string;
-  name: string;
 }
 
 export interface WorkoutCreatorInitialData {
@@ -74,6 +84,21 @@ interface SelectionState {
   weightTarget: string;
 }
 
+/** Filtro da lista: todos, só os já adicionados, ou um grupo muscular (nome em PT). */
+type ListFilter = { kind: 'all' } | { kind: 'selected' } | { kind: 'group'; group: string };
+
+/** Mesma ordem do catálogo muscular (seed do backend). */
+const MUSCLE_GROUPS = ['Peito', 'Costas', 'Ombros', 'Bíceps', 'Tríceps', 'Pernas', 'Abdômen'];
+
+const THUMB_SIZE = 48;
+
+const EMPTY_SELECTION: SelectionState = {
+  checked: false,
+  seriesTarget: '',
+  repsTarget: '',
+  weightTarget: '',
+};
+
 function toEntry(exerciseId: string, state: SelectionState): SelectedExerciseEntry {
   return {
     exerciseId,
@@ -93,6 +118,7 @@ export function WorkoutCreatorScreen({
   initialWorkout,
   onDelete,
 }: WorkoutCreatorScreenProps) {
+  const { language } = useLanguage();
   const [workoutName, setWorkoutName] = useState(() => initialWorkout?.name ?? '');
   const [selection, setSelection] = useState<Record<string, SelectionState>>(() => {
     const initial: Record<string, SelectionState> = {};
@@ -107,8 +133,31 @@ export function WorkoutCreatorScreen({
     return initial;
   });
   const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState<ListFilter>({ kind: 'all' });
+  const [detailExercise, setDetailExercise] = useState<WorkoutCreatorExercise | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const isEdit = mode === 'edit';
+
+  const getState = (id: string): SelectionState => selection[id] ?? EMPTY_SELECTION;
+
+  // A busca e os filtros só afetam o que é EXIBIDO — a seleção/validação
+  // continua sobre o catálogo inteiro, então filtrar não descarta o que já
+  // foi marcado antes.
+  const sortedExercises = useMemo(
+    () =>
+      [...exercises].sort((a, b) =>
+        exerciseName(a, language).localeCompare(exerciseName(b, language), language),
+      ),
+    [exercises, language],
+  );
+  const visibleExercises = useMemo(() => {
+    const byFilter = sortedExercises.filter((e) => {
+      if (filter.kind === 'selected') return selection[e.id]?.checked === true;
+      if (filter.kind === 'group') return e.primaryGroup === filter.group;
+      return true;
+    });
+    return filterExercises(byFilter, searchQuery);
+  }, [sortedExercises, filter, selection, searchQuery]);
 
   const header = (
     <ScreenHeader
@@ -153,13 +202,10 @@ export function WorkoutCreatorScreen({
     );
   }
 
-  const getState = (id: string): SelectionState =>
-    selection[id] ?? { checked: false, seriesTarget: '', repsTarget: '', weightTarget: '' };
-
   const setState = (id: string, patch: Partial<SelectionState>) => {
     setSelection((prev) => ({
       ...prev,
-      [id]: { ...getState(id), ...patch },
+      [id]: { ...(prev[id] ?? EMPTY_SELECTION), ...patch },
     }));
   };
 
@@ -169,11 +215,8 @@ export function WorkoutCreatorScreen({
     setState(id, { checked });
   };
 
-  // A busca só afeta o que é EXIBIDO — a seleção/validação continua sobre o
-  // catálogo inteiro, então filtrar não descarta o que já foi marcado antes.
   const entries: SelectedExerciseEntry[] = exercises.map((e) => toEntry(e.id, getState(e.id)));
   const canSave = canSaveWorkout(workoutName, entries);
-  const visibleExercises = filterExercises(exercises, searchQuery);
   const selectedCount = exercises.filter((e) => getState(e.id).checked).length;
 
   const handleSave = () => {
@@ -181,25 +224,28 @@ export function WorkoutCreatorScreen({
     onSave(workoutName, buildExerciseInputs(entries));
   };
 
-  return (
-    <Screen
-      edges={['top', 'bottom']}
-      testID="workout-creator-screen"
-      header={header}
-      title={isEdit ? 'Editar treino' : 'Criar treino'}
-      subtitle="Escolha os exercícios e defina séries, repetições e carga."
-      footer={
-        <Button
-          testID="save-workout-button"
-          label="Salvar treino"
-          icon="check"
-          haptic="success"
-          onPress={handleSave}
-          disabled={!canSave}
-          accessibilityLabel="Salvar treino"
-        />
-      }
-    >
+  const filterChips: Array<{ key: string; label: string; value: ListFilter }> = [
+    { key: 'all', label: 'Todos', value: { kind: 'all' } },
+    { key: 'selected', label: `Adicionados (${selectedCount})`, value: { kind: 'selected' } },
+    ...MUSCLE_GROUPS.map((group) => ({
+      key: group,
+      label: muscleGroupLabel(group, language),
+      value: { kind: 'group', group } as ListFilter,
+    })),
+  ];
+  const isFilterSelected = (value: ListFilter) =>
+    value.kind === filter.kind &&
+    (value.kind !== 'group' || (filter.kind === 'group' && filter.group === value.group));
+
+  const listHeader = (
+    <View style={styles.listHeader}>
+      <View style={styles.titleBlock}>
+        <Text style={styles.title} accessibilityRole="header">
+          {isEdit ? 'Editar treino' : 'Criar treino'}
+        </Text>
+        <Text style={styles.subtitle}>Escolha os exercícios e defina séries, repetições e carga.</Text>
+      </View>
+
       <View style={styles.block}>
         <Input
           testID="workout-name-input"
@@ -219,7 +265,7 @@ export function WorkoutCreatorScreen({
       <View style={styles.block}>
         <SectionTitle meta={`${selectedCount} selecionados`}>Exercícios</SectionTitle>
 
-        {/* Busca (Wave 8): 200 exercícios no catálogo tornam rolar a lista inteira inviável. */}
+        {/* Busca (Wave 8), em PT e EN — 500 exercícios no catálogo. */}
         <Input
           testID="exercise-search-input"
           placeholder="Buscar exercício…"
@@ -228,78 +274,146 @@ export function WorkoutCreatorScreen({
           accessibilityLabel="Buscar exercício"
         />
 
-        {visibleExercises.length === 0 ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRow}
+          keyboardShouldPersistTaps="handled"
+          testID="exercise-filter-chips"
+        >
+          {filterChips.map((chip) => (
+            <Chip
+              key={chip.key}
+              label={chip.label}
+              selected={isFilterSelected(chip.value)}
+              onPress={() => setFilter(chip.value)}
+              testID={`exercise-filter-${chip.key}`}
+            />
+          ))}
+        </ScrollView>
+      </View>
+    </View>
+  );
+
+  const renderExercise = ({ item: exercise, index }: { item: WorkoutCreatorExercise; index: number }) => {
+    const state = getState(exercise.id);
+    const name = exerciseName(exercise, language);
+    const isFirst = index === 0;
+    const isLast = index === visibleExercises.length - 1;
+    return (
+      <View style={[styles.rowCard, isFirst && styles.rowCardFirst, isLast && styles.rowCardLast]}>
+        <ListRow
+          testID={`exercise-row-${exercise.id}`}
+          title={name}
+          subtitle={exerciseSubtitle(exercise, language)}
+          divider={!isLast}
+          onPress={() => toggle(exercise.id, !state.checked)}
+          accessibilityLabel={`${state.checked ? 'Remover' : 'Adicionar'} ${name}`}
+          leading={
+            <ExerciseThumb
+              mediaKey={exercise.mediaKey}
+              size={THUMB_SIZE}
+              animated={state.checked}
+              onPress={() => setDetailExercise(exercise)}
+              accessibilityLabel={`Ver ${name}`}
+              testID={`exercise-thumb-${exercise.id}`}
+            />
+          }
+          trailing={
+            <Switch
+              testID={`exercise-toggle-${exercise.id}`}
+              value={state.checked}
+              onValueChange={(checked) => toggle(exercise.id, checked)}
+              trackColor={{ true: colors.primary, false: colors.cardAlt }}
+              thumbColor={colors.primaryText}
+              ios_backgroundColor={colors.cardAlt}
+              style={styles.switch}
+              accessibilityLabel={`Selecionar ${name}`}
+            />
+          }
+        >
+          {state.checked ? (
+            <View style={styles.targetsRow}>
+              <View style={styles.targetInput}>
+                <Input
+                  testID={`series-input-${exercise.id}`}
+                  label="Séries"
+                  placeholder="3"
+                  value={state.seriesTarget}
+                  onChangeText={(v) => setState(exercise.id, { seriesTarget: v })}
+                  keyboardType="numeric"
+                  accessibilityLabel={`Séries para ${name}`}
+                />
+              </View>
+              <View style={styles.targetInput}>
+                <Input
+                  testID={`reps-input-${exercise.id}`}
+                  label="Reps"
+                  placeholder="10"
+                  value={state.repsTarget}
+                  onChangeText={(v) => setState(exercise.id, { repsTarget: v })}
+                  keyboardType="numeric"
+                  accessibilityLabel={`Repetições para ${name}`}
+                />
+              </View>
+              <View style={styles.targetInput}>
+                <Input
+                  testID={`weight-input-${exercise.id}`}
+                  label="Peso (kg)"
+                  placeholder="0"
+                  value={state.weightTarget}
+                  onChangeText={(v) => setState(exercise.id, { weightTarget: v })}
+                  keyboardType="numeric"
+                  accessibilityLabel={`Peso para ${name}`}
+                />
+              </View>
+            </View>
+          ) : undefined}
+        </ListRow>
+      </View>
+    );
+  };
+
+  return (
+    <Screen
+      edges={['top', 'bottom']}
+      testID="workout-creator-screen"
+      header={header}
+      scroll={false}
+      contentStyle={styles.screenContent}
+      footer={
+        <Button
+          testID="save-workout-button"
+          label="Salvar treino"
+          icon="check"
+          haptic="success"
+          onPress={handleSave}
+          disabled={!canSave}
+          accessibilityLabel="Salvar treino"
+        />
+      }
+    >
+      <FlatList
+        testID="exercise-selection-list"
+        data={visibleExercises}
+        keyExtractor={(exercise) => exercise.id}
+        renderItem={renderExercise}
+        // `selection`/`language` mudam o conteúdo das linhas sem mudar `data`.
+        extraData={[selection, language]}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={
           <Text style={styles.noResultsText} testID="exercise-search-no-results">
             Nenhum exercício encontrado.
           </Text>
-        ) : (
-          <Card padding="none" testID="exercise-selection-list">
-            {visibleExercises.map((exercise, index) => {
-              const state = getState(exercise.id);
-              return (
-                <ListRow
-                  key={exercise.id}
-                  testID={`exercise-row-${exercise.id}`}
-                  title={exercise.name}
-                  divider={index < visibleExercises.length - 1}
-                  onPress={() => toggle(exercise.id, !state.checked)}
-                  accessibilityLabel={`${state.checked ? 'Remover' : 'Adicionar'} ${exercise.name}`}
-                  trailing={
-                    <Switch
-                      testID={`exercise-toggle-${exercise.id}`}
-                      value={state.checked}
-                      onValueChange={(checked) => toggle(exercise.id, checked)}
-                      trackColor={{ true: colors.primary, false: colors.cardAlt }}
-                      thumbColor={colors.primaryText}
-                      ios_backgroundColor={colors.cardAlt}
-                      style={styles.switch}
-                      accessibilityLabel={`Selecionar ${exercise.name}`}
-                    />
-                  }
-                >
-                  {state.checked ? (
-                    <View style={styles.targetsRow}>
-                      <View style={styles.targetInput}>
-                        <Input
-                          testID={`series-input-${exercise.id}`}
-                          label="Séries"
-                          placeholder="3"
-                          value={state.seriesTarget}
-                          onChangeText={(v) => setState(exercise.id, { seriesTarget: v })}
-                          keyboardType="numeric"
-                          accessibilityLabel={`Séries para ${exercise.name}`}
-                        />
-                      </View>
-                      <View style={styles.targetInput}>
-                        <Input
-                          testID={`reps-input-${exercise.id}`}
-                          label="Reps"
-                          placeholder="10"
-                          value={state.repsTarget}
-                          onChangeText={(v) => setState(exercise.id, { repsTarget: v })}
-                          keyboardType="numeric"
-                          accessibilityLabel={`Repetições para ${exercise.name}`}
-                        />
-                      </View>
-                      <View style={styles.targetInput}>
-                        <Input
-                          testID={`weight-input-${exercise.id}`}
-                          label="Peso (kg)"
-                          placeholder="0"
-                          value={state.weightTarget}
-                          onChangeText={(v) => setState(exercise.id, { weightTarget: v })}
-                          keyboardType="numeric"
-                          accessibilityLabel={`Peso para ${exercise.name}`}
-                        />
-                      </View>
-                    </View>
-                  ) : undefined}
-                </ListRow>
-              );
-            })}
-          </Card>
-        )}
-      </View>
+        }
+        contentContainerStyle={styles.listContent}
+        keyboardShouldPersistTaps="handled"
+        initialNumToRender={12}
+        windowSize={7}
+        style={styles.list}
+      />
+
+      <ExerciseDetailSheet exercise={detailExercise} onClose={() => setDetailExercise(null)} />
 
       <ConfirmSheet
         visible={showDeleteConfirm}
@@ -324,8 +438,52 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
+  // A FlatList faz a rolagem e encosta nas bordas laterais da casca; o
+  // gutter volta como padding do conteúdo da lista.
+  screenContent: {
+    paddingHorizontal: 0,
+    paddingTop: 0,
+  },
+  list: {
+    flex: 1,
+  },
+  listContent: {
+    paddingHorizontal: layout.gutter,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xxl,
+  },
+  listHeader: {
+    gap: layout.sectionGap,
+    paddingBottom: layout.blockGap,
+  },
+  titleBlock: {
+    gap: spacing.xxs,
+  },
+  title: {
+    ...typography.title,
+    color: colors.primaryText,
+  },
+  subtitle: {
+    ...typography.footnote,
+    color: colors.secondaryText,
+  },
   block: {
     gap: layout.blockGap,
+  },
+  filterRow: {
+    gap: spacing.xs,
+  },
+  rowCard: {
+    backgroundColor: colors.card,
+    overflow: 'hidden',
+  },
+  rowCardFirst: {
+    borderTopLeftRadius: radii.lg,
+    borderTopRightRadius: radii.lg,
+  },
+  rowCardLast: {
+    borderBottomLeftRadius: radii.lg,
+    borderBottomRightRadius: radii.lg,
   },
   errorText: {
     ...typography.footnote,

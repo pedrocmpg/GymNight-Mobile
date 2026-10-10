@@ -30,10 +30,14 @@ import { SectionTitle } from '../../designSystem/components/SectionTitle';
 import { OneRmChart } from './OneRmChart';
 import { computeProgressUIState } from './computeProgressUIState';
 import type { ChartPoint } from './computeChartGeometry';
+import { useLanguage } from '../../i18n/LanguageContext';
+import { exerciseName } from '../../i18n/exerciseLabels';
 
 export interface ProgressScreenExercise {
   id: string;
   name: string;
+  /** Nome em inglês (catálogo de 500), usado quando o idioma é EN. */
+  nameEn?: string | null;
 }
 
 export interface ProgressScreenSession {
@@ -76,6 +80,7 @@ export function ProgressScreen({
   sessions,
   onSelectExercise,
 }: ProgressScreenProps) {
+  const { language } = useLanguage();
   const uiState = computeProgressUIState({
     isLoading,
     hasSelectedExercise: selectedExerciseId !== null,
@@ -119,7 +124,7 @@ export function ProgressScreen({
             <Chip
               key={exercise.id}
               testID={`progress-exercise-option-${exercise.id}`}
-              label={exercise.name}
+              label={exerciseName(exercise, language)}
               selected={exercise.id === selectedExerciseId}
               onPress={() => onSelectExercise(exercise.id)}
             />

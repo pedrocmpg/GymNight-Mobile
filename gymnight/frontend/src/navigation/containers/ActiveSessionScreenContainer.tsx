@@ -17,6 +17,21 @@ import CardioLog from '../../db/models/CardioLog';
 import { deleteRecord } from '../../db/writeHelpers';
 import { createActiveSessionDatabaseProvider, createExerciseCatalogDatabaseProvider } from '../watermelonProviders';
 import { colors } from '../../designSystem/tokens';
+import { useLanguage } from '../../i18n/LanguageContext';
+import { exerciseName } from '../../i18n/exerciseLabels';
+import type { CatalogExercise } from '../../hooks/useObserveExerciseCatalog';
+import type { ActiveSessionExerciseOption } from '../../screens/ActiveSessionScreen/ActiveSessionScreen';
+
+/** Campos do catálogo (nome EN, mídia, grupos, equipamento) para a tela da sessão. */
+function catalogDetails(exercise: CatalogExercise) {
+  return {
+    nameEn: exercise.nameEn,
+    equipment: exercise.equipment,
+    mediaKey: exercise.mediaKey,
+    primaryGroup: exercise.primaryGroup,
+    secondaryGroups: exercise.secondaryGroups,
+  };
+}
 
 export interface ActiveSessionScreenContainerProps {
   route: { params: { sessionId: string } };
@@ -93,6 +108,7 @@ export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainer
     weightKg,
   } = useObserveActiveSession(sessionId, provider);
   const { exercises: catalogExercises } = useObserveExerciseCatalog(catalogProvider);
+  const { language } = useLanguage();
 
   const handleLogSet = (exerciseId: string, weight: number, reps: number, setType?: string) => {
     void persistLoggedSetWithIsolation(
@@ -139,10 +155,20 @@ export function ActiveSessionScreenContainer(props: ActiveSessionScreenContainer
   const hasWorkout = workoutExercises.length > 0;
   // O catálogo não tem alvos: sem treino definido a grade não se monta e a tela
   // cai no formulário livre, que é o comportamento pretendido.
-  const exerciseOptions = hasWorkout
-    ? workoutExercises
-    : catalogExercises.map((e) => ({ id: e.id, name: e.name }));
-  const nameById = new Map(exerciseOptions.map((e) => [e.id, e.name]));
+  // Os exercícios do treino vêm do join workout_exercises → exercises só com
+  // o nome; os campos do catálogo (mídia, EN, grupos) entram aqui.
+  const catalogById = new Map(catalogExercises.map((e) => [e.id, e]));
+  const exerciseOptions: ActiveSessionExerciseOption[] = hasWorkout
+    ? workoutExercises.map((option) => {
+        const catalog = catalogById.get(option.id);
+        return catalog ? { ...option, ...catalogDetails(catalog) } : option;
+      })
+    : catalogExercises
+        .map((e) => ({ id: e.id, name: e.name, ...catalogDetails(e) }))
+        .sort((a, b) =>
+          exerciseName(a, language).localeCompare(exerciseName(b, language), language),
+        );
+  const nameById = new Map(exerciseOptions.map((e) => [e.id, exerciseName(e, language)]));
 
   return (
     <ActiveSessionScreen

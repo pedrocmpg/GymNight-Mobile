@@ -32,6 +32,7 @@ import { hydrateLastPulledAt } from './src/sync/lastPulledAt';
 import database from './src/db/database';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { StartupErrorScreen } from './src/navigation/StartupErrorScreen';
+import { LanguageProvider } from './src/i18n/LanguageContext';
 
 /** Fetch adapter satisfying SyncHttpClient, used by the real Sync_Cycle_Runner. */
 const fetchHttpClient = {
@@ -130,13 +131,15 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <AppNavigator
-        fontsLoaded={fontsLoaded}
-        authManager={authManager}
-        syncEngine={syncEngine}
-        logoutManager={logoutManager}
-        sessionStore={sessionStore}
-      />
+      <LanguageProvider>
+        <AppNavigator
+          fontsLoaded={fontsLoaded}
+          authManager={authManager}
+          syncEngine={syncEngine}
+          logoutManager={logoutManager}
+          sessionStore={sessionStore}
+        />
+      </LanguageProvider>
       <StatusBar style="light" />
     </SafeAreaProvider>
   );

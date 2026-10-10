@@ -10,15 +10,18 @@ pela Wave 6 (percentuais de ativação muscular + valores MET) — ambas
 precisam gerar o MESMO id determinístico para o mesmo exercício, então a
 normalização e o namespace de UUID vivem aqui, num lugar só.
 """
+import csv
 import re
 import unicodedata
 import uuid
+from dataclasses import dataclass
 from pathlib import Path
 
 from .seed_data.met_values import EXERCISE_MET_MAP
 
 SEED_DATA_DIR = Path(__file__).resolve().parent / "seed_data"
 MUSCLE_USAGE_MAP_PATH = SEED_DATA_DIR / "muscle_usage_map.md"
+EXERCISE_CATALOG_CSV_PATH = SEED_DATA_DIR / "exercise_catalog.csv"
 
 # Namespace fixo para os UUIDv5 do catálogo de exercícios. `uuid5` é
 # determinístico: mesmo namespace + mesmo nome normalizado sempre produz o
@@ -153,3 +156,120 @@ def parse_muscle_contributions(
                 records.append((display_name, group_name, contribution))
 
     return records
+
+
+# ============================================================================
+# Catálogo de 500 exercícios (migration 011)
+# ============================================================================
+# Fonte: exercise_catalog.csv (colunas id,nome_en,nome_pt,grupo_principal,
+# grupos_secundarios,equipamento,imagem,gif). O `id` do CSV vira `media_key`,
+# a chave que o app usa para achar a miniatura e a animação embutidas no APK.
+
+# Contribuição muscular: o CSV só diz qual é o grupo principal e quais são os
+# secundários, sem percentual. O principal fica com 70% e os secundários
+# dividem 30% em partes iguais; sem secundário, o principal fica com 100%.
+PRIMARY_CONTRIBUTION = 0.7
+
+# MET quando o exercício não está no dicionário do desktop: 5.0 é o mesmo
+# fallback que o cálculo de calorias já usa; peso corporal segue a faixa de
+# calistenia do desktop (7.5).
+DEFAULT_MET = 5.0
+BODYWEIGHT_MET = 7.5
+BODYWEIGHT_EQUIPMENT = "Peso corporal"
+
+# Alguns equipamentos vieram em inglês no CSV. O banco guarda sempre o rótulo
+# em PT; a tradução para EN é feita no app.
+_EQUIPMENT_PT_OVERRIDES = {
+    "weighted": "Com carga",
+    "wheel roller": "Roda abdominal",
+    "sled machine": "Máquina (trenó)",
+}
+
+
+@dataclass(frozen=True)
+class CatalogExercise:
+    id: str
+    name: str
+    name_en: str
+    equipment: str
+    media_key: str
+    primary_group: str
+    secondary_groups: tuple[str, ...]
+    met_value: float
+
+    def muscle_contributions(self) -> list[tuple[str, float]]:
+        """(grupo, contribuição) com soma 1 — regra 70/30."""
+        if not self.secondary_groups:
+            return [(self.primary_group, 1.0)]
+        share = round((1 - PRIMARY_CONTRIBUTION) / len(self.secondary_groups), 4)
+        return [(self.primary_group, PRIMARY_CONTRIBUTION)] + [
+            (group, share) for group in self.secondary_groups
+        ]
+
+
+def _normalize_equipment(raw: str) -> str:
+    value = raw.strip()
+    return _EQUIPMENT_PT_OVERRIDES.get(value.lower(), value)
+
+
+def _parse_secondary_groups(raw: str, primary: str) -> tuple[str, ...]:
+    groups: list[str] = []
+    for part in raw.split("/"):
+        group = part.strip()
+        if group and group != primary and group not in groups:
+            groups.append(group)
+    return tuple(groups)
+
+
+def parse_exercise_catalog_csv(
+    csv_path: Path = EXERCISE_CATALOG_CSV_PATH,
+) -> list[CatalogExercise]:
+    """
+    Lê o exercise_catalog.csv e devolve os exercícios na ordem do arquivo.
+
+    O id é o mesmo UUIDv5 de sempre, a partir do `nome_pt` normalizado — um
+    exercício antigo com o mesmo nome (sem acento/caixa) mantém o id.
+    Levanta ValueError se um grupo muscular for desconhecido ou se dois nomes
+    colidirem após a normalização.
+    """
+    path = Path(csv_path)
+    if not path.exists():
+        raise FileNotFoundError(f"Arquivo não encontrado: {path}")
+
+    exercises: list[CatalogExercise] = []
+    seen_ids: set[str] = set()
+
+    # utf-8-sig: o CSV vem com BOM.
+    with path.open(encoding="utf-8-sig", newline="") as f:
+        for row in csv.DictReader(f):
+            name = row["nome_pt"].strip()
+            primary = row["grupo_principal"].strip()
+            secondaries = _parse_secondary_groups(row["grupos_secundarios"], primary)
+            for group in (primary, *secondaries):
+                if group not in MUSCLE_GROUP_NAMES:
+                    raise ValueError(f"Grupo muscular desconhecido {group!r} em {name!r}")
+
+            exercise_id = exercise_id_for(name)
+            if exercise_id in seen_ids:
+                raise ValueError(f"Nome duplicado após normalização: {name!r}")
+            seen_ids.add(exercise_id)
+
+            equipment = _normalize_equipment(row["equipamento"])
+            met = met_value_for(name)
+            if met is None:
+                met = BODYWEIGHT_MET if equipment == BODYWEIGHT_EQUIPMENT else DEFAULT_MET
+
+            exercises.append(
+                CatalogExercise(
+                    id=exercise_id,
+                    name=name,
+                    name_en=row["nome_en"].strip(),
+                    equipment=equipment,
+                    media_key=row["id"].strip(),
+                    primary_group=primary,
+                    secondary_groups=secondaries,
+                    met_value=met,
+                )
+            )
+
+    return exercises

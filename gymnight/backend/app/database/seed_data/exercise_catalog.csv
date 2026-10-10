@@ -1,0 +1,501 @@
+﻿id,nome_en,nome_pt,grupo_principal,grupos_secundarios,equipamento,imagem,gif
+0025,Barbell Bench Press,Supino reto com barra,Peito,Tríceps / Ombros,Barra,images/0025-EIeI8Vf.jpg,videos/0025-EIeI8Vf.gif
+0033,Barbell Decline Bench Press,Supino declinado com barra,Peito,Tríceps / Ombros,Barra,images/0033-GrO65fd.jpg,videos/0033-GrO65fd.gif
+1255,Barbell Decline Pullover,Pullover declinado com barra,Peito,Tríceps / Ombros,Barra,images/1255-9sgNE2O.jpg,videos/1255-9sgNE2O.gif
+0036,Barbell Decline Wide-Grip Press,Supino declinado com pegada aberta,Peito,Tríceps / Ombros,Barra,images/0036-hl8DUh8.jpg,videos/0036-hl8DUh8.gif
+0047,Barbell Incline Bench Press,Supino inclinado com barra,Peito,Ombros / Tríceps,Barra,images/0047-3TZduzM.jpg,videos/0047-3TZduzM.gif
+1256,Barbell Reverse-Grip Decline Bench Press,Supino declinado com pegada invertida,Peito,Tríceps / Ombros,Barra,images/1256-DotAgEF.jpg,videos/1256-DotAgEF.gif
+1257,Barbell Reverse-Grip Incline Bench Press,Supino inclinado com pegada invertida,Peito,Tríceps / Ombros,Barra,images/1257-DU7I633.jpg,videos/1257-DU7I633.gif
+0122,Barbell Wide-Grip Bench Press,Supino com pegada aberta,Peito,Ombros / Tríceps,Barra,images/0122-JsKq9so.jpg,videos/0122-JsKq9so.gif
+1258,Barbell Wide Reverse-Grip Bench Press,Supino com pegada aberta invertida,Peito,Tríceps / Ombros,Barra,images/1258-945zpRg.jpg,videos/1258-945zpRg.gif
+0151,Cable Bench Press,Supino na polia,Peito,Tríceps / Ombros,Polia,images/0151-7xI5MXA.jpg,videos/0151-7xI5MXA.gif
+0155,Cable Crossover,Crossover na polia,Peito,Tríceps,Polia,images/0155-0CXGHya.jpg,videos/0155-0CXGHya.gif
+0158,Cable Decline Fly,Crucifixo declinado na polia,Peito,Ombros / Tríceps,Polia,images/0158-7saC5zz.jpg,videos/0158-7saC5zz.gif
+1261,Cable Decline Press,Supino declinado na polia,Peito,Tríceps / Ombros,Polia,images/1261-2Pya1cP.jpg,videos/1261-2Pya1cP.gif
+0169,Cable Incline Bench Press,Supino inclinado na polia,Peito,Tríceps,Polia,images/0169-Vh0GsK4.jpg,videos/0169-Vh0GsK4.gif
+0171,Cable Incline Fly,Crucifixo inclinado na polia,Peito,Tríceps,Polia,images/0171-tBWXbIT.jpg,videos/0171-tBWXbIT.gif
+0179,Cable Low Fly,Crucifixo baixo na polia,Peito,Tríceps,Polia,images/0179-FVmZVhk.jpg,videos/0179-FVmZVhk.gif
+0185,Cable Lying Fly,Crucifixo deitado na polia,Peito,Tríceps,Polia,images/0185-lJJ7Yq8.jpg,videos/0185-lJJ7Yq8.gif
+0188,Cable Middle Fly,Crucifixo médio na polia,Peito,Tríceps,Polia,images/0188-xLYSdtg.jpg,videos/0188-xLYSdtg.gif
+1262,Cable One-Arm Decline Fly,Crucifixo declinado unilateral na polia,Peito,Ombros / Tríceps,Polia,images/1262-w4dLzSx.jpg,videos/1262-w4dLzSx.gif
+1265,Cable One-Arm Incline Press,Supino inclinado unilateral na polia,Peito,Tríceps,Polia,images/1265-GKEH6jj.jpg,videos/1265-GKEH6jj.gif
+0191,Cable One-Arm Lateral Fly,Crucifixo lateral unilateral na polia,Peito,,Polia,images/0191-dB07vDu.jpg,videos/0191-dB07vDu.gif
+2144,Cable Seated Chest Press,Supino sentado na polia,Peito,Ombros / Tríceps,Polia,images/2144-nIR4Rwl.jpg,videos/2144-nIR4Rwl.gif
+0227,Cable Standing Fly,Crucifixo em pé na polia,Peito,Tríceps,Polia,images/0227-Pr9Rhf4.jpg,videos/0227-Pr9Rhf4.gif
+1269,Standing Cable Crossover,Crossover em pé na polia,Peito,Tríceps,Polia,images/1269-UKWTJWR.jpg,videos/1269-UKWTJWR.gif
+1270,Upper Cable Crossover,Crossover alto na polia,Peito,Tríceps,Polia,images/1270-j7XMAyn.jpg,videos/1270-j7XMAyn.gif
+0251,Chest Dip,Mergulho para peito,Peito,Tríceps / Ombros,Peso corporal,images/0251-9WTm7dq.jpg,videos/0251-9WTm7dq.gif
+2462,Chest Dip on Straight Bar,Mergulho em barra reta,Peito,Tríceps / Ombros,Peso corporal,images/2462-LQFOrMn.jpg,videos/2462-LQFOrMn.gif
+0279,Decline Push-Up,Flexão declinada,Peito,Tríceps / Ombros,Peso corporal,images/0279-i5cEhka.jpg,videos/0279-i5cEhka.gif
+0288,Dumbbell Around-the-World Pullover,Pullover ao redor com halter,Peito,Tríceps,Halter,images/0288-vi8EhoE.jpg,videos/0288-vi8EhoE.gif
+0289,Dumbbell Bench Press,Supino reto com halteres,Peito,Tríceps / Ombros,Halter,images/0289-SpYC0Kp.jpg,videos/0289-SpYC0Kp.gif
+0301,Dumbbell Decline Bench Press,Supino declinado com halteres,Peito,Tríceps / Ombros,Halter,images/0301-DwhEmmE.jpg,videos/0301-DwhEmmE.gif
+0302,Dumbbell Decline Fly,Crucifixo declinado com halteres,Peito,Ombros,Halter,images/0302-xXm4nYq.jpg,videos/0302-xXm4nYq.gif
+1276,Dumbbell Decline One-Arm Fly,Crucifixo declinado unilateral com halter,Peito,Ombros,Halter,images/1276-NL6YBwN.jpg,videos/1276-NL6YBwN.gif
+0308,Dumbbell Fly,Crucifixo com halteres,Peito,Ombros,Halter,images/0308-yz9nUhF.jpg,videos/0308-yz9nUhF.gif
+0314,Dumbbell Incline Bench Press,Supino inclinado com halteres,Peito,Ombros / Tríceps,Halter,images/0314-ns0SIbU.jpg,videos/0314-ns0SIbU.gif
+0319,Dumbbell Incline Fly,Crucifixo inclinado com halteres,Peito,Ombros,Halter,images/0319-ESOd5Pl.jpg,videos/0319-ESOd5Pl.gif
+0321,Dumbbell Incline Hammer Press,Supino inclinado pegada neutra com halteres,Peito,Ombros / Tríceps,Halter,images/0321-PG1kcIb.jpg,videos/0321-PG1kcIb.gif
+1285,Dumbbell One-Arm Bench Fly,Crucifixo unilateral com halter,Peito,Ombros,Halter,images/1285-o5Jsk92.jpg,videos/1285-o5Jsk92.gif
+1287,Dumbbell One-Arm Decline Press,Supino declinado unilateral com halter,Peito,Tríceps / Ombros,Halter,images/1287-REGM1dE.jpg,videos/1287-REGM1dE.gif
+1289,Dumbbell One-Arm Incline Press,Supino inclinado unilateral com halter,Peito,Ombros / Tríceps,Halter,images/1289-PDaMuyV.jpg,videos/1289-PDaMuyV.gif
+0375,Dumbbell Pullover,Pullover com halter,Peito,Tríceps,Halter,images/0375-9XjtHvS.jpg,videos/0375-9XjtHvS.gif
+0433,Dumbbell Straight-Arm Pullover,Pullover de braço estendido com halter,Peito,Tríceps,Halter,images/0433-i8BdLTK.jpg,videos/0433-i8BdLTK.gif
+0493,Incline Push-Up,Flexão inclinada,Peito,Tríceps / Ombros,Peso corporal,images/0493-B1EVP9F.jpg,videos/0493-B1EVP9F.gif
+0494,Incline Reverse-Grip Push-Up,Flexão inclinada com pegada invertida,Peito,Tríceps / Ombros,Peso corporal,images/0494-XaaRnRn.jpg,videos/0494-XaaRnRn.gif
+0576,Lever Chest Press,Supino na máquina,Peito,Tríceps / Ombros,Máquina,images/0576-DOoWcnA.jpg,videos/0576-DOoWcnA.gif
+1300,Lever Decline Chest Press,Supino declinado na máquina,Peito,Tríceps / Ombros,Máquina,images/1300-vsVoPHt.jpg,videos/1300-vsVoPHt.gif
+1299,Lever Incline Chest Press,Supino inclinado na máquina,Peito,Ombros / Tríceps,Máquina,images/1299-jHAnWmT.jpg,videos/1299-jHAnWmT.gif
+0596,Lever Seated Fly,Crucifixo na máquina (peck deck),Peito,,Máquina,images/0596-v3xmPAR.jpg,videos/0596-v3xmPAR.gif
+1301,Machine Inner Chest Press,Supino articulado na máquina,Peito,Tríceps / Ombros,Máquina,images/1301-wDN97Ca.jpg,videos/1301-wDN97Ca.gif
+0662,Push-Up,Flexão de braço,Peito,Tríceps,Peso corporal,images/0662-I4hDWkc.jpg,videos/0662-I4hDWkc.gif
+0725,Single-Arm Push-Up,Flexão unilateral,Peito,Tríceps / Ombros,Peso corporal,images/0725-MUic5zN.jpg,videos/0725-MUic5zN.gif
+0748,Smith Bench Press,Supino no Smith,Peito,Tríceps / Ombros,Smith,images/0748-trqKQv2.jpg,videos/0748-trqKQv2.gif
+0753,Smith Decline Bench Press,Supino declinado no Smith,Peito,Tríceps / Ombros,Smith,images/0753-ETZfAbZ.jpg,videos/0753-ETZfAbZ.gif
+0757,Smith Incline Bench Press,Supino inclinado no Smith,Peito,Ombros / Tríceps,Smith,images/0757-5v7KYld.jpg,videos/0757-5v7KYld.gif
+1308,Smith Wide-Grip Bench Press,Supino com pegada aberta no Smith,Peito,Tríceps / Ombros,Smith,images/1308-zoOvPcx.jpg,videos/1308-zoOvPcx.gif
+0806,Suspended Push-Up,Flexão suspensa,Peito,Tríceps / Ombros,Peso corporal,images/0806-IaGQCrC.jpg,videos/0806-IaGQCrC.gif
+1311,Wide-Hand Push-Up,Flexão com pegada aberta,Peito,Tríceps / Ombros,Peso corporal,images/1311-JmMVpR3.jpg,videos/1311-JmMVpR3.gif
+2363,Wide-Grip Chest Dip,Mergulho com pegada aberta,Peito,Tríceps / Ombros,Peso corporal,images/2363-O2K9Vb5.jpg,videos/2363-O2K9Vb5.gif
+1018,Band Shrug,Encolhimento com elástico,Costas,Ombros,Elástico,images/1018-trmte8s.jpg,videos/1018-trmte8s.gif
+1316,Barbell Bent-Arm Pullover,Pullover de braço flexionado com barra,Costas,Tríceps,Barra,images/1316-cA9FuWG.jpg,videos/1316-cA9FuWG.gif
+0027,Barbell Bent-Over Row,Remada curvada com barra,Costas,Bíceps,Barra,images/0027-eZyBC3j.jpg,videos/0027-eZyBC3j.gif
+0049,Barbell Incline Row,Remada inclinada com barra,Costas,Bíceps,Barra,images/0049-dmgMp3n.jpg,videos/0049-dmgMp3n.gif
+0064,Barbell One-Arm Bent-Over Row,Remada curvada unilateral com barra,Costas,Bíceps,Barra,images/0064-Jsgsc27.jpg,videos/0064-Jsgsc27.gif
+3017,Barbell Pendlay Row,Remada Pendlay,Costas,Bíceps,Barra,images/3017-r0z6xzQ.jpg,videos/3017-r0z6xzQ.gif
+0073,Barbell Pullover,Pullover com barra,Costas,Tríceps,Barra,images/0073-i6LWjok.jpg,videos/0073-i6LWjok.gif
+0022,Barbell Pullover to Press,Pullover e supino com barra,Costas,Tríceps / Ombros,Barra,images/0022-znLogoF.jpg,videos/0022-znLogoF.gif
+0118,Barbell Reverse-Grip Bent-Over Row,Remada curvada com pegada supinada,Costas,Bíceps,Barra,images/0118-SzX3uzM.jpg,videos/0118-SzX3uzM.gif
+1317,Barbell Reverse-Grip Incline Row,Remada inclinada com pegada supinada,Costas,Bíceps,Barra,images/1317-8d8qJQI.jpg,videos/1317-8d8qJQI.gif
+0095,Barbell Shrug,Encolhimento com barra,Costas,Ombros,Barra,images/0095-dG7tG5y.jpg,videos/0095-dG7tG5y.gif
+3156,One-Arm Close-Grip Bodyweight Row,Remada unilateral pegada fechada no peso corporal,Costas,Bíceps,Peso corporal,images/3156-v2DfH14.jpg,videos/3156-v2DfH14.gif
+3158,Close-Grip Bodyweight Row,Remada pegada fechada no peso corporal,Costas,Bíceps,Peso corporal,images/3158-tig3PXb.jpg,videos/3158-tig3PXb.gif
+3162,One-Arm Bodyweight Row,Remada unilateral no peso corporal,Costas,Bíceps,Peso corporal,images/3162-xbkPfaw.jpg,videos/3162-xbkPfaw.gif
+3166,Bodyweight Row,Remada no peso corporal,Costas,Bíceps / Ombros,Peso corporal,images/3166-wd4ds3s.jpg,videos/3166-wd4ds3s.gif
+0150,Cable Bar Lateral Pulldown,Puxada com barra na polia,Costas,Bíceps,Polia,images/0150-eYnzaCm.jpg,videos/0150-eYnzaCm.gif
+0167,Kneeling High Cable Row,Remada alta ajoelhado na polia,Costas,Bíceps / Ombros,Polia,images/0167-ZSJNetl.jpg,videos/0167-ZSJNetl.gif
+1318,Cable Incline Bench Row,Remada inclinada na polia,Costas,Bíceps,Polia,images/1318-yaMIo4D.jpg,videos/1318-yaMIo4D.gif
+2330,Cable Lat Pulldown,Puxada na polia (dorsal),Costas,Bíceps,Polia,images/2330-LEprlgG.jpg,videos/2330-LEprlgG.gif
+0177,Rope Lat Pulldown,Puxada com corda na polia,Costas,Bíceps,Polia,images/0177-CuaWCmC.jpg,videos/0177-CuaWCmC.gif
+2616,V-Bar Lat Pulldown,Puxada com triângulo na polia,Costas,Bíceps,Polia,images/2616-4c9BhzB.jpg,videos/2616-4c9BhzB.gif
+0180,Cable Low Seated Row,Remada baixa na polia,Costas,Bíceps,Polia,images/0180-hvV79Si.jpg,videos/0180-hvV79Si.gif
+0184,Rope Cable Pullover,Pullover com corda na polia,Costas,Tríceps / Ombros,Polia,images/0184-Q2Eu1Ax.jpg,videos/0184-Q2Eu1Ax.gif
+0189,One-Arm Cable Row,Remada unilateral na polia,Costas,Bíceps,Polia,images/0189-EIsE3u8.jpg,videos/0189-EIsE3u8.gif
+3563,One-Arm Cable Pulldown,Puxada unilateral na polia,Costas,Bíceps,Polia,images/3563-U5INZY6.jpg,videos/3563-U5INZY6.gif
+0198,Cable Front Pulldown,Puxada frontal na polia,Costas,Bíceps,Polia,images/0198-RVwzP10.jpg,videos/0198-RVwzP10.gif
+0197,Wide-Grip Lat Bar Pulldown,Puxada com pegada aberta na polia,Costas,Bíceps,Polia,images/0197-qdRxqCj.jpg,videos/0197-qdRxqCj.gif
+0205,Cable Rear Pulldown,Puxada por trás na polia,Costas,Bíceps,Polia,images/0205-SpsOSXk.jpg,videos/0205-SpsOSXk.gif
+0208,Cable Reverse-Grip Seated Row,Remada sentada com pegada supinada na polia,Costas,Bíceps,Polia,images/0208-PNtsX17.jpg,videos/0208-PNtsX17.gif
+1321,Rope Elevated Seated Row,Remada sentada elevada com corda na polia,Costas,Bíceps,Polia,images/1321-c8oybX6.jpg,videos/1321-c8oybX6.gif
+1323,Rope Seated Row,Remada sentada com corda na polia,Costas,Bíceps,Polia,images/1323-SJqRxOt.jpg,videos/1323-SJqRxOt.gif
+0213,V-Bar Seated Row,Remada alta com triângulo na polia,Costas,Bíceps,Polia,images/0213-pwt0pnM.jpg,videos/0213-pwt0pnM.gif
+0861,Cable Seated Row,Remada sentada na polia,Costas,Bíceps,Polia,images/0861-fUBheHs.jpg,videos/0861-fUBheHs.gif
+0218,Wide-Grip Seated Cable Row,Remada sentada com pegada aberta na polia,Costas,Bíceps,Polia,images/0218-qcY50ZD.jpg,videos/0218-qcY50ZD.gif
+0220,Cable Shrug,Encolhimento na polia,Costas,Ombros,Polia,images/0220-Eg98Ft9.jpg,videos/0220-Eg98Ft9.gif
+1717,Cable Squat Row,Remada agachada na polia,Costas,Bíceps,Polia,images/1717-f7fnAIB.jpg,videos/1717-f7fnAIB.gif
+0234,V-Bar Standing Row,Remada em pé com triângulo na polia,Costas,Bíceps / Ombros,Polia,images/0234-4f8RXP8.jpg,videos/0234-4f8RXP8.gif
+0238,Straight-Arm Cable Pulldown,Pulldown de braço estendido na polia,Costas,Ombros / Bíceps,Polia,images/0238-x69MAlq.jpg,videos/0238-x69MAlq.gif
+0239,Straight-Back Seated Cable Row,Remada sentada com costas retas na polia,Costas,Bíceps / Ombros,Polia,images/0239-Tq6gbK6.jpg,videos/0239-Tq6gbK6.gif
+0245,Underhand Cable Pulldown,Puxada supinada na polia,Costas,Bíceps,Polia,images/0245-xBYcQHj.jpg,videos/0245-xBYcQHj.gif
+1324,Cable Upper Row,Remada alta na polia,Costas,Bíceps / Ombros,Polia,images/1324-PQStVXH.jpg,videos/1324-PQStVXH.gif
+1325,Behind-the-Neck Cable Pulldown,Puxada atrás da nuca na polia,Costas,Bíceps,Polia,images/1325-CmEr4pM.jpg,videos/1325-CmEr4pM.gif
+1326,Chin-Up,Barra fixa supinada,Costas,Bíceps,Peso corporal,images/1326-T2mxWqc.jpg,videos/1326-T2mxWqc.gif
+0253,Parallel-Grip Chin-Up,Barra fixa supinada com pegada paralela,Costas,Bíceps,Peso corporal,images/0253-G70mEAJ.jpg,videos/0253-G70mEAJ.gif
+1327,Close-Grip Chin-Up,Barra fixa supinada com pegada fechada,Costas,Bíceps,Peso corporal,images/1327-VnfUNW7.jpg,videos/1327-VnfUNW7.gif
+0293,Dumbbell Bent-Over Row,Remada curvada com halteres,Costas,Bíceps,Halter,images/0293-BJ0Hz5L.jpg,videos/0293-BJ0Hz5L.gif
+0305,Dumbbell Decline Shrug,Encolhimento declinado com halteres,Costas,Ombros,Halter,images/0305-cwsAI4G.jpg,videos/0305-cwsAI4G.gif
+0327,Dumbbell Incline Row,Remada inclinada com halteres,Costas,Bíceps / Ombros,Halter,images/0327-7vG5o25.jpg,videos/0327-7vG5o25.gif
+0329,Dumbbell Incline Shrug,Encolhimento inclinado com halteres,Costas,Ombros,Halter,images/0329-JymLInS.jpg,videos/0329-JymLInS.gif
+1328,Dumbbell Lying Rear Row,Remada posterior deitado com halteres,Costas,Ombros / Bíceps,Halter,images/1328-XUUD0Fs.jpg,videos/1328-XUUD0Fs.gif
+0292,One-Arm Dumbbell Row,Remada unilateral com halter,Costas,Bíceps,Halter,images/0292-C0MA9bC.jpg,videos/0292-C0MA9bC.gif
+1329,Dumbbell Palm-Rotational Row,Remada com rotação de punho com halteres,Costas,Bíceps,Halter,images/1329-wt6rwjk.jpg,videos/1329-wt6rwjk.gif
+1330,Dumbbell One-Arm Incline Row,Remada inclinada unilateral com halter,Costas,Bíceps / Ombros,Halter,images/1330-ZIViNh1.jpg,videos/1330-ZIViNh1.gif
+1331,Dumbbell Two-Arm Incline Row,Remada inclinada com halteres no banco,Costas,Bíceps,Halter,images/1331-9pQSkH8.jpg,videos/1331-9pQSkH8.gif
+0406,Dumbbell Shrug,Encolhimento com halteres,Costas,Ombros,Halter,images/0406-NJzBsGJ.jpg,videos/0406-NJzBsGJ.gif
+0489,Hyperextension,Hiperextensão lombar,Costas,Pernas,Peso corporal,images/0489-zhMwOwE.jpg,videos/0489-zhMwOwE.gif
+0499,Inverted Row,Remada invertida,Costas,Bíceps,Peso corporal,images/0499-bZGHsAZ.jpg,videos/0499-bZGHsAZ.gif
+0522,Kettlebell Alternating Row,Remada alternada com kettlebell,Costas,Bíceps,Kettlebell,images/0522-Ca76jUE.jpg,videos/0522-Ca76jUE.gif
+0541,One-Arm Kettlebell Row,Remada unilateral com kettlebell,Costas,Bíceps,Kettlebell,images/0541-g9AsZ8P.jpg,videos/0541-g9AsZ8P.gif
+0548,Kettlebell Sumo High Pull,Sumo high pull com kettlebell,Costas,Ombros / Pernas,Kettlebell,images/0548-8ARQ9Hw.jpg,videos/0548-8ARQ9Hw.gif
+0571,Lever Alternating Narrow-Grip Row,Remada alternada com pegada fechada na máquina,Costas,Bíceps,Máquina,images/0571-w2oRpuH.jpg,videos/0571-w2oRpuH.gif
+0573,Lever Back Extension,Extensão lombar na máquina,Costas,Pernas,Máquina,images/0573-rUXfn3R.jpg,videos/0573-rUXfn3R.gif
+3200,Lever V-Bar Bent-Over Row,Remada curvada com triângulo na máquina,Costas,Bíceps,Máquina,images/3200-LuBEORI.jpg,videos/3200-LuBEORI.gif
+0579,Lever Front Pulldown,Puxada frontal na máquina,Costas,Bíceps,Máquina,images/0579-7F1DVzn.jpg,videos/0579-7F1DVzn.gif
+0580,Lever Gripless Shrug,Encolhimento sem pegada na máquina,Costas,Ombros,Máquina,images/0580-f91FwXG.jpg,videos/0580-f91FwXG.gif
+0581,Lever High Row,Remada alta na máquina,Costas,Bíceps,Máquina,images/0581-nZZZy9m.jpg,videos/0581-nZZZy9m.gif
+0588,Lever Narrow-Grip Seated Row,Remada sentada com pegada fechada na máquina,Costas,Bíceps,Máquina,images/0588-IGjKj1v.jpg,videos/0588-IGjKj1v.gif
+1347,Lever One-Arm Wide Pulldown,Puxada unilateral com pegada aberta na máquina,Costas,Bíceps,Máquina,images/1347-tTuZSDT.jpg,videos/1347-tTuZSDT.gif
+2285,Lever Pullover,Pullover na máquina,Costas,Tríceps / Ombros,Máquina,images/2285-4U7iLb5.jpg,videos/2285-4U7iLb5.gif
+1348,Lever Reverse-Grip Vertical Row,Remada vertical com pegada supinada na máquina,Costas,Bíceps,Máquina,images/1348-ZqNOWQ6.jpg,videos/1348-ZqNOWQ6.gif
+1350,Lever Seated Row,Remada sentada na máquina,Costas,Bíceps,Máquina,images/1350-7I6LNUG.jpg,videos/1350-7I6LNUG.gif
+0604,Lever Shrug,Encolhimento na máquina,Costas,Ombros,Máquina,images/0604-ZZKbeMw.jpg,videos/0604-ZZKbeMw.gif
+0606,Lever T-Bar Row,Remada T na máquina,Costas,Bíceps,Máquina,images/0606-aaXr7ld.jpg,videos/0606-aaXr7ld.gif
+1351,Lever Reverse-Grip T-Bar Row,Remada T com pegada supinada na máquina,Costas,Bíceps,Máquina,images/1351-FVM1AUZ.jpg,videos/1351-FVM1AUZ.gif
+1313,Lever Unilateral Row,Remada unilateral na máquina,Costas,Bíceps,Máquina,images/1313-oROuvrX.jpg,videos/1313-oROuvrX.gif
+1352,Lower Back Curl,Curl lombar,Costas,Pernas,Peso corporal,images/1352-ANbbry2.jpg,videos/1352-ANbbry2.gif
+0627,Mixed-Grip Chin-Up,Barra fixa com pegada mista,Costas,Bíceps,Peso corporal,images/0627-T8UpLkb.jpg,videos/0627-T8UpLkb.gif
+0638,One-Arm Chin-Up,Barra fixa supinada unilateral,Costas,Bíceps,Peso corporal,images/0638-HjdqmZa.jpg,videos/0638-HjdqmZa.gif
+0651,Neutral-Grip Pull-Up,Barra fixa com pegada neutra,Costas,Bíceps,Peso corporal,images/0651-0V2YQjW.jpg,videos/0651-0V2YQjW.gif
+0652,Pull-Up,Barra fixa,Costas,Bíceps,Peso corporal,images/0652-lBDjFxJ.jpg,videos/0652-lBDjFxJ.gif
+0670,Rear Pull-Up,Barra fixa por trás,Costas,Bíceps,Peso corporal,images/0670-CbFSYC1.jpg,videos/0670-CbFSYC1.gif
+3144,Band Seated Straight-Back Row,Remada sentada com elástico,Costas,Bíceps / Ombros,Elástico,images/3144-Nu7jqFE.jpg,videos/3144-Nu7jqFE.gif
+0673,Reverse-Grip Lat Pulldown,Puxada supinada na máquina,Costas,Bíceps,Máquina,images/0673-ecpY0rH.jpg,videos/0673-ecpY0rH.gif
+0674,Reverse-Grip Pull-Up,Barra fixa com pegada supinada,Costas,Bíceps,Peso corporal,images/0674-YAk5dIw.jpg,videos/0674-YAk5dIw.gif
+0746,Smith Back Shrug,Encolhimento costas no Smith,Costas,Ombros,Smith,images/0746-MzNnwx9.jpg,videos/0746-MzNnwx9.gif
+1359,Smith Bent-Over Row,Remada curvada no Smith,Costas,Bíceps,Smith,images/1359-ZX9UZmj.jpg,videos/1359-ZX9UZmj.gif
+0761,Smith Narrow-Grip Row,Remada com pegada fechada no Smith,Costas,Bíceps,Smith,images/0761-JGKowMS.jpg,videos/0761-JGKowMS.gif
+1360,Smith One-Arm Row,Remada unilateral no Smith,Costas,Bíceps,Smith,images/1360-Q4DSJPC.jpg,videos/1360-Q4DSJPC.gif
+1361,Smith Reverse-Grip Bent-Over Row,Remada curvada com pegada supinada no Smith,Costas,Bíceps,Smith,images/1361-aaxA3cm.jpg,videos/1361-aaxA3cm.gif
+0767,Smith Shrug,Encolhimento no Smith,Costas,Ombros,Smith,images/0767-OUQ0ZyW.jpg,videos/0767-OUQ0ZyW.gif
+0808,Suspended Row,Remada suspensa (TRX),Costas,Bíceps / Ombros,Peso corporal,images/0808-4OaumBr.jpg,videos/0808-4OaumBr.gif
+0818,Parallel-Grip Lat Pulldown,Puxada com pegada paralela na polia,Costas,Bíceps,Polia,images/0818-rkg41Fb.jpg,videos/0818-rkg41Fb.gif
+0841,Weighted Pull-Up,Barra fixa com peso,Costas,Bíceps,weighted,images/0841-HMzLjXx.jpg,videos/0841-HMzLjXx.gif
+1429,Wide-Grip Pull-Up,Barra fixa com pegada aberta,Costas,Bíceps,Peso corporal,images/1429-Qqi7bko.jpg,videos/1429-Qqi7bko.gif
+1367,Wide-Grip Rear Pull-Up,Barra fixa com pegada aberta por trás,Costas,Bíceps,Peso corporal,images/1367-OYFhXVD.jpg,videos/1367-OYFhXVD.gif
+0977,Band Lateral Raise,Elevação lateral com elástico,Ombros,Costas,Elástico,images/0977-sTg7iys.jpg,videos/0977-sTg7iys.gif
+0978,Band Front Raise,Elevação frontal com elástico,Ombros,Tríceps / Costas,Elástico,images/0978-TFA88iB.jpg,videos/0978-TFA88iB.gif
+0993,Band Reverse Fly,Crucifixo inverso com elástico,Ombros,Costas,Elástico,images/0993-sTfvVsG.jpg,videos/0993-sTfvVsG.gif
+0997,Band Shoulder Press,Desenvolvimento com elástico,Ombros,Tríceps / Costas,Elástico,images/0997-peAeMR3.jpg,videos/0997-peAeMR3.gif
+1022,Band Rear Delt Row,Remada posterior com elástico,Ombros,Bíceps,Elástico,images/1022-tc5dYrf.jpg,videos/1022-tc5dYrf.gif
+0041,Barbell Front Raise,Elevação frontal com barra,Ombros,Bíceps / Tríceps,Barra,images/0041-b2Uoz54.jpg,videos/0041-b2Uoz54.gif
+0086,Behind-the-Neck Barbell Press,Desenvolvimento atrás da nuca com barra,Ombros,Tríceps / Costas,Barra,images/0086-ngPpyRS.jpg,videos/0086-ngPpyRS.gif
+0091,Barbell Overhead Press,Desenvolvimento com barra,Ombros,Tríceps / Costas,Barra,images/0091-kTbSH9h.jpg,videos/0091-kTbSH9h.gif
+1456,Close-Grip Barbell Military Press,Desenvolvimento militar com pegada fechada,Ombros,Tríceps / Costas,Barra,images/1456-wdRZISl.jpg,videos/1456-wdRZISl.gif
+1457,Wide-Grip Barbell Military Press,Desenvolvimento militar com pegada aberta,Ombros,Tríceps / Costas,Barra,images/1457-Kyd9Rz5.jpg,videos/1457-Kyd9Rz5.gif
+0120,Barbell Upright Row,Remada alta com barra,Ombros,Costas / Bíceps,Barra,images/0120-UDlhcO8.jpg,videos/0120-UDlhcO8.gif
+0162,Cable Front Raise,Elevação frontal na polia,Ombros,Tríceps,Polia,images/0162-u2X71Np.jpg,videos/0162-u2X71Np.gif
+0164,Single-Arm Cable Front Raise,Elevação frontal unilateral na polia,Ombros,Bíceps,Polia,images/0164-mTT3KLn.jpg,videos/0164-mTT3KLn.gif
+0178,Cable Lateral Raise,Elevação lateral na polia,Ombros,Costas / Tríceps,Polia,images/0178-goJ6ezq.jpg,videos/0178-goJ6ezq.gif
+0203,Rope Cable Rear Delt Row,Remada posterior com corda na polia,Ombros,Bíceps,Polia,images/0203-wqNPGCg.jpg,videos/0203-wqNPGCg.gif
+0219,Cable Shoulder Press,Desenvolvimento na polia,Ombros,Tríceps / Costas,Polia,images/0219-PzQanLE.jpg,videos/0219-PzQanLE.gif
+0225,Cable High Reverse Fly,Crucifixo inverso alto na polia,Ombros,,Polia,images/0225-P5p0j8B.jpg,videos/0225-P5p0j8B.gif
+0233,Standing Cable Rear Delt Row,Remada posterior em pé na polia,Ombros,Bíceps,Polia,images/0233-ZfyAGhK.jpg,videos/0233-ZfyAGhK.gif
+0235,Cable External Rotation,Rotação externa na polia,Ombros,,Polia,images/0235-FWdVhcW.jpg,videos/0235-FWdVhcW.gif
+0240,Cable Supine Reverse Fly,Crucifixo inverso deitado na polia,Ombros,,Polia,images/0240-PQcUlDi.jpg,videos/0240-PQcUlDi.gif
+0246,Cable Upright Row,Remada vertical na polia,Ombros,Costas / Bíceps,Polia,images/0246-cALKspW.jpg,videos/0246-cALKspW.gif
+0286,Dumbbell Alternating Press,Desenvolvimento alternado com halteres,Ombros,Tríceps,Halter,images/0286-izMnLqz.jpg,videos/0286-izMnLqz.gif
+2137,Arnold Press,Desenvolvimento Arnold com halteres,Ombros,Tríceps,Halter,images/2137-Xy4jlWA.jpg,videos/2137-Xy4jlWA.gif
+0299,Cuban Press,Desenvolvimento cubano com halteres,Ombros,Tríceps / Costas,Halter,images/0299-QfAKy1G.jpg,videos/0299-QfAKy1G.gif
+0310,Dumbbell Front Raise,Elevação frontal com halteres,Ombros,Bíceps,Halter,images/0310-3eGE2JC.jpg,videos/0310-3eGE2JC.gif
+0311,Dumbbell Full Can Raise,Elevação lateral com rotação e halteres,Ombros,Costas,Halter,images/0311-AQ0mC4Y.jpg,videos/0311-AQ0mC4Y.gif
+0323,Incline One-Arm Lateral Raise,Elevação lateral inclinada unilateral com halter,Ombros,Tríceps,Halter,images/0323-aTNKZiC.jpg,videos/0323-aTNKZiC.gif
+0326,Incline Rear Lateral Raise,Elevação posterior inclinada com halteres,Ombros,Costas,Halter,images/0326-vYk8lqw.jpg,videos/0326-vYk8lqw.gif
+0334,Dumbbell Lateral Raise,Elevação lateral com halteres,Ombros,Costas,Halter,images/0334-DsgkuIt.jpg,videos/0334-DsgkuIt.gif
+0335,Lateral-to-Front Raise,Elevação lateral para frontal com halteres,Ombros,Bíceps,Halter,images/0335-xMjBKwn.jpg,videos/0335-xMjBKwn.gif
+0863,Dumbbell External Rotation,Rotação externa deitado com halter,Ombros,Tríceps,Halter,images/0863-bmBf7LN.jpg,videos/0863-bmBf7LN.gif
+0345,One-Arm Lying Rear Lateral Raise,Elevação posterior unilateral deitado com halter,Ombros,Costas,Halter,images/0345-KwFGiEP.jpg,videos/0345-KwFGiEP.gif
+0348,Lying Rear Lateral Raise,Elevação posterior deitado com halteres,Ombros,Costas,Halter,images/0348-53Ttlck.jpg,videos/0348-53Ttlck.gif
+0355,One-Arm Lateral Raise,Elevação lateral unilateral com halter,Ombros,Tríceps,Halter,images/0355-n5cWCsI.jpg,videos/0355-n5cWCsI.gif
+0361,One-Arm Dumbbell Shoulder Press,Desenvolvimento unilateral com halter,Ombros,Tríceps / Costas,Halter,images/0361-84RyJf8.jpg,videos/0361-84RyJf8.gif
+0363,One-Arm Dumbbell Upright Row,Remada alta unilateral com halter,Ombros,Costas / Bíceps,Halter,images/0363-6cKQC5E.jpg,videos/0363-6cKQC5E.gif
+1700,Dumbbell Push Press,Push press com halteres,Ombros,Tríceps,Halter,images/1700-FS63wTN.jpg,videos/1700-FS63wTN.gif
+2292,Dumbbell Rear Delt Raise,Elevação posterior de deltoide com halteres,Ombros,,Halter,images/2292-mu5Guxt.jpg,videos/2292-mu5Guxt.gif
+0378,Dumbbell Rear Fly,Crucifixo inverso em pé com halteres,Ombros,,Halter,images/0378-8DiFDVA.jpg,videos/0378-8DiFDVA.gif
+0380,Dumbbell Rear Lateral Raise,Elevação posterior com halteres,Ombros,Costas,Halter,images/0380-v1qBec9.jpg,videos/0380-v1qBec9.gif
+0383,Seated Dumbbell Reverse Fly,Crucifixo inverso sentado com halteres,Ombros,,Halter,images/0383-EAs3xL9.jpg,videos/0383-EAs3xL9.gif
+0388,Seated Alternating Press,Desenvolvimento sentado alternado com halteres,Ombros,Tríceps,Halter,images/0388-QT5Q0nK.jpg,videos/0388-QT5Q0nK.gif
+0392,Seated Dumbbell Front Raise,Elevação frontal sentado com halteres,Ombros,Bíceps,Halter,images/0392-Ys97II0.jpg,videos/0392-Ys97II0.gif
+0396,Seated Dumbbell Lateral Raise,Elevação lateral sentado com halteres,Ombros,Costas,Halter,images/0396-hxyTtWj.jpg,videos/0396-hxyTtWj.gif
+0405,Seated Dumbbell Shoulder Press,Desenvolvimento sentado com halteres,Ombros,Tríceps / Costas,Halter,images/0405-znQUdHY.jpg,videos/0405-znQUdHY.gif
+0404,Parallel-Grip Seated Dumbbell Press,Desenvolvimento sentado com pegada neutra e halteres,Ombros,Tríceps / Costas,Halter,images/0404-f1jf47L.jpg,videos/0404-f1jf47L.gif
+0414,Alternating Dumbbell Overhead Press,Desenvolvimento alternado em pé com halteres,Ombros,Tríceps,Halter,images/0414-bBi35y3.jpg,videos/0414-bBi35y3.gif
+0415,Alternating Dumbbell Raise,Elevação alternada com halteres,Ombros,Costas,Halter,images/0415-SxHteRW.jpg,videos/0415-SxHteRW.gif
+0419,Dumbbell Front Raise Overhead,Elevação frontal acima da cabeça com halteres,Ombros,Bíceps,Halter,images/0419-laVRfDf.jpg,videos/0419-laVRfDf.gif
+0426,Standing Dumbbell Overhead Press,Desenvolvimento em pé com halteres,Ombros,Tríceps / Costas,Halter,images/0426-A6wtbuL.jpg,videos/0426-A6wtbuL.gif
+0427,Palms-In Dumbbell Press,Desenvolvimento com palmas para dentro e halteres,Ombros,Tríceps,Halter,images/0427-UilDHSs.jpg,videos/0427-UilDHSs.gif
+0437,Dumbbell Upright Row,Remada alta com halteres,Ombros,Costas / Bíceps,Halter,images/0437-ainizkb.jpg,videos/0437-ainizkb.gif
+0864,Upright Dumbbell External Rotation,Rotação externa em pé com halter,Ombros,,Halter,images/0864-x306lCW.jpg,videos/0864-x306lCW.gif
+0438,Dumbbell W-Press,Desenvolvimento em W com halteres,Ombros,Tríceps,Halter,images/0438-vmwLyCg.jpg,videos/0438-vmwLyCg.gif
+0520,Kettlebell Alternating Press,Desenvolvimento alternado com kettlebell,Ombros,Tríceps,Kettlebell,images/0520-5KLbZWx.jpg,videos/0520-5KLbZWx.gif
+0523,Kettlebell Arnold Press,Desenvolvimento Arnold com kettlebell,Ombros,Tríceps / Costas,Kettlebell,images/0523-UM8mgyG.jpg,videos/0523-UM8mgyG.gif
+0546,Kettlebell Seated Press,Desenvolvimento sentado com kettlebell,Ombros,Tríceps,Kettlebell,images/0546-BkxB8LW.jpg,videos/0546-BkxB8LW.gif
+0553,Kettlebell Military Press,Desenvolvimento militar com kettlebell,Ombros,Tríceps / Costas,Kettlebell,images/0553-blBXysN.jpg,videos/0553-blBXysN.gif
+0584,Lever Lateral Raise,Elevação lateral na máquina,Ombros,Costas,Máquina,images/0584-dRTfGZT.jpg,videos/0584-dRTfGZT.gif
+0590,Lever One-Arm Shoulder Press,Desenvolvimento unilateral na máquina,Ombros,Tríceps / Costas,Máquina,images/0590-2KGnL6M.jpg,videos/0590-2KGnL6M.gif
+0602,Lever Reverse Fly,Crucifixo inverso na máquina,Ombros,,Máquina,images/0602-myfUsKf.jpg,videos/0602-myfUsKf.gif
+0603,Lever Shoulder Press,Desenvolvimento na máquina,Ombros,Tríceps,Máquina,images/0603-67n3r98.jpg,videos/0603-67n3r98.gif
+3122,Band Seated Shoulder Press,Desenvolvimento sentado com elástico,Ombros,Tríceps / Costas,Elástico,images/3122-S93zLTG.jpg,videos/3122-S93zLTG.gif
+0747,Smith Behind-the-Neck Press,Desenvolvimento atrás da nuca no Smith,Ombros,Tríceps / Costas,Smith,images/0747-Gpn4ADc.jpg,videos/0747-Gpn4ADc.gif
+0762,Smith Rear Delt Row,Remada posterior no Smith,Ombros,Bíceps,Smith,images/0762-nFUwqG6.jpg,videos/0762-nFUwqG6.gif
+0765,Smith Seated Shoulder Press,Desenvolvimento sentado no Smith,Ombros,Tríceps / Costas,Smith,images/0765-xUwnBMT.jpg,videos/0765-xUwnBMT.gif
+0766,Smith Shoulder Press,Desenvolvimento no Smith,Ombros,Tríceps / Costas,Smith,images/0766-903mzG8.jpg,videos/0766-903mzG8.gif
+0772,Smith Behind-the-Head Military Press,Desenvolvimento militar atrás da cabeça no Smith,Ombros,Tríceps / Costas,Smith,images/0772-ht8xDrP.jpg,videos/0772-ht8xDrP.gif
+0774,Smith Military Press,Desenvolvimento militar no Smith,Ombros,Tríceps / Costas,Smith,images/0774-jjUPrze.jpg,videos/0774-jjUPrze.gif
+0775,Smith Upright Row,Remada alta no Smith,Ombros,Costas / Bíceps,Smith,images/0775-1DN3iz4.jpg,videos/0775-1DN3iz4.gif
+0968,Band Alternating Curl,Rosca alternada com elástico,Bíceps,,Elástico,images/0968-3omWx6P.jpg,videos/0968-3omWx6P.gif
+0976,Band Concentration Curl,Rosca concentrada com elástico,Bíceps,,Elástico,images/0976-kmVVAfu.jpg,videos/0976-kmVVAfu.gif
+0986,Band Overhead Curl,Rosca unilateral acima da cabeça com elástico,Bíceps,Ombros,Elástico,images/0986-UNAB8ak.jpg,videos/0986-UNAB8ak.gif
+0031,Barbell Curl,Rosca direta com barra,Bíceps,,Barra,images/0031-25GPyDY.jpg,videos/0031-25GPyDY.gif
+0038,Barbell Drag Curl,Rosca arrasto com barra,Bíceps,,Barra,images/0038-IENzBdA.jpg,videos/0038-IENzBdA.gif
+0059,Lying Barbell Preacher Curl,Rosca Scott deitado com barra,Bíceps,,Barra,images/0059-SYJ4Bkt.jpg,videos/0059-SYJ4Bkt.gif
+0070,Barbell Preacher Curl,Rosca Scott com barra,Bíceps,,Barra,images/0070-qOgPVf6.jpg,videos/0070-qOgPVf6.gif
+0080,Barbell Reverse Curl,Rosca invertida com barra,Bíceps,,Barra,images/0080-xNrS20v.jpg,videos/0080-xNrS20v.gif
+0081,Barbell Reverse Preacher Curl,Rosca Scott invertida com barra,Bíceps,,Barra,images/0081-4LIG9xr.jpg,videos/0081-4LIG9xr.gif
+0089,Seated Close-Grip Barbell Concentration Curl,Rosca concentrada sentado com pegada fechada e barra,Bíceps,,Barra,images/0089-1V1gj1u.jpg,videos/0089-1V1gj1u.gif
+0106,Close-Grip Barbell Curl,Rosca direta com pegada fechada e barra,Bíceps,,Barra,images/0106-4dUn2iv.jpg,videos/0106-4dUn2iv.gif
+0110,Standing Reverse-Grip Barbell Curl,Rosca invertida em pé com barra,Bíceps,,Barra,images/0110-LWuA3aZ.jpg,videos/0110-LWuA3aZ.gif
+0113,Wide-Grip Barbell Curl,Rosca direta com pegada aberta e barra,Bíceps,Ombros,Barra,images/0113-NdIb5Z1.jpg,videos/0113-NdIb5Z1.gif
+1631,Cable Concentration Curl,Rosca concentrada na polia,Bíceps,,Polia,images/1631-NvfE43H.jpg,videos/1631-NvfE43H.gif
+0868,Cable Curl,Rosca direta na polia,Bíceps,,Polia,images/0868-G08RZcQ.jpg,videos/0868-G08RZcQ.gif
+0165,Rope Hammer Cable Curl,Rosca martelo com corda na polia,Bíceps,,Polia,images/0165-HPlPoQA.jpg,videos/0165-HPlPoQA.gif
+0182,Lying Close-Grip Cable Curl,Rosca deitado com pegada fechada na polia,Bíceps,,Polia,images/0182-61GrD55.jpg,videos/0182-61GrD55.gif
+0190,One-Arm Cable Curl,Rosca unilateral na polia,Bíceps,,Polia,images/0190-YTur5nR.jpg,videos/0190-YTur5nR.gif
+1636,Overhead Cable Curl,Rosca acima da cabeça na polia,Bíceps,Ombros,Polia,images/1636-wDUqY2u.jpg,videos/1636-wDUqY2u.gif
+0195,Cable Preacher Curl,Rosca Scott na polia,Bíceps,,Polia,images/0195-P2lNrGL.jpg,videos/0195-P2lNrGL.gif
+1638,Cable Pulldown Curl,Rosca na polia com puxada,Bíceps,,Polia,images/1638-QTXKWPh.jpg,videos/1638-QTXKWPh.gif
+0206,Cable Reverse Curl,Rosca invertida na polia,Bíceps,,Polia,images/0206-eOG0r6v.jpg,videos/0206-eOG0r6v.gif
+1639,Rope Hammer Preacher Cable Curl,Rosca Scott martelo com corda na polia,Bíceps,,Polia,images/1639-PcPe0P5.jpg,videos/1639-PcPe0P5.gif
+1641,Seated Cable Curl,Rosca sentado na polia,Bíceps,,Polia,images/1641-8oYqOt9.jpg,videos/1641-8oYqOt9.gif
+1643,Seated Overhead Cable Curl,Rosca sentado acima da cabeça na polia,Bíceps,Ombros,Polia,images/1643-DpWMFP5.jpg,videos/1643-DpWMFP5.gif
+0229,Standing Inner Cable Curl,Rosca interna em pé na polia,Bíceps,,Polia,images/0229-YwnI4ja.jpg,videos/0229-YwnI4ja.gif
+1645,Incline Cable Curl,Rosca inclinada na polia,Bíceps,,Polia,images/1645-H9y3Dkr.jpg,videos/1645-H9y3Dkr.gif
+0285,Alternating Dumbbell Curl,Rosca alternada com halteres,Bíceps,,Halter,images/0285-BU15nH4.jpg,videos/0285-BU15nH4.gif
+0294,Dumbbell Curl,Rosca direta com halteres,Bíceps,,Halter,images/0294-NbVPDMW.jpg,videos/0294-NbVPDMW.gif
+0297,Seated Dumbbell Concentration Curl,Rosca concentrada sentado com halter,Bíceps,,Halter,images/0297-gvsWLQw.jpg,videos/0297-gvsWLQw.gif
+0313,Dumbbell Hammer Curl,Rosca martelo com halteres,Bíceps,,Halter,images/0313-slDvUAU.jpg,videos/0313-slDvUAU.gif
+0315,Incline Dumbbell Curl,Rosca inclinada com halteres,Bíceps,,Halter,images/0315-F3xgbjF.jpg,videos/0315-F3xgbjF.gif
+0318,Incline Alternating Dumbbell Curl,Rosca alternada inclinada com halteres,Bíceps,,Halter,images/0318-ae9UoXQ.jpg,videos/0318-ae9UoXQ.gif
+0320,Incline Hammer Curl,Rosca martelo inclinada com halteres,Bíceps,,Halter,images/0320-ByX0WxV.jpg,videos/0320-ByX0WxV.gif
+0350,Lying Dumbbell Curl,Rosca deitado com halteres,Bíceps,,Halter,images/0350-KUaZst7.jpg,videos/0350-KUaZst7.gif
+0372,Dumbbell Preacher Curl,Rosca Scott com halteres,Bíceps,,Halter,images/0372-jivWf8n.jpg,videos/0372-jivWf8n.gif
+0374,Prone Incline Dumbbell Curl,Rosca inclinada de bruços com halteres,Bíceps,,Halter,images/0374-mwpPcr1.jpg,videos/0374-mwpPcr1.gif
+0382,Reverse-Grip Dumbbell Curl,Rosca invertida com halteres,Bíceps,,Halter,images/0382-e4ojVhP.jpg,videos/0382-e4ojVhP.gif
+0391,Seated Dumbbell Curl,Rosca sentado com halteres,Bíceps,,Halter,images/0391-TiaZTxx.jpg,videos/0391-TiaZTxx.gif
+0402,Seated Dumbbell Preacher Curl,Rosca Scott sentado com halteres,Bíceps,,Halter,images/0402-7D5bgLT.jpg,videos/0402-7D5bgLT.gif
+0416,Standing Dumbbell Curl,Rosca em pé com halteres,Bíceps,,Halter,images/0416-3s4NnTh.jpg,videos/0416-3s4NnTh.gif
+0418,Standing Dumbbell Concentration Curl,Rosca concentrada em pé com halteres,Bíceps,,Halter,images/0418-7inpWch.jpg,videos/0418-7inpWch.gif
+0421,One-Arm Standing Concentration Curl,Rosca concentrada unilateral em pé com halter,Bíceps,,Halter,images/0421-8fgqP5a.jpg,videos/0421-8fgqP5a.gif
+0425,One-Arm Reverse Curl,Rosca invertida unilateral com halter,Bíceps,,Halter,images/0425-DU5Kkj2.jpg,videos/0425-DU5Kkj2.gif
+0428,Standing Dumbbell Preacher Curl,Rosca Scott em pé com halteres,Bíceps,,Halter,images/0428-hq2hyDH.jpg,videos/0428-hq2hyDH.gif
+0439,Zottman Curl,Rosca Zottman,Bíceps,,Halter,images/0439-kXaIn5A.jpg,videos/0439-kXaIn5A.gif
+1627,Close-Grip EZ-Bar Preacher Curl,Rosca Scott com pegada fechada e barra EZ,Bíceps,,Barra EZ,images/1627-hacCyUv.jpg,videos/1627-hacCyUv.gif
+0446,Close-Grip EZ-Bar Curl,Rosca direta com pegada fechada e barra EZ,Bíceps,,Barra EZ,images/0446-V4ryaZa.jpg,videos/0446-V4ryaZa.gif
+0447,EZ-Bar Curl,Rosca direta com barra EZ,Bíceps,,Barra EZ,images/0447-6TG6x2w.jpg,videos/0447-6TG6x2w.gif
+0451,Reverse-Grip EZ-Bar Curl,Rosca invertida com barra EZ,Bíceps,,Barra EZ,images/0451-Y5X65IB.jpg,videos/0451-Y5X65IB.gif
+0452,Reverse-Grip EZ-Bar Preacher Curl,Rosca Scott invertida com barra EZ,Bíceps,,Barra EZ,images/0452-vBNyir7.jpg,videos/0452-vBNyir7.gif
+1458,Seated EZ-Bar Curl,Rosca sentado com barra EZ,Bíceps,,Barra EZ,images/1458-jtFKbt5.jpg,videos/1458-jtFKbt5.gif
+0454,EZ-Bar Spider Curl,Rosca spider com barra EZ,Bíceps,,Barra EZ,images/0454-Ye5Qxb0.jpg,videos/0454-Ye5Qxb0.gif
+2741,Wide-Grip Standing EZ-Bar Curl,Rosca em pé com pegada aberta e barra EZ,Bíceps,,Barra EZ,images/2741-OVTZ65k.jpg,videos/2741-OVTZ65k.gif
+0575,Lever Curl,Rosca direta na máquina,Bíceps,,Máquina,images/0575-q6y3OhV.jpg,videos/0575-q6y3OhV.gif
+1615,Lever Hammer Preacher Curl,Rosca Scott martelo na máquina,Bíceps,,Máquina,images/1615-OAguZoG.jpg,videos/1615-OAguZoG.gif
+0592,Lever Preacher Curl,Rosca Scott na máquina,Bíceps,,Máquina,images/0592-b6hQYMb.jpg,videos/0592-b6hQYMb.gif
+1683,Smith Curl,Rosca no Smith,Bíceps,,Smith,images/1683-zILLZ98.jpg,videos/1683-zILLZ98.gif
+0975,Close-Grip Band Push-Up,Flexão com pegada fechada e elástico,Tríceps,Ombros,Elástico,images/0975-ufaxB52.jpg,videos/0975-ufaxB52.gif
+0998,Band Triceps Extension,Extensão de tríceps com elástico,Tríceps,Ombros,Elástico,images/0998-obe5LMq.jpg,videos/0998-obe5LMq.gif
+0030,Close-Grip Barbell Bench Press,Supino com pegada fechada e barra,Tríceps,Ombros,Barra,images/0030-J6Dx1Mu.jpg,videos/0030-J6Dx1Mu.gif
+0035,Decline Close-Grip Skull Crusher,Triceps testa declinado com barra,Tríceps,Ombros,Barra,images/0035-LMGXZn8.jpg,videos/0035-LMGXZn8.gif
+1719,Incline Close-Grip Barbell Bench Press,Supino inclinado com pegada fechada e barra,Tríceps,Ombros,Barra,images/1719-gx7s7uF.jpg,videos/1719-gx7s7uF.gif
+0060,Barbell Skull Crusher,Triceps testa com barra,Tríceps,Ombros,Barra,images/0060-h8LFzo9.jpg,videos/0060-h8LFzo9.gif
+2187,Reverse Close-Grip Barbell Bench Press,Supino com pegada invertida e barra,Tríceps,Ombros,Barra,images/2187-YqJw82s.jpg,videos/2187-YqJw82s.gif
+0092,Seated Barbell Overhead Triceps Extension,Extensão de tríceps sentado com barra,Tríceps,Ombros,Barra,images/0092-5uFK1xr.jpg,videos/0092-5uFK1xr.gif
+0109,Standing Barbell Overhead Triceps Extension,Extensão de tríceps em pé com barra,Tríceps,Ombros,Barra,images/0109-dZl9Q27.jpg,videos/0109-dZl9Q27.gif
+0129,Bench Dip,Mergulho no banco,Tríceps,Ombros,Peso corporal,images/0129-RrLske5.jpg,videos/0129-RrLske5.gif
+0149,Alternating Cable Triceps Extension,Extensão de tríceps alternada na polia,Tríceps,Ombros,Polia,images/0149-Gchi5Tr.jpg,videos/0149-Gchi5Tr.gif
+1722,Overhead Cable Triceps Extension,Extensão de tríceps acima da cabeça na polia,Tríceps,Ombros,Polia,images/1722-1xHyxys.jpg,videos/1722-1xHyxys.gif
+0173,Incline Cable Triceps Extension,Extensão de tríceps inclinado na polia,Tríceps,Ombros,Polia,images/0173-Hx1WC8I.jpg,videos/0173-Hx1WC8I.gif
+0860,Cable Kickback,Kickback na polia,Tríceps,Ombros,Polia,images/0860-HEJ6DIX.jpg,videos/0860-HEJ6DIX.gif
+0176,Kneeling Cable Triceps Extension,Extensão de tríceps ajoelhado na polia,Tríceps,Ombros,Polia,images/0176-KWdF2JI.jpg,videos/0176-KWdF2JI.gif
+1723,One-Arm Cable Pushdown,Tríceps pulley unilateral na polia,Tríceps,,Polia,images/1723-qRZ5S1N.jpg,videos/1723-qRZ5S1N.gif
+0194,Rope Overhead Triceps Extension,Extensão de tríceps com corda acima da cabeça,Tríceps,Ombros,Polia,images/0194-2IxROQ1.jpg,videos/0194-2IxROQ1.gif
+0201,Cable Pushdown,Tríceps pulley na polia,Tríceps,,Polia,images/0201-3ZflifB.jpg,videos/0201-3ZflifB.gif
+0200,Rope Cable Pushdown,Tríceps com corda na polia,Tríceps,,Polia,images/0200-dU605di.jpg,videos/0200-dU605di.gif
+2406,SZ-Bar Cable Pushdown,Tríceps com barra SZ na polia,Tríceps,,Polia,images/2406-ThKP69G.jpg,videos/2406-ThKP69G.gif
+0207,Reverse-Grip Cable Pushdown,Tríceps com pegada supinada na polia,Tríceps,,Polia,images/0207-VjYliFZ.jpg,videos/0207-VjYliFZ.gif
+0231,Standing One-Arm Cable Triceps Extension,Extensão de tríceps unilateral em pé na polia,Tríceps,Ombros,Polia,images/0231-sYCcnon.jpg,videos/0231-sYCcnon.gif
+0241,V-Bar Cable Pushdown,Tríceps com barra V na polia,Tríceps,,Polia,images/0241-gAwDzB3.jpg,videos/0241-gAwDzB3.gif
+0259,Close-Grip Push-Up,Flexão com pegada fechada,Tríceps,Ombros,Peso corporal,images/0259-x6KpKpq.jpg,videos/0259-x6KpKpq.gif
+0283,Diamond Push-Up,Flexão diamante,Tríceps,Ombros,Peso corporal,images/0283-soIB2rj.jpg,videos/0283-soIB2rj.gif
+0296,Close-Grip Dumbbell Press,Supino com pegada fechada e halteres,Tríceps,Ombros,Halter,images/0296-RxayqAZ.jpg,videos/0296-RxayqAZ.gif
+0306,Decline Dumbbell Triceps Extension,Extensão de tríceps declinado com halter,Tríceps,Ombros,Halter,images/0306-OTgkHwR.jpg,videos/0306-OTgkHwR.gif
+0330,Incline Dumbbell Triceps Extension,Extensão de tríceps inclinado com halter,Tríceps,Ombros,Halter,images/0330-OVIKwsd.jpg,videos/0330-OVIKwsd.gif
+0333,Dumbbell Kickback,Kickback com halter,Tríceps,Ombros,Halter,images/0333-W6PxUkg.jpg,videos/0333-W6PxUkg.gif
+0337,Dumbbell Skull Crusher,Triceps testa com halteres,Tríceps,Ombros,Halter,images/0337-L2V5Nan.jpg,videos/0337-L2V5Nan.gif
+0344,One-Arm Lying Dumbbell Extension (Pronated),Extensão unilateral deitado pronada com halter,Tríceps,Ombros,Halter,images/0344-wyaqzOS.jpg,videos/0344-wyaqzOS.gif
+0346,One-Arm Lying Dumbbell Extension (Supinated),Extensão unilateral deitado supinada com halter,Tríceps,,Halter,images/0346-zZlORz6.jpg,videos/0346-zZlORz6.gif
+0351,Lying Dumbbell Triceps Extension,Extensão de tríceps deitado com halter,Tríceps,Ombros,Halter,images/0351-mpKZGWz.jpg,videos/0351-mpKZGWz.gif
+0352,Neutral-Grip Dumbbell Bench Press,Supino com pegada neutra e halteres,Tríceps,Ombros,Halter,images/0352-pP8wP2P.jpg,videos/0352-pP8wP2P.gif
+0354,One-Arm Dumbbell Kickback,Kickback unilateral com halter,Tríceps,Ombros,Halter,images/0354-bQy2Eni.jpg,videos/0354-bQy2Eni.gif
+0362,One-Arm Dumbbell Triceps Extension,Extensão de tríceps unilateral com halter,Tríceps,Ombros,Halter,images/0362-nAuHPcD.jpg,videos/0362-nAuHPcD.gif
+1623,Palms-In Incline Dumbbell Press,Supino inclinado com pegada neutra e halteres,Tríceps,Ombros,Halter,images/1623-8eqjhOl.jpg,videos/1623-8eqjhOl.gif
+0373,Pronated-Grip Dumbbell Triceps Extension,Extensão de tríceps com pegada pronada e halter,Tríceps,,Halter,images/0373-bpJL2Qs.jpg,videos/0373-bpJL2Qs.gif
+0389,Seated Dumbbell Bench Extension,Extensão de tríceps sentado no banco com halter,Tríceps,Ombros,Halter,images/0389-JhYSVwT.jpg,videos/0389-JhYSVwT.gif
+0394,Seated Dumbbell Kickback,Kickback sentado com halter,Tríceps,Ombros,Halter,images/0394-en550rk.jpg,videos/0394-en550rk.gif
+2188,Seated Dumbbell Triceps Extension,Extensão de tríceps sentado com halter,Tríceps,Ombros,Halter,images/2188-kont8Ut.jpg,videos/2188-kont8Ut.gif
+0420,Standing Dumbbell Kickback,Kickback em pé com halter,Tríceps,Ombros,Halter,images/0420-UmpPAAe.jpg,videos/0420-UmpPAAe.gif
+0430,Standing Dumbbell Triceps Extension,Extensão de tríceps em pé com halter,Tríceps,Ombros,Halter,images/0430-PdmaD0N.jpg,videos/0430-PdmaD0N.gif
+1748,EZ-Bar Lying Triceps Extension Behind Head,Extensão de tríceps deitado atrás da cabeça com barra EZ,Tríceps,Ombros,Barra EZ,images/1748-6CKUx7o.jpg,videos/1748-6CKUx7o.gif
+1749,Standing EZ-Bar French Press,Triceps testa em pé com barra EZ,Tríceps,Ombros,Barra EZ,images/1749-1cTf2Ux.jpg,videos/1749-1cTf2Ux.gif
+0448,Decline Close-Grip EZ-Bar Face Press,Triceps testa declinado com barra EZ,Tríceps,Ombros,Barra EZ,images/0448-DgZQ11d.jpg,videos/0448-DgZQ11d.gif
+0449,Incline EZ-Bar Triceps Extension,Extensão de tríceps inclinado com barra EZ,Tríceps,Ombros,Barra EZ,images/0449-KyLtiLT.jpg,videos/0449-KyLtiLT.gif
+0453,Seated EZ-Bar Triceps Extension,Extensão de tríceps sentado com barra EZ,Tríceps,Ombros,Barra EZ,images/0453-iaapw0g.jpg,videos/0453-iaapw0g.gif
+2432,Close-Grip EZ-Bar Bench Press,Supino com pegada fechada e barra EZ,Tríceps,Ombros,Barra EZ,images/2432-da4cXST.jpg,videos/2432-da4cXST.gif
+0591,Lever Triceps Dip,Mergulho para tríceps na máquina,Tríceps,Ombros,Máquina,images/0591-D5yqP2p.jpg,videos/0591-D5yqP2p.gif
+1451,Lever Seated Dip,Mergulho sentado na máquina,Tríceps,Ombros,Máquina,images/1451-BRImeP8.jpg,videos/1451-BRImeP8.gif
+0607,Lever Triceps Extension,Extensão de tríceps na máquina,Tríceps,Ombros,Máquina,images/0607-Ser9eQp.jpg,videos/0607-Ser9eQp.gif
+0672,Reverse Dip,Mergulho invertido,Tríceps,Ombros,Peso corporal,images/0672-NZ5Qqkz.jpg,videos/0672-NZ5Qqkz.gif
+0751,Smith Close-Grip Bench Press,Supino com pegada fechada no Smith,Tríceps,Ombros,Smith,images/0751-WcHl7ru.jpg,videos/0751-WcHl7ru.gif
+1625,Smith Decline Close-Grip Bench Press,Supino declinado com pegada fechada no Smith,Tríceps,Ombros,Smith,images/1625-yB9SvIF.jpg,videos/1625-yB9SvIF.gif
+1753,Three-Bench Dip,Mergulho em três bancos,Tríceps,Ombros,Peso corporal,images/1753-DQ0cqkT.jpg,videos/1753-DQ0cqkT.gif
+0814,Triceps Dip,Mergulho para tríceps,Tríceps,Ombros,Peso corporal,images/0814-X6C6i5Y.jpg,videos/0814-X6C6i5Y.gif
+0813,Bench Dip Between Benches,Mergulho entre bancos,Tríceps,Ombros,Peso corporal,images/0813-Wgbn9qo.jpg,videos/0813-Wgbn9qo.gif
+0001,Three-Quarter Sit-Up,Abdominal 3/4,Abdômen,Pernas / Costas,Peso corporal,images/0001-2gPfomN.jpg,videos/0001-2gPfomN.gif
+0002,Side Bend,Inclinação lateral com peso corporal,Abdômen,,Peso corporal,images/0002-Hy9D21L.jpg,videos/0002-Hy9D21L.gif
+0006,Alternate Heel Touch,Toque alternado nos calcanhares,Abdômen,,Peso corporal,images/0006-qaZVsGk.jpg,videos/0006-qaZVsGk.gif
+0084,Barbell Ab Rollout,Rollout com barra,Abdômen,Costas,Barra,images/0084-7M66AVi.jpg,videos/0084-7M66AVi.gif
+0138,Bottoms-Up,Elevação de quadril (bottoms-up),Abdômen,Pernas,Peso corporal,images/0138-CI6baTY.jpg,videos/0138-CI6baTY.gif
+0175,Kneeling Cable Crunch,Abdominal ajoelhado na polia,Abdômen,,Polia,images/0175-WW95auq.jpg,videos/0175-WW95auq.gif
+0212,Seated Cable Crunch,Abdominal sentado na polia,Abdômen,,Polia,images/0212-8xUv4J7.jpg,videos/0212-8xUv4J7.gif
+2399,Seated Cable Twist,Rotação sentado na polia,Abdômen,,Polia,images/2399-UEjSrKI.jpg,videos/2399-UEjSrKI.gif
+0222,Cable Side Bend,Inclinação lateral na polia,Abdômen,,Polia,images/0222-wPypxFY.jpg,videos/0222-wPypxFY.gif
+0223,Cable Side Crunch,Abdominal lateral na polia,Abdômen,,Polia,images/0223-q2ADGqV.jpg,videos/0223-q2ADGqV.gif
+0226,Standing Cable Crunch,Abdominal em pé na polia,Abdômen,,Polia,images/0226-jpgqxiS.jpg,videos/0226-jpgqxiS.gif
+0242,Cable Reverse Crunch,Abdominal reverso na polia,Abdômen,Pernas,Polia,images/0242-TXtXc84.jpg,videos/0242-TXtXc84.gif
+0243,Cable Twist,Rotação na polia,Abdômen,,Polia,images/0243-aVs3BR3.jpg,videos/0243-aVs3BR3.gif
+0862,Cable Up-Down Twist,Rotação alternada na polia,Abdômen,Costas,Polia,images/0862-fhZQPlV.jpg,videos/0862-fhZQPlV.gif
+0262,Cross-Body Crunch,Abdominal cruzado,Abdômen,,Peso corporal,images/0262-rbu5UUb.jpg,videos/0262-rbu5UUb.gif
+0267,Overhead Crunch,Abdominal com mãos atrás da cabeça,Abdômen,Pernas,Peso corporal,images/0267-kjJ3VoQ.jpg,videos/0267-kjJ3VoQ.gif
+0274,Floor Crunch,Abdominal no chão,Abdômen,Pernas,Peso corporal,images/0274-TFqbd8t.jpg,videos/0274-TFqbd8t.gif
+3016,Curl-Up,Curl-up abdominal,Abdômen,Pernas,Peso corporal,images/3016-g2oKspu.jpg,videos/3016-g2oKspu.gif
+0276,Dead Bug,Dead bug,Abdômen,Pernas / Costas,Peso corporal,images/0276-iny3m5y.jpg,videos/0276-iny3m5y.gif
+0277,Decline Crunch,Abdominal declinado,Abdômen,Pernas,Peso corporal,images/0277-9Ap7miY.jpg,videos/0277-9Ap7miY.gif
+0282,Decline Sit-Up,Abdominal declinado com sit-up,Abdômen,Pernas / Costas,Peso corporal,images/0282-QLL2gdc.jpg,videos/0282-QLL2gdc.gif
+0407,Dumbbell Side Bend,Inclinação lateral com halter,Abdômen,,Halter,images/0407-IpONWYv.jpg,videos/0407-IpONWYv.gif
+0443,Elbow-to-Knee,Cotovelo no joelho,Abdômen,,Peso corporal,images/0443-jvp6DiD.jpg,videos/0443-jvp6DiD.gif
+0456,Bent-Knee Leg Sit-Up,Abdominal com pernas flexionadas,Abdômen,Pernas,Peso corporal,images/0456-AR0ig3o.jpg,videos/0456-AR0ig3o.gif
+0457,Straight-Arm Leg Sit-Up,Abdominal com braços estendidos,Abdômen,Pernas,Peso corporal,images/0457-KZn52RC.jpg,videos/0457-KZn52RC.gif
+1764,Hanging Hip Raise,Elevação de quadril na barra,Abdômen,Pernas / Costas,Peso corporal,images/1764-VEcJRo2.jpg,videos/1764-VEcJRo2.gif
+0472,Hanging Leg Raise,Elevação de pernas na barra,Abdômen,Pernas,Peso corporal,images/0472-I3tsCnC.jpg,videos/0472-I3tsCnC.gif
+1761,Hanging Oblique Knee Raise,Elevação oblíqua de joelhos na barra,Abdômen,,Peso corporal,images/1761-BaE7O6U.jpg,videos/1761-BaE7O6U.gif
+0474,Hanging Straight-Leg Hip Raise,Elevação de quadril com pernas retas na barra,Abdômen,Pernas,Peso corporal,images/0474-pj0X0tF.jpg,videos/0474-pj0X0tF.gif
+0475,Hanging Straight-Leg Raise,Elevação de pernas retas na barra,Abdômen,Pernas,Peso corporal,images/0475-4Ml7QFO.jpg,videos/0475-4Ml7QFO.gif
+0484,Bent-Knee Hip Raise,Elevação de quadril com joelhos flexionados,Abdômen,Pernas,Peso corporal,images/0484-196HJGw.jpg,videos/0484-196HJGw.gif
+0507,Jackknife Sit-Up,Abdominal canivete,Abdômen,Pernas,Peso corporal,images/0507-mbkgB44.jpg,videos/0507-mbkgB44.gif
+0583,Lever Kneeling Twist,Rotação ajoelhado na máquina,Abdômen,Costas,Máquina,images/0583-sZOR9EV.jpg,videos/0583-sZOR9EV.gif
+1452,Lever Seated Crunch,Abdominal sentado na máquina,Abdômen,,Máquina,images/1452-Wgaz7pm.jpg,videos/1452-Wgaz7pm.gif
+0600,Lever Seated Leg Raise Crunch,Abdominal com elevação de pernas na máquina,Abdômen,Pernas,Máquina,images/0600-PQ2AtC3.jpg,videos/0600-PQ2AtC3.gif
+2312,Lying Elbow-to-Knee,Cotovelo no joelho deitado,Abdômen,Pernas / Costas,Peso corporal,images/2312-AQIhRjM.jpg,videos/2312-AQIhRjM.gif
+0620,Lying Leg Raise,Elevação de pernas deitado no banco,Abdômen,Pernas,Peso corporal,images/0620-WhuFnR7.jpg,videos/0620-WhuFnR7.gif
+0634,Negative Crunch,Abdominal negativo,Abdômen,Pernas,Peso corporal,images/0634-szIn2UK.jpg,videos/0634-szIn2UK.gif
+0635,Floor Oblique Crunch,Abdominal oblíquo no chão,Abdômen,,Peso corporal,images/0635-QUDd8WS.jpg,videos/0635-QUDd8WS.gif
+0664,Push-Up to Side Plank,Flexão com prancha lateral,Abdômen,Ombros / Tríceps,Peso corporal,images/0664-KhHJ338.jpg,videos/0664-KhHJ338.gif
+0872,Reverse Crunch,Abdominal reverso,Abdômen,Pernas,Peso corporal,images/0872-nCU1Ekp.jpg,videos/0872-nCU1Ekp.gif
+3663,Reverse Plank with Leg Lift,Prancha reversa com elevação de perna,Abdômen,Pernas / Ombros,Peso corporal,images/3663-tFToB7l.jpg,videos/3663-tFToB7l.gif
+0687,Russian Twist,Russian twist,Abdômen,,Peso corporal,images/0687-XVDdcoj.jpg,videos/0687-XVDdcoj.gif
+0689,Seated Leg Raise,Elevação de pernas sentado,Abdômen,Pernas,Peso corporal,images/0689-Hgs6Nl1.jpg,videos/0689-Hgs6Nl1.gif
+0705,Side Bridge,Prancha lateral,Abdômen,Pernas,Peso corporal,images/0705-RKjH6Lt.jpg,videos/0705-RKjH6Lt.gif
+0805,Suspended Ab Rollout,Rollout suspenso,Abdômen,Pernas,Peso corporal,images/0805-X3TCNEU.jpg,videos/0805-X3TCNEU.gif
+0807,Suspended Reverse Crunch,Abdominal reverso suspenso,Abdômen,Pernas,Peso corporal,images/0807-R1WYG5D.jpg,videos/0807-R1WYG5D.gif
+0871,Tuck Crunch,Abdominal tuck,Abdômen,Pernas,Peso corporal,images/0871-BMMolZ3.jpg,videos/0871-BMMolZ3.gif
+0826,Vertical Leg Raise,Elevação de pernas na paralela,Abdômen,Pernas,Peso corporal,images/0826-ZNgOYQU.jpg,videos/0826-ZNgOYQU.gif
+0832,Weighted Crunch,Abdominal com peso,Abdômen,,weighted,images/0832-s8nrDXF.jpg,videos/0832-s8nrDXF.gif
+0846,Weighted Russian Twist,Russian twist com peso,Abdômen,Costas,weighted,images/0846-fZFZ704.jpg,videos/0846-fZFZ704.gif
+0857,Wheel Rollout,Rollout com roda abdominal,Abdômen,Costas,wheel roller,images/0857-NAgVB3t.jpg,videos/0857-NAgVB3t.gif
+1408,Band Hip Lift,Elevação de quadril com elástico,Pernas,,Elástico,images/1408-E4R8Hz1.jpg,videos/1408-E4R8Hz1.gif
+0999,Band Single-Leg Calf Raise,Panturrilha unilateral com elástico,Pernas,,Elástico,images/0999-9JprnPh.jpg,videos/0999-9JprnPh.gif
+0026,Barbell Bench Squat,Agachamento no banco com barra,Pernas,,Barra,images/0026-W9pFVv1.jpg,videos/0026-W9pFVv1.gif
+0029,Clean-Grip Barbell Front Squat,Agachamento frontal com pegada clean e barra,Pernas,,Barra,images/0029-qi996YS.jpg,videos/0029-qi996YS.gif
+0032,Barbell Deadlift,Levantamento terra com barra,Pernas,Costas,Barra,images/0032-ila4NZS.jpg,videos/0032-ila4NZS.gif
+1370,Barbell Floor Calf Raise,Panturrilha no chão com barra,Pernas,,Barra,images/1370-2IHEa2T.jpg,videos/1370-2IHEa2T.gif
+0042,Barbell Front Squat,Agachamento frontal com barra,Pernas,,Barra,images/0042-zG0zs85.jpg,videos/0042-zG0zs85.gif
+0043,Barbell Full Squat,Agachamento livre com barra,Pernas,,Barra,images/0043-qXTaZnJ.jpg,videos/0043-qXTaZnJ.gif
+1409,Barbell Glute Bridge,Ponte de glúteo com barra,Pernas,Costas,Barra,images/1409-qKBpF7I.jpg,videos/1409-qKBpF7I.gif
+0044,Barbell Good Morning,Good morning com barra,Pernas,Costas,Barra,images/0044-XlZ4lAC.jpg,videos/0044-XlZ4lAC.gif
+0046,Barbell Hack Squat,Agachamento hack com barra,Pernas,,Barra,images/0046-5VCj6iH.jpg,videos/0046-5VCj6iH.gif
+1436,High-Bar Barbell Squat,Agachamento com barra alta,Pernas,,Barra,images/1436-Gnfo4FM.jpg,videos/1436-Gnfo4FM.gif
+1435,Low-Bar Barbell Squat,Agachamento com barra baixa,Pernas,,Barra,images/1435-bTpEUcm.jpg,videos/1435-bTpEUcm.gif
+0054,Barbell Lunge,Afundo com barra,Pernas,,Barra,images/0054-t8iSghb.jpg,videos/0054-t8iSghb.gif
+0063,Narrow-Stance Barbell Squat,Agachamento com pés juntos e barra,Pernas,,Barra,images/0063-elhhVgj.jpg,videos/0063-elhhVgj.gif
+0074,Barbell Rack Pull,Rack pull com barra,Pernas,Costas,Barra,images/0074-za9Ni4z.jpg,videos/0074-za9Ni4z.gif
+0078,Barbell Rear Lunge,Afundo para trás com barra,Pernas,,Barra,images/0078-VaP75jl.jpg,videos/0078-VaP75jl.gif
+0085,Barbell Romanian Deadlift,Levantamento terra romeno com barra,Pernas,Costas,Barra,images/0085-wQ2c4XD.jpg,videos/0085-wQ2c4XD.gif
+0088,Seated Barbell Calf Raise,Panturrilha sentado com barra,Pernas,,Barra,images/0088-ktsFQAZ.jpg,videos/0088-ktsFQAZ.gif
+1756,Barbell Single-Leg Deadlift,Levantamento terra unilateral com barra,Pernas,Costas,Barra,images/1756-gEyURal.jpg,videos/1756-gEyURal.gif
+0099,Barbell Single-Leg Split Squat,Afundo unilateral com barra,Pernas,,Barra,images/0099-gGNQmVt.jpg,videos/0099-gGNQmVt.gif
+1372,Standing Barbell Calf Raise,Panturrilha em pé com barra,Pernas,,Barra,images/1372-8ozhUIZ.jpg,videos/1372-8ozhUIZ.gif
+0108,Standing Barbell Calf Raise on Block,Panturrilha em pé com barra no degrau,Pernas,,Barra,images/0108-rGwhJ5o.jpg,videos/0108-rGwhJ5o.gif
+0111,Rocking Standing Barbell Calf Raise,Panturrilha em pé balançando com barra,Pernas,,Barra,images/0111-6HiHHe0.jpg,videos/0111-6HiHHe0.gif
+0114,Barbell Step-Up,Step-up com barra,Pernas,,Barra,images/0114-Kxquu2E.jpg,videos/0114-Kxquu2E.gif
+0116,Barbell Straight-Leg Deadlift,Levantamento terra com pernas estendidas e barra,Pernas,Costas,Barra,images/0116-hrVQWvE.jpg,videos/0116-hrVQWvE.gif
+0117,Barbell Sumo Deadlift,Levantamento terra sumô com barra,Pernas,Costas,Barra,images/0117-KgI0tqW.jpg,videos/0117-KgI0tqW.gif
+0124,Wide-Stance Barbell Squat,Agachamento sumô com barra,Pernas,,Barra,images/0124-s7HX1BY.jpg,videos/0124-s7HX1BY.gif
+0127,Barbell Zercher Squat,Agachamento Zercher com barra,Pernas,,Barra,images/0127-LSTChY9.jpg,videos/0127-LSTChY9.gif
+0130,Bench Hip Extension,Extensão de quadril no banco,Pernas,,Peso corporal,images/0130-u27Kcdz.jpg,videos/0130-u27Kcdz.gif
+1373,Bodyweight Standing Calf Raise,Panturrilha em pé no peso corporal,Pernas,,Peso corporal,images/1373-bJYHBIN.jpg,videos/1373-bJYHBIN.gif
+0168,Cable Hip Adduction,Adução de quadril na polia,Pernas,,Polia,images/0168-hBGWILP.jpg,videos/0168-hBGWILP.gif
+0196,Rope Cable Pull-Through,Pull-through com corda na polia,Pernas,Costas,Polia,images/0196-OM46QHm.jpg,videos/0196-OM46QHm.gif
+1375,Cable Standing Calf Raise,Panturrilha em pé na polia,Pernas,,Polia,images/1375-yl2IYyy.jpg,videos/1375-yl2IYyy.gif
+0228,Cable Hip Extension,Extensão de quadril na polia,Pernas,,Polia,images/0228-Kpajagk.jpg,videos/0228-Kpajagk.gif
+1376,Single-Leg Cable Standing Calf Raise,Panturrilha unilateral em pé na polia,Pernas,,Polia,images/1376-fgc9Xdl.jpg,videos/1376-fgc9Xdl.gif
+0284,Donkey Calf Raise,Panturrilha donkey,Pernas,,Peso corporal,images/0284-u5ESqzH.jpg,videos/0284-u5ESqzH.gif
+0291,Dumbbell Bench Squat,Agachamento no banco com halteres,Pernas,,Halter,images/0291-mnzcrIB.jpg,videos/0291-mnzcrIB.gif
+0300,Dumbbell Deadlift,Levantamento terra com halteres,Pernas,Costas,Halter,images/0300-nUwVh7b.jpg,videos/0300-nUwVh7b.gif
+1760,Dumbbell Goblet Squat,Agachamento goblet com halter,Pernas,,Halter,images/1760-yn8yg1r.jpg,videos/1760-yn8yg1r.gif
+0336,Dumbbell Lunge,Afundo com halteres,Pernas,,Halter,images/0336-RRWFUcw.jpg,videos/0336-RRWFUcw.gif
+0339,Dumbbell Lying Leg Curl,Mesa flexora deitado com halter,Pernas,,Halter,images/0339-FkBIE6a.jpg,videos/0339-FkBIE6a.gif
+0381,Dumbbell Rear Lunge,Afundo para trás com halteres,Pernas,,Halter,images/0381-SSsBDwB.jpg,videos/0381-SSsBDwB.gif
+1459,Dumbbell Romanian Deadlift,Levantamento terra romeno com halteres,Pernas,Costas,Halter,images/1459-rR0LJzx.jpg,videos/1459-rR0LJzx.gif
+1379,Seated Dumbbell Calf Raise,Panturrilha sentado com halter,Pernas,,Halter,images/1379-r29jP7S.jpg,videos/1379-r29jP7S.gif
+0400,Seated One-Leg Dumbbell Calf Raise,Panturrilha sentado unilateral com halter,Pernas,,Halter,images/0400-Ia7tumC.jpg,videos/0400-Ia7tumC.gif
+0409,Single-Leg Dumbbell Calf Raise,Panturrilha unilateral com halter,Pernas,,Halter,images/0409-1kB3Wmk.jpg,videos/0409-1kB3Wmk.gif
+1757,Dumbbell Single-Leg Deadlift,Levantamento terra unilateral com halteres,Pernas,Costas,Halter,images/1757-gKozT8X.jpg,videos/1757-gKozT8X.gif
+0410,Dumbbell Split Squat,Agachamento búlgaro com halteres,Pernas,,Halter,images/0410-qx4fgX7.jpg,videos/0410-qx4fgX7.gif
+0411,Dumbbell Single-Leg Squat,Agachamento unilateral com halter,Pernas,,Halter,images/0411-H6ybluc.jpg,videos/0411-H6ybluc.gif
+0413,Dumbbell Squat,Agachamento com halteres,Pernas,,Halter,images/0413-HsvHqgf.jpg,videos/0413-HsvHqgf.gif
+0417,Standing Dumbbell Calf Raise,Panturrilha em pé com halteres,Pernas,,Halter,images/0417-dPmaUaU.jpg,videos/0417-dPmaUaU.gif
+0431,Dumbbell Step-Up,Step-up com halteres,Pernas,,Halter,images/0431-aXtJhlg.jpg,videos/0431-aXtJhlg.gif
+0432,Dumbbell Stiff-Leg Deadlift,Levantamento terra stiff com halteres,Pernas,Costas,Halter,images/0432-5eLRITT.jpg,videos/0432-5eLRITT.gif
+0434,Dumbbell Straight-Leg Deadlift,Levantamento terra de perna reta com halteres,Pernas,Costas,Halter,images/0434-oom75KC.jpg,videos/0434-oom75KC.gif
+3193,Glute-Ham Raise,Glute-ham raise,Pernas,Costas,Peso corporal,images/3193-Vvwjz6N.jpg,videos/3193-Vvwjz6N.gif
+1383,Hack Calf Raise,Panturrilha no hack,Pernas,,sled machine,images/1383-2ORFMoR.jpg,videos/1383-2ORFMoR.gif
+1384,Hack One-Leg Calf Raise,Panturrilha unilateral no hack,Pernas,,sled machine,images/1384-AxFoqAD.jpg,videos/1384-AxFoqAD.gif
+0496,Inverse Leg Curl,Flexora invertida,Pernas,,Peso corporal,images/0496-ms7tjSG.jpg,videos/0496-ms7tjSG.gif
+0533,Kettlebell Front Squat,Agachamento frontal com kettlebell,Pernas,,Kettlebell,images/0533-DB0n8AG.jpg,videos/0533-DB0n8AG.gif
+0534,Kettlebell Goblet Squat,Agachamento goblet com kettlebell,Pernas,,Kettlebell,images/0534-ZA8b5hc.jpg,videos/0534-ZA8b5hc.gif
+0549,Kettlebell Swing,Swing com kettlebell,Pernas,,Kettlebell,images/0549-UHJlbu3.jpg,videos/0549-UHJlbu3.gif
+2287,Lever Alternate Leg Press,Leg press alternado na máquina,Pernas,,Máquina,images/2287-V07qpXy.jpg,videos/2287-V07qpXy.gif
+2289,Lever Calf Press,Panturrilha no leg press na máquina,Pernas,,Máquina,images/2289-7B4F5nZ.jpg,videos/2289-7B4F5nZ.gif
+0578,Lever Deadlift,Levantamento terra na máquina,Pernas,,Máquina,images/0578-GUT8I22.jpg,videos/0578-GUT8I22.gif
+1253,Lever Donkey Calf Raise,Panturrilha donkey na máquina,Pernas,,Máquina,images/1253-C9LuR4A.jpg,videos/1253-C9LuR4A.gif
+0582,Lever Kneeling Leg Curl,Mesa flexora ajoelhado na máquina,Pernas,,Máquina,images/0582-nnmCTLN.jpg,videos/0582-nnmCTLN.gif
+0585,Lever Leg Extension,Cadeira extensora,Pernas,,Máquina,images/0585-my33uHU.jpg,videos/0585-my33uHU.gif
+0586,Lever Lying Leg Curl,Mesa flexora na máquina,Pernas,,Máquina,images/0586-17lJ1kr.jpg,videos/0586-17lJ1kr.gif
+0593,Lever Reverse Hyperextension,Hiperextensão reversa na máquina,Pernas,Costas,Máquina,images/0593-Krmb3cB.jpg,videos/0593-Krmb3cB.gif
+2315,Lever Rotary Calf,Panturrilha rotativa na máquina,Pernas,,Máquina,images/2315-MrgP9L6.jpg,videos/2315-MrgP9L6.gif
+2335,Lever Seated Calf Press,Panturrilha sentado na prensa,Pernas,,Máquina,images/2335-Ie9UGty.jpg,videos/2335-Ie9UGty.gif
+0594,Lever Seated Calf Raise,Panturrilha sentado na máquina,Pernas,,Máquina,images/0594-bOOdeyc.jpg,videos/0594-bOOdeyc.gif
+0597,Lever Seated Hip Abduction,Abdução de quadril sentado na máquina,Pernas,,Máquina,images/0597-CHpahtl.jpg,videos/0597-CHpahtl.gif
+0598,Lever Seated Hip Adduction,Adução de quadril sentado na máquina,Pernas,,Máquina,images/0598-oHsrypV.jpg,videos/0598-oHsrypV.gif
+0599,Lever Seated Leg Curl,Mesa flexora sentado na máquina,Pernas,,Máquina,images/0599-Zg3XY7P.jpg,videos/0599-Zg3XY7P.gif
+1385,Seated Leg Press Calf Raise,Panturrilha sentado no leg press,Pernas,,Máquina,images/1385-IeDEXTe.jpg,videos/1385-IeDEXTe.gif
+0605,Lever Standing Calf Raise,Panturrilha em pé na máquina,Pernas,,Máquina,images/0605-ykUOVze.jpg,videos/0605-ykUOVze.gif
+1476,One-Leg Squat,Agachamento unilateral (pistol),Pernas,,Peso corporal,images/1476-C31LMnP.jpg,videos/1476-C31LMnP.gif
+3006,Band Seated Hip Abduction,Abdução de quadril sentado com elástico,Pernas,,Elástico,images/3006-0xDpB4L.jpg,videos/3006-0xDpB4L.gif
+1423,Reverse Hyperextension on Bench,Hiperextensão reversa no banco,Pernas,Costas,Peso corporal,images/1423-OrETs32.jpg,videos/1423-OrETs32.gif
+0710,Side Hip Abduction,Abdução de quadril lateral,Pernas,,Peso corporal,images/0710-7WaDzyL.jpg,videos/0710-7WaDzyL.gif
+0727,Dumbbell Single-Leg Calf Raise Elevated,Panturrilha unilateral elevada com halter,Pernas,,Halter,images/0727-fKZgDEO.jpg,videos/0727-fKZgDEO.gif
+0730,Single-Leg Platform Slide,Slide unilateral,Pernas,,Peso corporal,images/0730-LNE3wfo.jpg,videos/0730-LNE3wfo.gif
+1425,Sled 45° One-Leg Press,Leg press 45° unilateral no trenó,Pernas,,sled machine,images/1425-WWD6FzI.jpg,videos/1425-WWD6FzI.gif
+0738,Sled 45° Calf Press,Panturrilha no leg press 45° no trenó,Pernas,,sled machine,images/0738-qCNVnaU.jpg,videos/0738-qCNVnaU.gif
+0739,Sled 45° Leg Press,Leg press 45° no trenó,Pernas,,sled machine,images/0739-10Z2DXU.jpg,videos/0739-10Z2DXU.gif
+0740,Sled 45° Wide Leg Press,Leg press 45° com pés abertos no trenó,Pernas,,sled machine,images/0740-tj41Nu6.jpg,videos/0740-tj41Nu6.gif
+1391,Leg Press Calf Raise,Panturrilha no leg press,Pernas,,sled machine,images/1391-ykHcWme.jpg,videos/1391-ykHcWme.gif
+0741,Sled Close Hack Squat,Hack squat no trenó com pés juntos,Pernas,,sled machine,images/0741-gf3ZjB9.jpg,videos/0741-gf3ZjB9.gif
+0742,Sled Forward Angled Calf Raise,Panturrilha inclinada no trenó,Pernas,,sled machine,images/0742-XDOiFns.jpg,videos/0742-XDOiFns.gif
+0743,Sled Hack Squat,Hack squat no trenó,Pernas,,sled machine,images/0743-Qa55kX1.jpg,videos/0743-Qa55kX1.gif
+2334,Sled Lying Calf Press,Panturrilha deitado no trenó,Pernas,,sled machine,images/2334-g376LuL.jpg,videos/2334-g376LuL.gif
+0744,Sled Lying Squat,Agachamento deitado no trenó,Pernas,,sled machine,images/0744-9n2149Z.jpg,videos/0744-9n2149Z.gif
+0749,Smith Bent-Knee Good Morning,Good morning no Smith,Pernas,Costas,Smith,images/0749-1bQkKZK.jpg,videos/0749-1bQkKZK.gif
+1433,Smith Front Squat,Agachamento frontal no Smith,Pernas,,Smith,images/1433-lFhb2Rw.jpg,videos/1433-lFhb2Rw.gif
+3281,Smith Full Squat,Agachamento no Smith,Pernas,,Smith,images/3281-NNoHCEA.jpg,videos/3281-NNoHCEA.gif
+0755,Smith Hack Squat,Hack squat no Smith,Pernas,,Smith,images/0755-ZuPXtCK.jpg,videos/0755-ZuPXtCK.gif
+1434,Smith Low-Bar Squat,Agachamento com barra baixa no Smith,Pernas,,Smith,images/1434-RGLscZM.jpg,videos/1434-RGLscZM.gif
+1393,Smith Floor Calf Raise,Panturrilha no chão no Smith,Pernas,,Smith,images/1393-9GXrTE6.jpg,videos/1393-9GXrTE6.gif
+0763,Smith Reverse Calf Raise,Panturrilha invertida no Smith,Pernas,,Smith,images/0763-ywaNfuh.jpg,videos/0763-ywaNfuh.gif
+1395,Smith Seated Single-Leg Calf Raise,Panturrilha unilateral sentado no Smith,Pernas,,Smith,images/1395-0S75mYG.jpg,videos/1395-0S75mYG.gif
+0768,Smith Split Squat,Afundo no Smith,Pernas,,Smith,images/0768-wWFspEi.jpg,videos/0768-wWFspEi.gif
+0770,Smith Squat,Agachamento guiado no Smith,Pernas,,Smith,images/0770-jFtipLl.jpg,videos/0770-jFtipLl.gif
+0773,Smith Standing Calf Raise,Panturrilha em pé no Smith,Pernas,,Smith,images/0773-6MaEjVA.jpg,videos/0773-6MaEjVA.gif
+0795,Standing Single-Leg Curl,Flexora em pé unilateral,Pernas,,Peso corporal,images/0795-C5jncD2.jpg,videos/0795-C5jncD2.gif
+1427,Straight-Leg Hip Abduction,Abdução de quadril com perna estendida,Pernas,,Peso corporal,images/1427-mQ1tBXn.jpg,videos/1427-mQ1tBXn.gif
+0811,Trap Bar Deadlift,Levantamento terra com barra hexagonal,Pernas,Costas,Barra hexagonal,images/0811-jQGwmxN.jpg,videos/0811-jQGwmxN.gif
+1460,Walking Lunge,Avanço caminhando,Pernas,,Peso corporal,images/1460-IZVHb27.jpg,videos/1460-IZVHb27.gif

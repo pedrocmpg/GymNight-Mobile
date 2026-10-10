@@ -1,6 +1,9 @@
 """
-Integration test: migration 009 seeds the muscle catalog (7 groups, 452
-activation rows, MET values) against a real Postgres (Wave 6).
+Integration test: o catálogo muscular no `head` contra um Postgres real.
+
+A migration 009 criou as tabelas e semeou 7 grupos + mapa/MET dos 210
+exercícios antigos; a 011 trocou mapa e MET pelos dos 500 do CSV (regra
+70/30, MET do desktop quando existe, senão fallback por equipamento).
 """
 
 import os
@@ -14,12 +17,12 @@ os.environ.setdefault("DATABASE_URL", "postgresql://localhost/test")
 
 from app.database.seed_helpers import (  # noqa: E402
     exercise_id_for,
-    met_value_for,
     muscle_group_id_for,
-    parse_exercise_names,
-    parse_muscle_contributions,
+    parse_exercise_catalog_csv,
     MUSCLE_GROUP_NAMES,
 )
+
+CATALOG = parse_exercise_catalog_csv()
 
 
 def test_seven_muscle_groups_seeded(db_transaction):
@@ -35,7 +38,7 @@ def test_seven_muscle_groups_seeded(db_transaction):
 
 
 def test_exercise_muscle_map_row_count_matches_parsed_source(db_transaction):
-    expected = len(parse_muscle_contributions())
+    expected = sum(len(e.muscle_contributions()) for e in CATALOG)
     count = db_transaction.execute(text("SELECT COUNT(*) FROM exercise_muscle_map")).scalar()
     assert count == expected
 
@@ -46,8 +49,8 @@ def test_exercise_muscle_map_contributions_in_range(db_transaction):
     assert all(0 < r.contribution <= 1 for r in rows)
 
 
-def test_supino_reto_muscle_contributions_match_source(db_transaction):
-    exercise_id = exercise_id_for("Supino Reto (Barra)")
+def test_supino_reto_muscle_contributions_follow_70_30_rule(db_transaction):
+    exercise_id = exercise_id_for("Supino reto com barra")
     rows = db_transaction.execute(
         text(
             """
@@ -60,21 +63,22 @@ def test_supino_reto_muscle_contributions_match_source(db_transaction):
         {"exercise_id": exercise_id},
     ).all()
     by_group = {r.group_name: r.contribution for r in rows}
-    assert by_group == {"Peito": pytest.approx(0.65), "Ombros": pytest.approx(0.15), "Tríceps": pytest.approx(0.2)}
+    assert by_group == {"Peito": pytest.approx(0.7), "Ombros": pytest.approx(0.15), "Tríceps": pytest.approx(0.15)}
 
 
 def test_exercise_met_values_seeded_for_known_exercise(db_transaction):
-    exercise_id = exercise_id_for("Supino Reto (Barra)")
+    first = CATALOG[0]
+    exercise_id = first.id
     row = db_transaction.execute(
         text("SELECT met_value FROM exercise_met_values WHERE exercise_id = :id"),
         {"id": exercise_id},
     ).first()
     assert row is not None
-    assert row.met_value == met_value_for("Supino Reto (Barra)")
+    assert row.met_value == first.met_value
 
 
-def test_exercise_met_values_row_count_matches_exercises_with_met(db_transaction):
-    expected = sum(1 for name in parse_exercise_names() if met_value_for(name) is not None)
+def test_every_exercise_has_exactly_one_met_value(db_transaction):
+    expected = len(CATALOG)
     count = db_transaction.execute(text("SELECT COUNT(*) FROM exercise_met_values")).scalar()
     assert count == expected
 
@@ -109,7 +113,7 @@ def test_new_columns_on_existing_tables_have_correct_defaults(db_transaction):
     assert row.description == ""
 
     we_id = "test-we-defaults"
-    exercise_id = exercise_id_for("Supino Reto (Barra)")
+    exercise_id = CATALOG[0].id
     db_transaction.execute(
         text(
             "INSERT INTO workout_exercises "

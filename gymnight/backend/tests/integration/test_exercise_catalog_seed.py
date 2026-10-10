@@ -1,12 +1,13 @@
 """
-Integration test: migration 008 actually seeds the shared `exercises`
-catalog against a real Postgres (PARIDADE-01-DESTRAVAR.md §3).
+Integration test: no `head`, o catálogo compartilhado `exercises` é o de 500
+exercícios do CSV (migration 011), contra um Postgres real.
 
-The session-scoped `engine` fixture (conftest.py) already runs
-`alembic upgrade head` once — by the time these tests run, the 210 rows
-from migration 008 are already committed (migrations run outside any
-test's transaction), so every test's rolled-back transaction still sees
-them (Postgres transactions see already-committed prior data).
+A migration 008 semeava 210 exercícios a partir do muscle_usage_map.md; a
+011 apagou os que não existem no CSV e fez upsert dos 500. O caminho
+010 → 011 com dados antigos está em test_exercise_catalog_500_migration.py.
+
+O fixture `engine` (conftest.py) roda `alembic upgrade head` uma vez — as
+linhas já estão commitadas quando cada teste (com rollback) roda.
 """
 
 import os
@@ -18,62 +19,75 @@ os.environ.setdefault("SUPABASE_URL", "http://test-placeholder")
 os.environ.setdefault("SUPABASE_JWT_SECRET", "test-secret-placeholder")
 os.environ.setdefault("DATABASE_URL", "postgresql://localhost/test")
 
-from app.database.seed_helpers import exercise_id_for, parse_exercise_names  # noqa: E402
+from app.database.seed_helpers import exercise_id_for, parse_exercise_catalog_csv  # noqa: E402
+
+CATALOG = parse_exercise_catalog_csv()
 
 
-def test_exercises_table_has_210_seeded_rows(db_transaction):
+def test_exercises_table_has_500_rows(db_transaction):
     count = db_transaction.execute(text("SELECT COUNT(*) FROM exercises")).scalar()
-    assert count == 210
+    assert count == 500
 
 
-def test_seeded_exercise_has_deterministic_id_and_display_name(db_transaction):
-    expected_id = exercise_id_for("Supino Reto (Barra)")
+def test_every_csv_row_is_seeded_with_all_columns(db_transaction):
+    rows = db_transaction.execute(
+        text("SELECT id, name, name_en, equipment, media_key FROM exercises")
+    ).all()
+    by_id = {r.id: r for r in rows}
+    for exercise in CATALOG:
+        row = by_id[exercise.id]
+        assert row.name == exercise.name
+        assert row.name_en == exercise.name_en
+        assert row.equipment == exercise.equipment
+        assert row.media_key == exercise.media_key
+
+
+def test_old_catalog_names_are_gone(db_transaction):
     row = db_transaction.execute(
-        text("SELECT id, name FROM exercises WHERE id = :id"),
-        {"id": expected_id},
+        text("SELECT 1 FROM exercises WHERE id = :id"),
+        {"id": exercise_id_for("Supino Reto (Barra)")},
     ).first()
+    assert row is None
 
+
+def test_old_name_matching_the_csv_keeps_its_id_with_the_new_display_name(db_transaction):
+    # "Hiperextensão Lombar" (catálogo antigo) normaliza igual a
+    # "Hiperextensão lombar" (CSV) — mesmo UUIDv5, linha mantida e atualizada.
+    row = db_transaction.execute(
+        text("SELECT name, media_key FROM exercises WHERE id = :id"),
+        {"id": exercise_id_for("Hiperextensão Lombar")},
+    ).first()
     assert row is not None
-    assert row.name == "Supino Reto (Barra)"
+    assert row.name == "Hiperextensão lombar"
+    assert row.media_key is not None
 
 
-def test_every_parsed_name_has_a_matching_row(db_transaction):
-    names = parse_exercise_names()
-    ids = [exercise_id_for(n) for n in names]
-
-    result = db_transaction.execute(
-        text("SELECT COUNT(*) FROM exercises WHERE id = ANY(:ids)"),
-        {"ids": ids},
-    ).scalar()
-
-    assert result == len(names)
-
-
-def test_seed_insert_is_idempotent_via_on_conflict(db_transaction):
-    """Re-running the same INSERT ... ON CONFLICT DO NOTHING (what the
-    migration's upgrade() does per row) must not raise nor duplicate rows —
-    proves the migration is safe to re-apply (e.g. redeploy)."""
+def test_seed_upsert_is_idempotent(db_transaction):
     before = db_transaction.execute(text("SELECT COUNT(*) FROM exercises")).scalar()
-
-    name = "Supino Reto (Barra)"
+    first = CATALOG[0]
     db_transaction.execute(
         text(
             """
-            INSERT INTO exercises (id, name, created_at, updated_at)
-            VALUES (:id, :name, 0, 0)
-            ON CONFLICT (id) DO NOTHING
+            INSERT INTO exercises (id, name, name_en, equipment, media_key, created_at, updated_at)
+            VALUES (:id, :name, :name_en, :equipment, :media_key, 0, 0)
+            ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
             """
         ),
-        {"id": exercise_id_for(name), "name": name},
+        {
+            "id": first.id,
+            "name": first.name,
+            "name_en": first.name_en,
+            "equipment": first.equipment,
+            "media_key": first.media_key,
+        },
     )
-
     after = db_transaction.execute(text("SELECT COUNT(*) FROM exercises")).scalar()
     assert after == before
 
 
 @pytest.mark.parametrize(
     "display_name",
-    ["Supino Reto (Barra)", "Agachamento Livre (Back Squat)", "Rosca Direta (Barra)"],
+    ["Supino reto com barra", "Agachamento livre com barra", "Rosca direta com barra"],
 )
 def test_spot_check_known_exercises_present(db_transaction, display_name):
     row = db_transaction.execute(

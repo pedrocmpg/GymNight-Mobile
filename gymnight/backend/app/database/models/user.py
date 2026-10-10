@@ -30,6 +30,7 @@ from sqlalchemy import Column, String, BigInteger, Float, ForeignKey
 from sqlalchemy.orm import relationship, validates
 
 # Import Base from connection module (single source of truth)
+from app.core.genders import ACCEPTED_GENDERS
 from app.database.connection import Base
 
 # Import timestamp utility function
@@ -225,9 +226,11 @@ class User(Base):
 
     @validates("gender")
     def validate_gender(self, key, value):
-        """Reject gender values not in the accepted enumeration."""
-        if value is not None and value not in {"male", "female", "other"}:
-            raise ValueError(f"gender must be 'male', 'female', or 'other', got {value!r}")
+        """Reject gender values not in the accepted enumeration (EN or the app's PT labels)."""
+        if value is not None and value not in ACCEPTED_GENDERS:
+            raise ValueError(
+                f"gender must be one of {sorted(ACCEPTED_GENDERS)}, got {value!r}"
+            )
         return value
 
     @validates("training_time")

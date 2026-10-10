@@ -39,7 +39,8 @@ from app.schemas.user import UserProfileUpdate       # noqa: E402
 
 _BIRTH_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
-VALID_GENDERS = {"male", "female", "other"}
+# EN + os rótulos PT que o app grava no onboarding (app/core/genders.py).
+VALID_GENDERS = {"male", "female", "other", "Masculino", "Feminino", "Outro"}
 
 VALID_TRAINING_TIMES = {"Nunca treinei", "Até 6 meses", "6 meses a 2 anos", "Mais de 2 anos"}
 
@@ -337,8 +338,8 @@ def test_property_3_birth_date_validation(birth_date: str) -> None:
 # Strategy: arbitrary strings, biased toward the valid set and short strings
 _gender_strategy = st.one_of(
     st.text(min_size=0, max_size=20),         # Mostly non-matching strings
-    st.sampled_from(["male", "female", "other"]),  # Valid values
-    st.sampled_from(["Male", "FEMALE", "Other", "", " ", "unknown", "m", "f"]),
+    st.sampled_from(sorted(VALID_GENDERS)),  # Valid values
+    st.sampled_from(["Male", "FEMALE", "Other", "", " ", "unknown", "m", "f", "masculino", "OUTRO"]),
 )
 
 
@@ -350,8 +351,8 @@ def test_property_4_gender_validation(gender: str) -> None:
     **Validates: Requirements 1.4, 4.7**
 
     For any string `gender`:
-    - If gender is one of {"male", "female", "other"}, both the ORM validator
-      and the Pydantic schema MUST accept it.
+    - If gender is in VALID_GENDERS (EN values or the app's PT labels), both
+      the ORM validator and the Pydantic schema MUST accept it.
     - If gender is any other string, the ORM validator MUST raise ValueError
       and the Pydantic schema MUST raise ValidationError.
 
@@ -525,7 +526,7 @@ def _make_test_client(mock_user_id: str, mock_db: MagicMock) -> TestClient:
             lambda d: d.isoformat()
         ),
     ),
-    gender=st.one_of(st.none(), st.sampled_from(["male", "female", "other"])),
+    gender=st.one_of(st.none(), st.sampled_from(sorted(VALID_GENDERS))),
     training_time=st.one_of(st.none(), st.sampled_from(sorted(VALID_TRAINING_TIMES))),
 )
 def test_property_5_post_users_field_roundtrip(

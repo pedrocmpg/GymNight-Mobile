@@ -226,6 +226,10 @@ describe('WatermelonDB schema migration v1 -> v2 (Wave 6, real adapter)', () => 
 
     const migratedExercise = await dbV2.get<Exercise>('exercises').find(ids.exerciseId);
     expect(migratedExercise.name).toBe('Supino Reto (Barra)');
+    // v4: colunas do catálogo de 500 ficam null até o pull trazê-las.
+    expect(migratedExercise.nameEn).toBeNull();
+    expect(migratedExercise.mediaKey).toBeNull();
+    expect(getRawDocument(adapterV2, 'exercises', ids.exerciseId).equipment).toBeNull();
 
     const migratedWorkout = await dbV2.get<Workout>('workouts').find(ids.workoutId);
     expect(migratedWorkout.name).toBe('Treino A');

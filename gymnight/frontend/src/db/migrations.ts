@@ -98,5 +98,21 @@ export const migrations = schemaMigrations({
         }),
       ],
     },
+    // v3 → v4 (catálogo de 500 exercícios): colunas opcionais vindas do
+    // servidor (migration 011 do backend). Linhas existentes ficam com null
+    // até o próximo pull trazer o catálogo novo.
+    {
+      toVersion: 4,
+      steps: [
+        addColumns({
+          table: 'exercises',
+          columns: [
+            { name: 'name_en', type: 'string', isOptional: true },
+            { name: 'equipment', type: 'string', isOptional: true },
+            { name: 'media_key', type: 'string', isOptional: true },
+          ],
+        }),
+      ],
+    },
   ],
 });

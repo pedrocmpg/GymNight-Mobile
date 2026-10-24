@@ -6,6 +6,7 @@ import type { AuthManager } from '../auth/AuthManager';
 import type { LogoutManager } from '../auth/LogoutManager';
 import type { SyncEngine } from '../sync/SyncEngine';
 import type { SessionStore } from '../auth/sessionStore';
+import type { GymAiClient } from '../gymai/GymAiClient';
 import { runBootstrapRouting, resolveAuthenticatedPhase } from './bootstrapRouting';
 import { colors } from '../designSystem/tokens';
 import { LoadingState } from '../designSystem/components/LoadingState';
@@ -38,6 +39,7 @@ export interface AppNavigatorProps {
   syncEngine: SyncEngine;
   logoutManager: LogoutManager;
   sessionStore: SessionStore;
+  gymAiClient: GymAiClient;
   /**
    * Whether the Inter families have finished loading (App.tsx owns the
    * `useFonts` call). Folded into the existing bootstrap loading gate so the
@@ -123,6 +125,7 @@ export function AppNavigator(props: AppNavigatorProps) {
                 <MainTabNavigator
                   syncEngine={props.syncEngine}
                   logoutManager={props.logoutManager}
+                  gymAiClient={props.gymAiClient}
                   userId={props.sessionStore.getCurrentSession()?.user_id ?? ''}
                   onCreateWorkout={() => navProps.navigation.navigate('WorkoutCreator')}
                   onEditWorkout={(workoutId) =>

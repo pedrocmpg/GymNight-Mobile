@@ -6,9 +6,11 @@
  * fiação de callbacks/parâmetros.
  */
 import React from 'react';
-import { act, render, type RenderAPI } from '@testing-library/react-native';
+import { act, fireEvent, render, type RenderAPI } from '@testing-library/react-native';
 import { AppNavigator } from '../AppNavigator';
 import * as bootstrap from '../bootstrapRouting';
+import { createMockGymAiClient } from '../../gymai/mockGymAiClient';
+import type { GymAiResult } from '../../gymai/GymAiClient';
 
 jest.mock('@react-navigation/native', () => require('../../test/mocks/fakeNavigators').fakeNavigationNative);
 jest.mock('@react-navigation/native-stack', () => require('../../test/mocks/fakeNavigators').fakeNativeStack);
@@ -43,6 +45,7 @@ const navProps = {
   syncEngine: {},
   logoutManager: {},
   sessionStore,
+  gymAiClient: createMockGymAiClient(),
 } as any;
 
 async function mount(phase: string, extra: Record<string, unknown> = {}): Promise<RenderAPI> {
@@ -51,7 +54,8 @@ async function mount(phase: string, extra: Record<string, unknown> = {}): Promis
   await act(async () => undefined); // drena o runBootstrapRouting
   return tree;
 }
-const SCREEN_IDS = ['auth', 'onboarding', 'dashboard', 'progress', 'statistics', 'creator', 'session'];
+const SCREEN_IDS = ['auth', 'onboarding', 'dashboard', 'progress', 'statistics', 'gymai-screen', 'creator', 'session'];
+const TABS = ['dashboard', 'progress', 'statistics', 'gymai-screen'];
 const ids = (tree: RenderAPI) => SCREEN_IDS.filter((id) => tree.queryAllByTestId(id).length > 0);
 const isLoading = (tree: RenderAPI) => tree.queryAllByTestId('app-loading').length > 0;
 
@@ -89,7 +93,7 @@ describe('AppNavigator (renderizado)', () => {
     await act(async () => {
       mockProps.onboarding.onCompleted();
     });
-    expect(ids(tree)).toEqual(['dashboard', 'progress', 'statistics']);
+    expect(ids(tree)).toEqual(TABS);
   });
 
   it('fase onboarding renderiza o setup', async () => {
@@ -97,9 +101,9 @@ describe('AppNavigator (renderizado)', () => {
     expect(ids(tree)).toEqual(['onboarding']);
   });
 
-  it('fase authenticated renderiza as três abas com o userId da sessão', async () => {
+  it('fase authenticated renderiza as quatro abas com o userId da sessão', async () => {
     const tree = await mount('authenticated');
-    expect(ids(tree)).toEqual(['dashboard', 'progress', 'statistics']);
+    expect(ids(tree)).toEqual(TABS);
     expect(mockProps.dashboard.userId).toBe('user-test-1');
     expect(mockProps.progress.userId).toBe('user-test-1');
     expect(mockProps.statistics.userId).toBe('user-test-1');
@@ -112,11 +116,11 @@ describe('AppNavigator (renderizado)', () => {
     expect(mockProps.creator.workoutId).toBeUndefined();
 
     await act(async () => mockProps.creator.onSaved());
-    expect(ids(tree)).toEqual(['dashboard', 'progress', 'statistics']);
+    expect(ids(tree)).toEqual(TABS);
 
     await act(async () => mockProps.dashboard.onCreateWorkout());
     await act(async () => mockProps.creator.onBack());
-    expect(ids(tree)).toEqual(['dashboard', 'progress', 'statistics']);
+    expect(ids(tree)).toEqual(TABS);
   });
 
   it('editar treino repassa o workoutId ao criador', async () => {
@@ -133,16 +137,87 @@ describe('AppNavigator (renderizado)', () => {
     expect(mockProps.session.route.params).toEqual({ sessionId: 'session-test-3' });
 
     await act(async () => mockProps.session.onBack());
-    expect(ids(tree)).toEqual(['dashboard', 'progress', 'statistics']);
+    expect(ids(tree)).toEqual(TABS);
 
     await act(async () => mockProps.dashboard.onSessionStarted('session-test-4'));
     await act(async () => mockProps.session.onSessionEnded());
-    expect(ids(tree)).toEqual(['dashboard', 'progress', 'statistics']);
+    expect(ids(tree)).toEqual(TABS);
   });
 
   it('logout nas abas volta para a tela de login', async () => {
     const tree = await mount('authenticated');
     await act(async () => mockProps.dashboard.onLoggedOut());
     expect(ids(tree)).toEqual(['auth']);
+  });
+
+  describe('aba GymAI', () => {
+    async function mountChat(result?: GymAiResult) {
+      return mount('authenticated', { gymAiClient: createMockGymAiClient(result) });
+    }
+    async function ask(tree: RenderAPI, text: string) {
+      fireEvent.changeText(tree.getByTestId('gymai-input'), text);
+      await act(async () => {
+        fireEvent.press(tree.getByTestId('gymai-send'));
+      });
+    }
+
+    it('começa vazia, com o envio desabilitado', async () => {
+      const tree = await mountChat();
+      expect(tree.queryAllByTestId('gymai-empty')).toHaveLength(1);
+      expect(tree.getByTestId('gymai-send').props.accessibilityState.disabled).toBe(true);
+    });
+
+    it('sucesso: mantém pergunta e resposta no histórico em memória', async () => {
+      const tree = await mountChat();
+      await ask(tree, 'Quanto descansar entre séries?');
+      expect(tree.getByTestId('gymai-message-user')).toBeTruthy();
+      expect(tree.getByText('[mock] Recebi: Quanto descansar entre séries?')).toBeTruthy();
+      expect(tree.queryAllByTestId('gymai-empty')).toHaveLength(0);
+      expect(tree.queryAllByTestId('gymai-loading')).toHaveLength(0);
+
+      await ask(tree, 'E para hipertrofia?');
+      expect(tree.getAllByTestId('gymai-message-user')).toHaveLength(2);
+      expect(tree.getAllByTestId('gymai-message-assistant')).toHaveLength(2);
+    });
+
+    it('mostra o estado de carregando até o cliente responder', async () => {
+      let resolve!: (r: GymAiResult) => void;
+      const pending = new Promise<GymAiResult>((r) => (resolve = r));
+      const tree = await mount('authenticated', { gymAiClient: { sendMessage: () => pending } });
+      await ask(tree, 'Oi');
+      expect(tree.queryAllByTestId('gymai-loading')).toHaveLength(1);
+      expect(tree.getByTestId('gymai-send').props.accessibilityState.disabled).toBe(true);
+      await act(async () => resolve({ success: true, reply: 'Olá!' }));
+      expect(tree.queryAllByTestId('gymai-loading')).toHaveLength(0);
+      expect(tree.getByText('Olá!')).toBeTruthy();
+    });
+
+    it('offline: avisa e mantém a pergunta no histórico', async () => {
+      const tree = await mountChat({ success: false, reason: 'offline' });
+      await ask(tree, 'Oi');
+      expect(tree.queryAllByTestId('gymai-error-offline')).toHaveLength(1);
+      expect(tree.getAllByTestId('gymai-message-user')).toHaveLength(1);
+      expect(tree.queryAllByTestId('gymai-message-assistant')).toHaveLength(0);
+    });
+
+    it('rate_limited: avisa do limite de requisições', async () => {
+      const tree = await mountChat({ success: false, reason: 'rate_limited' });
+      await ask(tree, 'Oi');
+      expect(tree.queryAllByTestId('gymai-error-rate_limited')).toHaveLength(1);
+      expect(tree.getByText(/Muitas perguntas/)).toBeTruthy();
+    });
+
+    it('um novo envio bem-sucedido limpa o aviso de erro', async () => {
+      const sendMessage = jest
+        .fn()
+        .mockResolvedValueOnce({ success: false, reason: 'offline' })
+        .mockResolvedValueOnce({ success: true, reply: 'Voltei' });
+      const tree = await mount('authenticated', { gymAiClient: { sendMessage } });
+      await ask(tree, 'Oi');
+      await ask(tree, 'De novo');
+      expect(tree.queryAllByTestId('gymai-error-offline')).toHaveLength(0);
+      expect(tree.getByText('Voltei')).toBeTruthy();
+      expect(sendMessage.mock.calls[1][0].map((m: any) => m.content)).toEqual(['Oi', 'De novo']);
+    });
   });
 });

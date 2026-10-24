@@ -116,6 +116,7 @@ def create_user_profile(
         height=profile.height,
         birth_date=profile.birth_date,
         gender=profile.gender,
+        training_time=profile.training_time,
     )
     db.add(new_user)
     db.commit()

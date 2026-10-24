@@ -30,6 +30,9 @@ import MuscleGroup from '../models/MuscleGroup';
 import ExerciseMuscleMap from '../models/ExerciseMuscleMap';
 import ExerciseMetValue from '../models/ExerciseMetValue';
 import CardioLog from '../models/CardioLog';
+import { stopAllLokiAutosave } from '@/test/lokiAutosaveCleanup';
+
+afterAll(stopAllLokiAutosave);
 
 // Espelho exato do schema pré-Wave-6 (git show aa31fb6:.../schema.ts) — um
 // congelamento histórico deliberado, não deve ser "atualizado" nunca.

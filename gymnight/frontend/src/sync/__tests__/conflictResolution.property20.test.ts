@@ -58,7 +58,8 @@ const arbTombstoneScenario: fc.Arbitrary<TombstoneScenario> = fc
   .record({
     id: fc.uuid(),
     status: arbPendingStatus,
-    columnSet: fc.uniqueArray(arbColumnName, { minLength: 1, maxLength: 8 }),
+    // `id` não é coluna de dado: o resultado da resolução sempre carrega o id do registro.
+    columnSet: fc.uniqueArray(arbColumnName.filter((c) => c !== 'id'), { minLength: 1, maxLength: 8 }),
   })
   .chain(({ id, status, columnSet }) => {
     return fc

@@ -26,6 +26,9 @@ import MuscleGroup from '../models/MuscleGroup';
 import ExerciseMuscleMap from '../models/ExerciseMuscleMap';
 import ExerciseMetValue from '../models/ExerciseMetValue';
 import CardioLog from '../models/CardioLog';
+import { stopAllLokiAutosave } from '@/test/lokiAutosaveCleanup';
+
+afterAll(stopAllLokiAutosave);
 
 const schemaV1 = appSchema({
   version: 1,

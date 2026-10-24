@@ -47,6 +47,7 @@ function freshDb(): Database {
     migrations,
     dbName: `main_flows_${Date.now()}_${counter}`,
     useWebWorker: false,
+    extraLokiOptions: { autosave: false }, // sem setInterval de autosave: evita "worker process failed to exit"
     useIncrementalIndexedDB: false,
   });
   return new Database({ adapter, modelClasses: MODELS });

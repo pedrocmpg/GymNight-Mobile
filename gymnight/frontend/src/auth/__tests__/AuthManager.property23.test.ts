@@ -88,6 +88,10 @@ describe('Property 23: Auth failures keep user on Auth_Screen with error message
             };
 
             const storage: SecureStoragePort = {
+              async loadSession() {
+                return null;
+              },
+              async clearSession() {},
               async saveSession(_session) {
                 throw new Error('saveSession should not be called on auth failure');
               },
@@ -136,6 +140,10 @@ describe('Property 23: Auth failures keep user on Auth_Screen with error message
             };
 
             const storage: SecureStoragePort = {
+              async loadSession() {
+                return null;
+              },
+              async clearSession() {},
               async saveSession(_session) {
                 throw new Error('saveSession should not be called on network failure');
               },
@@ -193,6 +201,10 @@ describe('Property 23: Auth failures keep user on Auth_Screen with error message
             };
 
             const storage: SecureStoragePort = {
+              async loadSession() {
+                return null;
+              },
+              async clearSession() {},
               async saveSession(_session) {
                 // Should never be called
               },

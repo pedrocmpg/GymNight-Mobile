@@ -235,7 +235,7 @@ describe('Property 1: Reactive_Query reflects local writes in the same emission 
               break;
             case 'update':
               try {
-                collection.update(op.record?.id ?? 'nonexistent', op.patch);
+                collection.update('nonexistent', op.patch);
               } catch {
                 // ignore — record might not exist
               }

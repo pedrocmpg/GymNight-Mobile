@@ -42,7 +42,7 @@ class TestStorageAdapter implements StorageAdapter {
 
   constructor(options?: {
     initialLastPulledAt?: number | null;
-    failAtIndex?: number;
+    failAtIndex?: number | null;
     expectedTotalChanges?: number;
   }) {
     this.lastPulledAt = options?.initialLastPulledAt ?? null;

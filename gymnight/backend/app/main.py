@@ -18,6 +18,7 @@ from slowapi.errors import RateLimitExceeded
 from app.routers import users
 from app.routers.admin import router as admin_router
 from app.routers.health import router as health_router
+from app.routers.chat import router as chat_router
 from app.api.v1.endpoints.sync import sync_router
 from app.core.config import settings
 from app.core.limiter import limiter
@@ -106,6 +107,7 @@ app.include_router(health_router)
 app.include_router(admin_router)
 # Canonical sync router: GET /api/v1/sync/pull and POST /api/v1/sync/push
 app.include_router(sync_router, prefix="/api/v1")
+app.include_router(chat_router, prefix="/api/v1")
 
 # ============================================================================
 # MIDDLEWARE REGISTRATION

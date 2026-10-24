@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from unittest.mock import MagicMock, call, patch
 
@@ -64,12 +64,12 @@ _MS_PER_DAY = 86_400_000
 
 def _now_ms() -> int:
     """Return the current UTC time as a Unix millisecond timestamp."""
-    return int(datetime.utcnow().timestamp() * 1000)
+    return int(datetime.now(timezone.utc).timestamp() * 1000)
 
 
 def _cutoff_ms(retention_days: int) -> int:
     """Compute the cutoff threshold: records older than this should be deleted."""
-    return int((datetime.utcnow() - timedelta(days=retention_days)).timestamp() * 1000)
+    return int((datetime.now(timezone.utc) - timedelta(days=retention_days)).timestamp() * 1000)
 
 
 def _make_tombstone(deleted_at: int) -> MagicMock:
@@ -272,7 +272,7 @@ def test_property_11_tombstone_cleanup_threshold(timestamps: list[int]) -> None:
         # computes the cutoff and performs the delete.
         # We invoke the route's core logic by calling _get_retention_days() then
         # replicating the cutoff calculation, and verify the mock DB state.
-        cutoff_ms = int((datetime.utcnow() - timedelta(days=retention)).timestamp() * 1000)
+        cutoff_ms = int((datetime.now(timezone.utc) - timedelta(days=retention)).timestamp() * 1000)
         after_call_ms = _now_ms()
 
         # Manually drive the filter + delete on the mock
@@ -555,7 +555,7 @@ def test_property_11_cutoff_calculation_is_correct(retention_days: int) -> None:
     3. The cutoff is consistent: calling it twice in rapid succession differs by
        at most 2 seconds (no stale or wildly wrong clock usage).
 
-    Note: the cutoff formula (datetime.utcnow() - timedelta(days=N)).timestamp()
+    Note: the cutoff formula (datetime.now(timezone.utc) - timedelta(days=N)).timestamp()
     uses Python's local-time DST rules internally, which can introduce a ±1-hour
     offset for dates far in the past. Both the production code and this test use
     the same formula, so the offset cancels out in any correctness comparison.
@@ -569,11 +569,11 @@ def test_property_11_cutoff_calculation_is_correct(retention_days: int) -> None:
 
         # First reading
         retention1 = _get_retention_days()
-        cutoff1 = int((datetime.utcnow() - timedelta(days=retention1)).timestamp() * 1000)
+        cutoff1 = int((datetime.now(timezone.utc) - timedelta(days=retention1)).timestamp() * 1000)
 
         # Second reading — should be within 2 seconds
         retention2 = _get_retention_days()
-        cutoff2 = int((datetime.utcnow() - timedelta(days=retention2)).timestamp() * 1000)
+        cutoff2 = int((datetime.now(timezone.utc) - timedelta(days=retention2)).timestamp() * 1000)
 
         # Both must return the configured retention value
         assert retention1 == retention_days, (
@@ -595,7 +595,7 @@ def test_property_11_cutoff_calculation_is_correct(retention_days: int) -> None:
             larger_retention = retention_days + 1
             settings.TOMBSTONE_RETENTION_DAYS = larger_retention
             cutoff_larger = int(
-                (datetime.utcnow() - timedelta(days=larger_retention)).timestamp() * 1000
+                (datetime.now(timezone.utc) - timedelta(days=larger_retention)).timestamp() * 1000
             )
             # cutoff with larger retention must be strictly earlier
             assert cutoff_larger < cutoff2 + 2000, (

@@ -55,6 +55,10 @@ function createInstrumentedMocks(
   };
 
   const storage: SecureStoragePort = {
+    async loadSession() {
+      return null;
+    },
+    async clearSession() {},
     async saveSession(_session) {
       log.push({ event: 'saveSession_start', timestamp: counter++ });
       // Simulate async persistence
@@ -159,6 +163,10 @@ describe('Property 22: Session persistence completes before navigation', () => {
           };
 
           const storage: SecureStoragePort = {
+            async loadSession() {
+              return null;
+            },
+            async clearSession() {},
             async saveSession(s) {
               persistedSession = s;
             },

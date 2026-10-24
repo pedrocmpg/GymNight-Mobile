@@ -4,16 +4,19 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import type { SyncEngine } from '../sync/SyncEngine';
 import type { LogoutManager } from '../auth/LogoutManager';
+import type { GymAiClient } from '../gymai/GymAiClient';
 import { colors, typography, spacing, layout } from '../designSystem/tokens';
 import { haptic } from '../designSystem/haptics';
 import { DashboardScreenContainer } from './containers/DashboardScreenContainer';
 import { ProgressScreenContainer } from './containers/ProgressScreenContainer';
 import { StatisticsScreenContainer } from './containers/StatisticsScreenContainer';
+import { GymAiScreenContainer } from './containers/GymAiScreenContainer';
 
 export type MainTabParamList = {
   Treinos: undefined;
   Progresso: undefined;
   Estatísticas: undefined;
+  GymAI: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -30,6 +33,7 @@ function TabIcon({ name, color }: { name: string; color: string }) {
 export interface MainTabNavigatorProps {
   syncEngine: SyncEngine;
   logoutManager: LogoutManager;
+  gymAiClient: GymAiClient;
   userId: string;
   onCreateWorkout: () => void;
   /** Ícone de lápis na linha do treino (Wave 8). */
@@ -96,6 +100,14 @@ export function MainTabNavigator(props: MainTabNavigatorProps) {
         }}
       >
         {() => <StatisticsScreenContainer userId={props.userId} />}
+      </Tab.Screen>
+      <Tab.Screen
+        name="GymAI"
+        options={{
+          tabBarIcon: ({ color }) => <TabIcon name="comment-dots" color={color} />,
+        }}
+      >
+        {() => <GymAiScreenContainer client={props.gymAiClient} />}
       </Tab.Screen>
     </Tab.Navigator>
   );

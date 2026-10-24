@@ -29,6 +29,7 @@ import {
 import { SyncEngine } from './src/sync/SyncEngine';
 import { createSyncCycleRunner } from './src/sync/syncCycleRunner';
 import { hydrateLastPulledAt } from './src/sync/lastPulledAt';
+import { createBackendGymAiClient } from './src/gymai/backendGymAiClient';
 import database from './src/db/database';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { StartupErrorScreen } from './src/navigation/StartupErrorScreen';
@@ -128,6 +129,12 @@ export default function App() {
   });
   const syncEngine = new SyncEngine(syncCycleRunner);
 
+  const gymAiClient = createBackendGymAiClient({
+    backendBaseUrl: config.backendBaseUrl,
+    http: fetchHttpClient,
+    authInterceptor,
+  });
+
   return (
     <SafeAreaProvider>
       <AppNavigator
@@ -136,6 +143,7 @@ export default function App() {
         syncEngine={syncEngine}
         logoutManager={logoutManager}
         sessionStore={sessionStore}
+        gymAiClient={gymAiClient}
       />
       <StatusBar style="light" />
     </SafeAreaProvider>

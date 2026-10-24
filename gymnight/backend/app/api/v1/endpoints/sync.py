@@ -300,6 +300,33 @@ def pull(
 # ============================================================================
 
 
+def _payload_owned_ids(
+    table_changes: Optional[TableChanges],
+    model,
+    current_user_id: str,
+    db: Session,
+) -> set[str]:
+    """
+    IDs de registros pai enviados no próprio payload que o usuário pode possuir.
+
+    O cliente WatermelonDB envia pai e filhos no mesmo push (ex.: treino novo +
+    seus workout_exercises), então o pai ainda não existe no banco quando o scan
+    roda. Um id só conta se não existir no banco ou já pertencer ao usuário —
+    nunca se pertencer a outro (o handler `created` ignora ids existentes).
+    """
+    if not table_changes:
+        return set()
+    owned: set[str] = set()
+    for record in table_changes.created + table_changes.updated:
+        record_id = record.get("id")
+        if record_id is None:
+            continue
+        existing = db.query(model).filter(model.id == record_id).first()
+        if existing is None or existing.user_id == current_user_id:
+            owned.add(record_id)
+    return owned
+
+
 def _validate_push_ownership(
     payload: PushPayload,
     current_user_id: str,
@@ -324,6 +351,8 @@ def _validate_push_ownership(
     Requirements: 7.1, 7.2, 7.3, 7.4, 7.5
     """
     changes = payload.changes
+    payload_workouts = _payload_owned_ids(changes.get("workouts"), Workout, current_user_id, db)
+    payload_sessions = _payload_owned_ids(changes.get("workout_sessions"), WorkoutSession, current_user_id, db)
 
     # --- Tabela `users`: user_id direto + id == current_user_id (Req 10) ---
     users_changes = changes.get("users")
@@ -382,6 +411,8 @@ def _validate_push_ownership(
     we_changes = changes.get("workout_exercises")
     if we_changes:
         for record in we_changes.created + we_changes.updated:
+            if record["workout_id"] in payload_workouts:
+                continue
             workout = (
                 db.query(Workout)
                 .filter(Workout.id == record["workout_id"])
@@ -397,6 +428,8 @@ def _validate_push_ownership(
     ls_changes = changes.get("logged_sets")
     if ls_changes:
         for record in ls_changes.created + ls_changes.updated:
+            if record["session_id"] in payload_sessions:
+                continue
             session = (
                 db.query(WorkoutSession)
                 .filter(WorkoutSession.id == record["session_id"])
@@ -412,6 +445,8 @@ def _validate_push_ownership(
     cardio_changes = changes.get("cardio_logs")
     if cardio_changes:
         for record in cardio_changes.created + cardio_changes.updated:
+            if record["session_id"] in payload_sessions:
+                continue
             session = (
                 db.query(WorkoutSession)
                 .filter(WorkoutSession.id == record["session_id"])

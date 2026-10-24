@@ -134,6 +134,43 @@ function flattenPushedRecords(
 /**
  * Implements the push branch per the design's outcome table (Property 18).
  */
+/**
+ * Grava no WatermelonDB o que o push 200 confirmou: created/updated viram
+ * 'synced' e deleted são removidos de vez. Sem isto os registros ficam
+ * 'created' para sempre — são reenviados a cada ciclo e, pior, edições
+ * posteriores nunca chegam ao servidor (o push de `created` é idempotente).
+ * Só marca o registro que não mudou desde a leitura (updated_at igual).
+ * Falha aqui nunca derruba o ciclo: o registro apenas é reenviado no próximo.
+ */
+async function markPushedRecordsInDatabase(db: Database, pushed: PendingRecord[]): Promise<void> {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { prepareMarkAsSynced } = require('@nozbe/watermelondb/sync/impl/helpers');
+    await db.write(async () => {
+      const prepared: unknown[] = [];
+      for (const rec of pushed) {
+        const table = (rec as unknown as { _table: string })._table;
+        if (rec._status === 'deleted') {
+          await (db.adapter as unknown as {
+            destroyDeletedRecords: (t: string, ids: string[]) => Promise<void>;
+          }).destroyDeletedRecords(table, [rec.id as string]);
+          continue;
+        }
+        try {
+          const model: any = await db.get(table).find(rec.id as string);
+          if (model._raw.updated_at === rec.updated_at) prepared.push(prepareMarkAsSynced(model));
+        } catch {
+          // registro sumiu localmente entre a leitura e o push: nada a marcar
+        }
+      }
+      if (prepared.length > 0) await db.batch(...(prepared as any[]));
+    });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn('[sync] não foi possível marcar registros como synced:', error);
+  }
+}
+
 async function runPushBranch(pending: PendingRecord[], deps: SyncCycleRunnerDeps): Promise<PushOutcome> {
   if (pending.length === 0) {
     return 'continue';
@@ -166,6 +203,7 @@ async function handlePushResult(
   if (result.status === 200) {
     const pushedRecords = flattenPushedRecords(payload, pending);
     markRecordsAsSynced(pending, pushedRecords);
+    await markPushedRecordsInDatabase(deps.db, pushedRecords);
     return 'continue';
   }
 

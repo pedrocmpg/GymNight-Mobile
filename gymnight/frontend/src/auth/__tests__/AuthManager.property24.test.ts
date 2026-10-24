@@ -77,6 +77,10 @@ describe('Property 24: Secure_Storage write failure after successful auth discar
 
             // Mock: SecureStorage fails with the arbitrary error
             const storage: SecureStoragePort = {
+              async loadSession() {
+                return null;
+              },
+              async clearSession() {},
               async saveSession(_session) {
                 throw storageError;
               },
@@ -128,6 +132,10 @@ describe('Property 24: Secure_Storage write failure after successful auth discar
 
             // Mock: SecureStorage captures what was passed then fails
             const storage: SecureStoragePort = {
+              async loadSession() {
+                return null;
+              },
+              async clearSession() {},
               async saveSession(s) {
                 sessionPassedToStorage = s;
                 throw storageError;
@@ -178,6 +186,10 @@ describe('Property 24: Secure_Storage write failure after successful auth discar
 
             // Mock: SecureStorage fails
             const storage: SecureStoragePort = {
+              async loadSession() {
+                return null;
+              },
+              async clearSession() {},
               async saveSession(_session) {
                 throw storageError;
               },

@@ -82,6 +82,12 @@ def _configure_structlog_for_testing(captured: list[dict]) -> None:
         logger_factory=structlog.PrintLoggerFactory(),
         cache_logger_on_first_use=False,  # IMPORTANT: must be False for per-test config
     )
+    # O `log` do middleware é um proxy que, se algum outro teste já usou o app
+    # real (cache_logger_on_first_use=True em produção), fica congelado na
+    # cadeia antiga. Recria o proxy para que ele enxergue esta configuração.
+    import app.middleware.access_log as access_log_module
+
+    access_log_module.log = structlog.get_logger(access_log_module.__name__)
 
 
 def _build_test_app() -> FastAPI:

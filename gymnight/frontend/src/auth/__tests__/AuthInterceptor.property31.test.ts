@@ -198,14 +198,15 @@ describe('Property 31: At most one concurrent token refresh call; queued request
 
           // Use a race with a timeout to verify no deadlock.
           // All promises must resolve within a reasonable time (1 second).
-          const timeout = new Promise<'timeout'>((resolve) =>
-            setTimeout(() => resolve('timeout'), 1000)
-          );
+          let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+          const timeout = new Promise<'timeout'>((resolve) => {
+            timeoutHandle = setTimeout(() => resolve('timeout'), 1000);
+          });
 
           const raceResult = await Promise.race([
             Promise.all(promises).then(() => 'resolved' as const),
             timeout,
-          ]);
+          ]).finally(() => clearTimeout(timeoutHandle)); // não deixa timer pendente por execução
 
           expect(raceResult).toBe('resolved');
 

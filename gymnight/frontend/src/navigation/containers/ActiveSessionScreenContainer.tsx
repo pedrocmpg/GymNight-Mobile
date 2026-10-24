@@ -10,6 +10,7 @@ import {
   createCardioLog,
   persistLoggedSetWithIsolation,
 } from '../../screens/ActiveSessionScreen/sessionLifecycle';
+import { persistLoggedSet } from '../../screens/ActiveSessionScreen/persistLoggedSet';
 import { endSessionWithPersistence } from '../../screens/ActiveSessionScreen/endSessionWithPersistence';
 import type { CardioFormValue } from '../../screens/CardioScreen/CardioForm';
 import database from '../../db/database';
@@ -23,38 +24,6 @@ export interface ActiveSessionScreenContainerProps {
   onSessionEnded: () => void;
   /** Sai da sessão sem encerrá-la (o "← Voltar" do header, com confirmação). */
   onBack?: () => void;
-}
-
-async function persistLoggedSet(data: {
-  exerciseId: string;
-  weight: number;
-  reps: number;
-  sessionId: string;
-  setType?: string;
-}): Promise<string> {
-  const loggedSet = createLoggedSet(
-    data.sessionId,
-    data.exerciseId,
-    data.weight,
-    data.reps,
-    undefined,
-    undefined,
-    data.setType ?? 'N',
-  );
-  const record = await database.write(async () => {
-    return database.get('logged_sets').create((r: any) => {
-      r._raw.session_id = loggedSet.session_id;
-      r._raw.exercise_id = loggedSet.exercise_id;
-      r._raw.weight = loggedSet.weight;
-      r._raw.repetitions = loggedSet.repetitions;
-      r._raw.estimated_one_rm = loggedSet.estimated_one_rm;
-      r._raw.set_type = loggedSet.set_type;
-      r._raw.completed_at = loggedSet.completed_at;
-      r._raw.created_at = Date.now();
-      r._raw.updated_at = Date.now();
-    });
-  });
-  return record.id;
 }
 
 async function persistCardioLog(sessionId: string, entry: CardioFormValue): Promise<string> {

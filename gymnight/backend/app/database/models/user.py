@@ -75,7 +75,7 @@ class User(Base):
     --------
     - id: String(36) - Supabase Auth UUID (= JWT sub claim), primary key
     - name: String(255) - User's full name, NOT NULL
-    - email: String(255) - Unique email for display, indexed for fast queries, NOT NULL
+    - email: String(255) - Unique email for display, indexed for fast queries, nullable (migration 007)
     - created_at: BigInteger - Unix milliseconds when created, NOT NULL, auto-generated if not provided
     - updated_at: BigInteger - Unix milliseconds when last modified, NOT NULL, auto-updated on changes
     
@@ -91,7 +91,7 @@ class User(Base):
     - PRIMARY KEY: id (= Supabase Auth UUID / JWT sub claim)
     - UNIQUE: email (prevents duplicate accounts)
     - INDEX: email (fast lookup during queries)
-    - NOT NULL: id, name, email, created_at, updated_at
+    - NOT NULL: id, name, created_at, updated_at
     
     SYNC PROTOCOL EXAMPLE:
     ----------------------
@@ -144,7 +144,7 @@ class User(Base):
         String(255),
         unique=True,          # UNIQUE constraint: prevents duplicate accounts
         index=True,           # INDEX: speeds up WHERE email='...' queries
-        nullable=False        # Email is required
+        nullable=True         # Alinhado à migration 007 (coluna nullable no banco)
     )
     
     # ========================================================================

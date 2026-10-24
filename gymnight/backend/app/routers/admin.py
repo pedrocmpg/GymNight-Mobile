@@ -12,7 +12,7 @@ Requirements: 10.1, 10.2, 10.3, 10.4
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import structlog
@@ -119,7 +119,7 @@ def cleanup_tombstones(
 
     # Compute the cutoff as a Unix millisecond timestamp (Req 10.1)
     cutoff_ms = int(
-        (datetime.utcnow() - timedelta(days=retention)).timestamp() * 1000
+        (datetime.now(timezone.utc) - timedelta(days=retention)).timestamp() * 1000
     )
 
     try:
@@ -134,7 +134,7 @@ def cleanup_tombstones(
         log.info(
             "tombstone_cleanup",
             deleted_count=n,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
         )
 
         return {"deleted_count": n}

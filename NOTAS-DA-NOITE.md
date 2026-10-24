@@ -7,7 +7,12 @@
 4. **GymAI (backend)** — `app/gymai/providers.py` (`GYMAI_PROVIDER=mock|gemini`, `GEMINI_API_KEY`, `GEMINI_MODEL`), `POST /api/v1/chat` com auth e 10/min. Anthropic/Claude é recusado em código. Testes em `tests/test_gymai.py`.
 5. **utcnow** — backend sem avisos (app + testes trocados juntos por `datetime.now(timezone.utc)`).
 
-## Pendente
+## Atualização (continuação da sessão)
+Os pendentes abaixo foram resolvidos depois: cliente GymAI no frontend (`src/gymai`), aviso "worker process failed to exit" (timer do `Promise.race` em `AuthInterceptor.property31` + autosave do Loki, ver `src/test/lokiAutosaveCleanup.ts`), erros do `tsc`, `test_correlation_id` (logger do middleware congelado) e `IDEIAS.md`.
+Ainda não feito: **a tela do GymAI** (só interface, clientes e testes) e as correções de `birth_date`/README listadas em `IDEIAS.md`.
+Resultado final: `npm test` 1049 passam, sem aviso; `npx tsc --noEmit` limpo; `pytest` 127 passam (151 com `TEST_DATABASE_URL`).
+
+## Pendências originais (histórico)
 - **(4) Cliente GymAI no frontend**: falta a interface `GymAiClient` + implementação que chama `/api/v1/chat` (e a tela). Só o backend foi feito.
 - **(5) "worker process failed to exit"**: NÃO resolvido. Com `--detectOpenHandles` (execução serial) não aparece nenhum handle nem o aviso; só ocorre com workers paralelos. Suspeitos: suítes lentas (`SyncEngine.property*`, `writeHelpers.property17`, 20–48 s). Próximo passo: rodar `npx jest --selectProjects unit -w 4` bissectando por diretório.
 - **`npx tsc --noEmit` NÃO passa**: 4 erros antigos em testes (`AuthManager.property22/23/24` — `SecureStoragePort` sem `loadSession/clearSession`; `useReactiveQuery.property1` linha 238; `pullApply.property13` linha 278). Existiam antes da noite.

@@ -22,6 +22,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine
+from dotenv import dotenv_values
 from sqlalchemy.orm import Session
 
 # alembic.ini lives at gymnight/backend/alembic.ini — resolve relative to this
@@ -34,7 +35,10 @@ _ALEMBIC_INI = Path(__file__).resolve().parents[2] / "alembic.ini"
 # (Requirement 13.3)
 # ---------------------------------------------------------------------------
 
-TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
+# Also accept the value from backend/.env (os.environ alone would miss it).
+TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL") or dotenv_values(
+    Path(__file__).resolve().parents[2] / ".env"
+).get("TEST_DATABASE_URL")
 
 if not TEST_DATABASE_URL:
     pytest.skip(

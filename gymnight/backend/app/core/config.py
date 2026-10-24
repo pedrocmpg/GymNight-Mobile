@@ -24,6 +24,17 @@ class Settings(BaseSettings):
     # Valid range: [1, 3650]. Defaults to 90 days.
     TOMBSTONE_RETENTION_DAYS: int = 90
 
+    # Application log level: DEBUG, INFO, WARNING or ERROR
+    LOG_LEVEL: str = "INFO"
+
+    # GymAI chat provider: "mock" (default) or "gemini"
+    GYMAI_PROVIDER: str = "mock"
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-2.0-flash"
+
+    # Used by integration tests / Alembic only
+    TEST_DATABASE_URL: str | None = None
+
 
 def _load_settings() -> Settings:
     """

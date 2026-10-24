@@ -47,10 +47,6 @@ echo Criando/atualizando .env...
     echo EXPO_PUBLIC_SUPABASE_URL=%SUPABASE_URL%
     echo EXPO_PUBLIC_SUPABASE_ANON_KEY=%SUPABASE_ANON_KEY%
     echo.
-    echo # Debug ^(desabilitar em producao^)
-    echo EXPO_PUBLIC_DEBUG_SYNC=false
-    echo EXPO_PUBLIC_DEBUG_AUTH=false
-    echo EXPO_PUBLIC_DEBUG_DB=false
 ) > .env
 
 echo. & echo [OK] .env criado/atualizado & echo.

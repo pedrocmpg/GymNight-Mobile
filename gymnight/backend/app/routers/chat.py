@@ -3,6 +3,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
+from app.core.config import settings
 from app.core.limiter import limiter
 from app.core.security import get_current_user
 from app.gymai.providers import ChatProvider, ProviderError, create_provider
@@ -25,7 +26,13 @@ class ChatResponse(BaseModel):
 
 def get_chat_provider() -> ChatProvider:
     try:
-        return create_provider()
+        return create_provider(
+            {
+                "GYMAI_PROVIDER": settings.GYMAI_PROVIDER,
+                "GEMINI_API_KEY": settings.GEMINI_API_KEY,
+                "GEMINI_MODEL": settings.GEMINI_MODEL,
+            }
+        )
     except ProviderError as exc:
         raise HTTPException(status_code=503, detail=str(exc))
 

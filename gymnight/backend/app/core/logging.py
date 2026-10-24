@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import re
 import sys
 from typing import Any
@@ -154,7 +153,9 @@ def _rename_event_to_message(
 
 def _resolve_log_level() -> int:
     """Resolve the LOG_LEVEL env var to a stdlib logging level integer."""
-    level_name = os.environ.get("LOG_LEVEL", "INFO").upper().strip()
+    from app.core.config import settings
+
+    level_name = settings.LOG_LEVEL.upper().strip()
     level = getattr(logging, level_name, None)
     if not isinstance(level, int):
         # Fall back to INFO for unrecognised values

@@ -51,7 +51,7 @@ def get_url() -> str:
     try:
         from app.core.config import settings
 
-        return settings.DATABASE_URL
+        return settings.TEST_DATABASE_URL or settings.DATABASE_URL
     except Exception:
         pass
 

@@ -15,6 +15,8 @@ from datetime import date
 from pydantic import BaseModel, ConfigDict, field_validator
 from typing import Optional
 
+from app.core.genders import ACCEPTED_GENDERS
+
 
 class UserProfileCreate(BaseModel):
     """Cria perfil após registro bem-sucedido no Supabase Auth."""
@@ -59,8 +61,8 @@ class UserProfileCreate(BaseModel):
     @field_validator("gender")
     @classmethod
     def validate_gender(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and v not in {"male", "female", "other"}:
-            raise ValueError("gender must be one of: male, female, other")
+        if v is not None and v not in ACCEPTED_GENDERS:
+            raise ValueError(f"gender must be one of: {', '.join(sorted(ACCEPTED_GENDERS))}")
         return v
 
     @field_validator("training_time")
@@ -115,8 +117,8 @@ class UserProfileUpdate(BaseModel):
     @field_validator("gender")
     @classmethod
     def validate_gender(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and v not in {"male", "female", "other"}:
-            raise ValueError("gender must be one of: male, female, other")
+        if v is not None and v not in ACCEPTED_GENDERS:
+            raise ValueError(f"gender must be one of: {', '.join(sorted(ACCEPTED_GENDERS))}")
         return v
 
     @field_validator("training_time")

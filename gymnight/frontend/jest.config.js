@@ -36,6 +36,9 @@ module.exports = {
         '^@expo/vector-icons$': '<rootDir>/src/test/mocks/expoVectorIcons.ts',
         '^@expo/vector-icons/(.*)$': '<rootDir>/src/test/mocks/expoVectorIcons.ts',
         '^expo-haptics$': '<rootDir>/src/test/mocks/expoHaptics.ts',
+        '^expo-image$': '<rootDir>/src/test/mocks/expoImage.ts',
+        // Assets do catálogo de exercícios (src/catalog/exerciseMedia.generated.ts).
+        '\\.(jpg|jpeg|png|gif|webp)$': '<rootDir>/src/test/mocks/fileStub.js',
       },
       transformIgnorePatterns: TRANSFORM_IGNORE_PATTERNS,
       setupFiles: [

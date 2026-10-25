@@ -1,5 +1,6 @@
 import { Q, type Database } from '@nozbe/watermelondb';
-import type { ReactiveObservable } from '../hooks/useReactiveQuery';
+import { combineMany, type ReactiveObservable } from '../hooks/useReactiveQuery';
+import { buildExerciseMuscleIndex, EMPTY_MUSCLE_SUMMARY } from '../catalog/exerciseMuscles';
 import type {
   DashboardDatabaseProvider,
   DashboardLoggedSet,
@@ -68,10 +69,34 @@ interface WorkoutSessionRecord {
   };
 }
 
-/** Registro cru de `exercises` (Wave 7 — Estatísticas). */
+/** Registro cru de `exercises` (Wave 7; colunas do catálogo de 500 desde a v4). */
 interface ExerciseRecord {
   id: string;
-  _raw: { name: string; created_at: number; updated_at: number };
+  _raw: {
+    name: string;
+    name_en?: string | null;
+    equipment?: string | null;
+    media_key?: string | null;
+    created_at: number;
+    updated_at: number;
+  };
+}
+
+/** Linha de `exercises` -> CatalogExercise, compartilhado pelos providers. */
+function toCatalogExercise(r: ExerciseRecord): CatalogExercise {
+  return {
+    id: r.id,
+    name: r._raw.name,
+    nameEn: r._raw.name_en ?? null,
+    equipment: r._raw.equipment ?? null,
+    mediaKey: r._raw.media_key ?? null,
+    createdAt: r._raw.created_at,
+    updatedAt: r._raw.updated_at,
+  };
+}
+
+function observeExerciseRecords(db: Database): ReactiveObservable<ExerciseRecord[]> {
+  return db.get('exercises').query().observe() as unknown as ReactiveObservable<ExerciseRecord[]>;
 }
 
 /** Registro cru de `exercise_muscle_map` (Wave 6, catálogo pull-only). */
@@ -337,15 +362,7 @@ export function createHistoryDatabaseProvider(db: Database): HistoryDatabaseProv
       );
     },
     observeExercises(): ReactiveObservable<CatalogExercise[]> {
-      const query = db.get('exercises').query();
-      return mapObservable(query.observe(), (records: any[]) =>
-        records.map((r) => ({
-          id: r.id,
-          name: r._raw.name,
-          createdAt: r._raw.created_at,
-          updatedAt: r._raw.updated_at,
-        }))
-      );
+      return mapObservable(observeExerciseRecords(db), (records) => records.map(toCatalogExercise));
     },
     observeWorkoutNames(userId: string): ReactiveObservable<Array<{ id: string; name: string }>> {
       const query = db.get('workouts').query(Q.where('user_id', userId));
@@ -392,17 +409,7 @@ export function createStatisticsDatabaseProvider(db: Database): StatisticsDataba
       );
     },
     observeExercises(): ReactiveObservable<CatalogExercise[]> {
-      const query = db.get('exercises').query();
-      return mapObservable(
-        query.observe() as unknown as ReactiveObservable<ExerciseRecord[]>,
-        (records) =>
-          records.map((r) => ({
-            id: r.id,
-            name: r._raw.name,
-            createdAt: r._raw.created_at,
-            updatedAt: r._raw.updated_at,
-          })),
-      );
+      return mapObservable(observeExerciseRecords(db), (records) => records.map(toCatalogExercise));
     },
     observeExerciseMuscleMap(): ReactiveObservable<ExerciseMuscleContribution[]> {
       // Catálogo compartilhado (Wave 6), sem filtro de usuário.
@@ -432,14 +439,43 @@ export function createStatisticsDatabaseProvider(db: Database): StatisticsDataba
 export function createExerciseCatalogDatabaseProvider(db: Database): ExerciseCatalogDatabaseProvider {
   return {
     observeExercises(): ReactiveObservable<CatalogExercise[]> {
-      const query = db.get('exercises').query();
-      return mapObservable(query.observe(), (records: any[]) =>
-        records.map((r) => ({
-          id: r.id,
-          name: r._raw.name,
-          createdAt: r._raw.created_at,
-          updatedAt: r._raw.updated_at,
-        }))
+      // Exercícios + grupo principal/secundários (join client-side com o
+      // catálogo muscular, que é pull-only e tão estável quanto o próprio
+      // catálogo).
+      const muscleMap = mapObservable(
+        db.get('exercise_muscle_map').query().observe() as unknown as ReactiveObservable<
+          ExerciseMuscleMapRecord[]
+        >,
+        (records): ExerciseMuscleContribution[] =>
+          records.map((r) => ({
+            exerciseId: r._raw.exercise_id,
+            muscleGroupId: r._raw.muscle_group_id,
+            contribution: r._raw.contribution,
+          })),
+      );
+      const muscleGroups = mapObservable(
+        db.get('muscle_groups').query().observe() as unknown as ReactiveObservable<
+          MuscleGroupRecord[]
+        >,
+        (records): MuscleGroupRow[] => records.map((r) => ({ id: r.id, name: r._raw.name })),
+      );
+      return mapObservable(
+        combineMany<[ExerciseRecord[], ExerciseMuscleContribution[], MuscleGroupRow[]]>([
+          observeExerciseRecords(db),
+          muscleMap,
+          muscleGroups,
+        ]),
+        ([records, map, groups]) => {
+          const muscles = buildExerciseMuscleIndex(map, groups);
+          return records.map((r) => {
+            const summary = muscles.get(r.id) ?? EMPTY_MUSCLE_SUMMARY;
+            return {
+              ...toCatalogExercise(r),
+              primaryGroup: summary.primaryGroup,
+              secondaryGroups: summary.secondaryGroups,
+            };
+          });
+        },
       );
     },
   };

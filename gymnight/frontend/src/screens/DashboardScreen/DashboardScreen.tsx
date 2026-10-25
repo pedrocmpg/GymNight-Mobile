@@ -30,6 +30,7 @@ import { colors, typography, spacing, radii, layout } from '../../designSystem/t
 import { Banner } from '../../designSystem/components/Banner';
 import { Button } from '../../designSystem/components/Button';
 import { Card } from '../../designSystem/components/Card';
+import { Chip } from '../../designSystem/components/Chip';
 import { DayDot } from '../../designSystem/components/DayDot';
 import { EmptyState } from '../../designSystem/components/EmptyState';
 import { IconButton } from '../../designSystem/components/IconButton';
@@ -47,6 +48,14 @@ import {
   reorderWeekMondayFirst,
 } from '../../hooks/historyDomainUtils';
 import { getSyncStatusColor, type SyncState } from '../../sync/SyncStatusIndicator';
+import { useLanguage } from '../../i18n/LanguageContext';
+import type { AppLanguage } from '../../i18n/language';
+
+/** Opções do seletor de idioma, cada uma no próprio idioma. */
+const LANGUAGE_OPTIONS: ReadonlyArray<{ value: AppLanguage; label: string }> = [
+  { value: 'pt', label: 'Português' },
+  { value: 'en', label: 'English' },
+];
 
 export interface DashboardWorkout {
   id: string;
@@ -174,6 +183,7 @@ export function DashboardScreen({
   onLogout,
 }: DashboardScreenProps) {
   const [isAccountOpen, setAccountOpen] = useState(false);
+  const { language, setLanguage } = useLanguage();
 
   if (isLoading) {
     return (
@@ -439,6 +449,20 @@ export function DashboardScreen({
           <View style={[styles.syncDot, { backgroundColor: syncColor }]} />
           <Text style={styles.syncText}>{SYNC_LABEL[syncStatus]}</Text>
         </View>
+        <View style={styles.languageSetting} testID="language-setting">
+          <Text style={styles.languageLabel}>Idioma dos exercícios</Text>
+          <View style={styles.languageOptions}>
+            {LANGUAGE_OPTIONS.map((option) => (
+              <Chip
+                key={option.value}
+                label={option.label}
+                selected={language === option.value}
+                onPress={() => setLanguage(option.value)}
+                testID={`language-option-${option.value}`}
+              />
+            ))}
+          </View>
+        </View>
         <Button
           label="Sair"
           icon="sign-out-alt"
@@ -563,5 +587,16 @@ const styles = StyleSheet.create({
   syncText: {
     ...typography.footnote,
     color: colors.secondaryText,
+  },
+  languageSetting: {
+    gap: spacing.xs,
+  },
+  languageLabel: {
+    ...typography.footnote,
+    color: colors.secondaryText,
+  },
+  languageOptions: {
+    flexDirection: 'row',
+    gap: spacing.xs,
   },
 });

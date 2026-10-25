@@ -21,7 +21,17 @@ import {
  */
 export interface CatalogExercise {
   id: string;
+  /** Nome em PT — sempre presente. */
   name: string;
+  /** Catálogo de 500 (schema v4): null até o pull trazer o catálogo novo. */
+  nameEn?: string | null;
+  /** Rótulo em PT ("Barra", "Halter"…); a tradução fica em i18n/exerciseLabels. */
+  equipment?: string | null;
+  /** Chave da mídia embutida (src/catalog/exerciseMedia). */
+  mediaKey?: string | null;
+  /** Derivados de exercise_muscle_map — só o provider do catálogo preenche. */
+  primaryGroup?: string | null;
+  secondaryGroups?: string[];
   createdAt: number;
   updatedAt: number;
 }

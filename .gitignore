@@ -149,3 +149,7 @@ vite.config.ts.timestamp-*
 .vite/
 
 __pycache__
+
+# Mídia bruta do catálogo de exercícios (fonte do npm run media:build;
+# o que vai para o app fica em gymnight/frontend/assets/exercises/)
+EXERCICIOS/

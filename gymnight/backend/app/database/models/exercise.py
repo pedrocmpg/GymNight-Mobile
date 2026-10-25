@@ -172,7 +172,13 @@ class Exercise(Base):
         index=True,           # INDEX: fast search/lookup queries
         nullable=False        # Name is required
     )
-    
+
+    # Catálogo de 500 (migration 011): nome em inglês, equipamento (rótulo em
+    # PT, o app traduz) e a chave da mídia embutida no app (o `id` do CSV).
+    name_en = Column(String(255), nullable=True)
+    equipment = Column(String(50), nullable=True)
+    media_key = Column(String(20), nullable=True)
+
     # ========================================================================
     # SYNC TIMESTAMP COLUMNS: WatermelonDB synchronization protocol
     # ========================================================================

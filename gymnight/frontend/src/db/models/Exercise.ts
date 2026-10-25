@@ -9,6 +9,9 @@ export default class Exercise extends Model {
   };
 
   @field('name') name!: string;
+  @field('name_en') nameEn!: string | null;
+  @field('equipment') equipment!: string | null;
+  @field('media_key') mediaKey!: string | null;
   @date('created_at') createdAt!: Date;
   @date('updated_at') updatedAt!: Date;
 

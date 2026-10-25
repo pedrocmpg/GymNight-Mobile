@@ -16,6 +16,8 @@
 export interface ExerciseForSearch {
   id: string;
   name: string;
+  /** Catálogo de 500: a busca casa com o nome em inglês também, em qualquer idioma. */
+  nameEn?: string | null;
 }
 
 /** NFD + remover diacríticos + lowercase — mesmo algoritmo de normalização
@@ -35,8 +37,8 @@ export function normalizeForSearch(text: string): string {
 
 /**
  * Filtra o catálogo por substring da query, insensível a acento e caixa nos
- * dois sentidos. Query vazia (ou só espaços) devolve o catálogo inteiro,
- * inalterado; sem nenhum match devolve array vazio.
+ * dois sentidos, no nome em PT ou em EN. Query vazia (ou só espaços) devolve
+ * o catálogo inteiro, inalterado; sem nenhum match devolve array vazio.
  *
  * @param exercises - Catálogo completo (ou já filtrado por outro critério)
  * @param query - Texto digitado pelo usuário
@@ -46,5 +48,9 @@ export function normalizeForSearch(text: string): string {
 export function filterExercises<T extends ExerciseForSearch>(exercises: T[], query: string): T[] {
   const normalizedQuery = normalizeForSearch(query);
   if (normalizedQuery === '') return exercises;
-  return exercises.filter((e) => normalizeForSearch(e.name).includes(normalizedQuery));
+  return exercises.filter(
+    (e) =>
+      normalizeForSearch(e.name).includes(normalizedQuery) ||
+      (e.nameEn ? normalizeForSearch(e.nameEn).includes(normalizedQuery) : false),
+  );
 }

@@ -31,8 +31,15 @@ function findColumn(table: TestTable, name: string): TestColumn {
 }
 
 describe('WatermelonDB Schema', () => {
-  it('should have version 3 (v3: onboarding — tempo de treino)', () => {
-    expect(schema.version).toBe(3);
+  it('should have version 4 (v4: catálogo de 500 exercícios)', () => {
+    expect(schema.version).toBe(4);
+  });
+
+  it('exercises table should have the optional catalog columns (v4)', () => {
+    const table = findTable('exercises');
+    for (const name of ['name_en', 'equipment', 'media_key']) {
+      expect(findColumn(table, name).isOptional).toBe(true);
+    }
   });
 
   it('should define exactly 10 tables', () => {

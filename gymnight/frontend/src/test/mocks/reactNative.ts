@@ -6,13 +6,61 @@
  * element types as host components, which is exactly what
  * @testing-library/react-native needs.
  */
+import React from 'react';
 
 export const View = 'View';
 export const Text = 'Text';
 export const TouchableOpacity = 'TouchableOpacity';
 export const TextInput = 'TextInput';
 export const ScrollView = 'ScrollView';
-export const FlatList = 'FlatList';
+
+interface FlatListMockProps<T> {
+  data?: readonly T[] | null;
+  renderItem: (info: { item: T; index: number }) => React.ReactNode;
+  keyExtractor?: (item: T, index: number) => string;
+  ListHeaderComponent?: React.ReactNode | React.ComponentType;
+  ListFooterComponent?: React.ReactNode | React.ComponentType;
+  ListEmptyComponent?: React.ReactNode | React.ComponentType;
+  [prop: string]: unknown;
+}
+
+function renderSlot(slot: React.ReactNode | React.ComponentType | undefined): React.ReactNode {
+  if (slot == null) return null;
+  if (typeof slot === 'function') return React.createElement(slot as React.ComponentType);
+  return slot as React.ReactNode;
+}
+
+/**
+ * FlatList sem virtualização: renderiza cabeçalho, TODOS os itens e rodapé
+ * dentro de um host 'FlatList' — o bastante para os testes acharem as linhas
+ * por testID. As demais props (testID, contentContainerStyle…) ficam no host.
+ */
+export function FlatList<T>({
+  data,
+  renderItem,
+  keyExtractor,
+  ListHeaderComponent,
+  ListFooterComponent,
+  ListEmptyComponent,
+  ...rest
+}: FlatListMockProps<T>) {
+  const items = data ?? [];
+  return React.createElement(
+    'FlatList',
+    rest,
+    renderSlot(ListHeaderComponent),
+    items.length === 0
+      ? renderSlot(ListEmptyComponent)
+      : items.map((item, index) =>
+          React.createElement(
+            React.Fragment,
+            { key: keyExtractor ? keyExtractor(item, index) : String(index) },
+            renderItem({ item, index }),
+          ),
+        ),
+    renderSlot(ListFooterComponent),
+  );
+}
 export const ActivityIndicator = 'ActivityIndicator';
 export const Pressable = 'Pressable';
 export const Image = 'Image';

@@ -33,6 +33,7 @@ import { createBackendGymAiClient } from './src/gymai/backendGymAiClient';
 import database from './src/db/database';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { StartupErrorScreen } from './src/navigation/StartupErrorScreen';
+import { LanguageProvider } from './src/i18n/LanguageContext';
 
 /** Fetch adapter satisfying SyncHttpClient, used by the real Sync_Cycle_Runner. */
 const fetchHttpClient = {
@@ -137,14 +138,16 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <AppNavigator
-        fontsLoaded={fontsLoaded}
-        authManager={authManager}
-        syncEngine={syncEngine}
-        logoutManager={logoutManager}
-        sessionStore={sessionStore}
-        gymAiClient={gymAiClient}
-      />
+      <LanguageProvider>
+        <AppNavigator
+          fontsLoaded={fontsLoaded}
+          authManager={authManager}
+          syncEngine={syncEngine}
+          logoutManager={logoutManager}
+          sessionStore={sessionStore}
+          gymAiClient={gymAiClient}
+        />
+      </LanguageProvider>
       <StatusBar style="light" />
     </SafeAreaProvider>
   );

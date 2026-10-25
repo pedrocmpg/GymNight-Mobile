@@ -46,6 +46,13 @@ import {
 } from './setGrid';
 import { CardioSection, type CardioSectionEntry } from './CardioSection';
 import type { CardioFormValue } from '../CardioScreen/CardioForm';
+import { ExerciseThumb } from '../../components/exercise/ExerciseThumb';
+import {
+  ExerciseDetailSheet,
+  type ExerciseDetails,
+} from '../../components/exercise/ExerciseDetailSheet';
+import { useLanguage } from '../../i18n/LanguageContext';
+import { exerciseName, exerciseSubtitle } from '../../i18n/exerciseLabels';
 
 export type ActiveSessionCardioEntry = CardioSectionEntry;
 
@@ -61,9 +68,13 @@ export interface ActiveSessionLoggedSet {
   setType?: string;
 }
 
-export interface ActiveSessionExerciseOption {
+/**
+ * Exercício da sessão. Os campos de ExerciseDetails além de `name` (nome
+ * EN, mídia, grupos, equipamento) vêm do catálogo e são opcionais: sem
+ * eles a tela mostra o nome em PT e o ícone de fallback.
+ */
+export interface ActiveSessionExerciseOption extends ExerciseDetails {
   id: string;
-  name: string;
   seriesTarget?: number;
   repsTarget?: number;
   weightTarget?: number;
@@ -165,6 +176,15 @@ export function ActiveSessionScreen({
   // Tipo de série escolhido ANTES de gravar (N/W/D/F) — some da linha depois
   // que ela é logada, quando o tipo real gravado passa a mandar.
   const [pendingSetTypes, setPendingSetTypes] = useState<Record<string, string>>({});
+  const [detailExercise, setDetailExercise] = useState<ActiveSessionExerciseOption | null>(null);
+  const { language } = useLanguage();
+
+  const optionById = useMemo(
+    () => new Map(exerciseOptions.map((option) => [option.id, option])),
+    [exerciseOptions],
+  );
+  // Modo livre: o exercício escolhido nos chips, com a animação acima do formulário.
+  const selectedOption = exerciseId ? optionById.get(exerciseId) ?? null : null;
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
@@ -379,6 +399,8 @@ export function ActiveSessionScreen({
           {grid.map((exercise) => {
             const isComplete =
               exercise.totalCount > 0 && exercise.completedCount === exercise.totalCount;
+            const option = optionById.get(exercise.exerciseId);
+            const name = option ? exerciseName(option, language) : exercise.name;
             return (
               <Card
                 key={exercise.exerciseId}
@@ -386,8 +408,16 @@ export function ActiveSessionScreen({
                 testID={`exercise-card-${exercise.exerciseId}`}
               >
                 <View style={styles.exerciseHeader}>
+                  <ExerciseThumb
+                    mediaKey={option?.mediaKey}
+                    size={EXERCISE_THUMB_SIZE}
+                    animated
+                    onPress={option ? () => setDetailExercise(option) : undefined}
+                    accessibilityLabel={`Ver ${name}`}
+                    testID={`exercise-thumb-${exercise.exerciseId}`}
+                  />
                   <Text style={styles.exerciseName} numberOfLines={2}>
-                    {exercise.name}
+                    {name}
                   </Text>
                   <View style={styles.exerciseCountWrap}>
                     {isComplete ? (
@@ -559,13 +589,35 @@ export function ActiveSessionScreen({
                 {exerciseOptions.map((option) => (
                   <Chip
                     key={option.id}
-                    label={option.name}
+                    label={exerciseName(option, language)}
                     selected={exerciseId === option.id}
                     onPress={() => setExerciseId(option.id)}
                     testID={`exercise-option-${option.id}`}
                   />
                 ))}
               </ScrollView>
+              {selectedOption ? (
+                <View style={styles.selectedExercise} testID="selected-exercise-preview">
+                  <ExerciseThumb
+                    mediaKey={selectedOption.mediaKey}
+                    size={SELECTED_THUMB_SIZE}
+                    animated
+                    onPress={() => setDetailExercise(selectedOption)}
+                    accessibilityLabel={`Ver ${exerciseName(selectedOption, language)}`}
+                    testID="selected-exercise-thumb"
+                  />
+                  <View style={styles.selectedExerciseText}>
+                    <Text style={styles.selectedExerciseName} numberOfLines={2}>
+                      {exerciseName(selectedOption, language)}
+                    </Text>
+                    {exerciseSubtitle(selectedOption, language) ? (
+                      <Text style={styles.selectedExerciseMeta} numberOfLines={1}>
+                        {exerciseSubtitle(selectedOption, language)}
+                      </Text>
+                    ) : null}
+                  </View>
+                </View>
+              ) : null}
               <View style={styles.inputRow}>
                 <View style={styles.inputHalf}>
                   <Input
@@ -613,6 +665,8 @@ export function ActiveSessionScreen({
         />
       )}
 
+      <ExerciseDetailSheet exercise={detailExercise} onClose={() => setDetailExercise(null)} />
+
       <ConfirmSheet
         visible={showExitConfirm}
         testID="exit-confirm"
@@ -642,6 +696,8 @@ function SummaryMetric({ value, label, testID }: { value: string; label: string;
 }
 
 const LIVE_DOT_SIZE = 6;
+const EXERCISE_THUMB_SIZE = 56;
+const SELECTED_THUMB_SIZE = 72;
 const SUMMARY_BADGE_SIZE = 64;
 const COL_NUMBER_WIDTH = 32;
 const COL_TYPE_WIDTH = 28;
@@ -789,6 +845,23 @@ const styles = StyleSheet.create({
   },
   exercisePickerContent: {
     gap: spacing.xs,
+  },
+  selectedExercise: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  selectedExerciseText: {
+    flex: 1,
+    gap: spacing.xxs,
+  },
+  selectedExerciseName: {
+    ...typography.bodyStrong,
+    color: colors.primaryText,
+  },
+  selectedExerciseMeta: {
+    ...typography.footnote,
+    color: colors.secondaryText,
   },
   inputRow: {
     flexDirection: 'row',

@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
 
 export const schema = appSchema({
-  version: 3,
+  version: 4,
   tables: [
     tableSchema({
       name: 'users',
@@ -24,6 +24,11 @@ export const schema = appSchema({
       name: 'exercises',
       columns: [
         { name: 'name', type: 'string' },
+        // v4 (catálogo de 500): nome em inglês, equipamento (rótulo em PT) e a
+        // chave da mídia embutida (src/catalog/exerciseMedia.generated.ts).
+        { name: 'name_en', type: 'string', isOptional: true },
+        { name: 'equipment', type: 'string', isOptional: true },
+        { name: 'media_key', type: 'string', isOptional: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
       ],
